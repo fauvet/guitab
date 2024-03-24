@@ -3,7 +3,7 @@
   "background_color": "#3ABCF8",
   "display": "standalone",
   "scope": "",
-  "start_url": "",
+  "start_url": "index.html",
   "name": "GuiTab",
   "short_name": "GuiTab",
   "icons": [
