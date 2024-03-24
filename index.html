@@ -5,62 +5,68 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GuiTab</title>
 
-    <script type="text/javascript" src="raphael.js"></script>
-    <script type="text/javascript" src="raphael.chord.js"></script>
+    <script type="text/javascript" src="lib/raphael.js"></script>
+    <script type="text/javascript" src="lib/raphael.chord.js"></script>
 
     <style>
       * {
         font-family: system-ui, sans-serif;
       }
-
-      .container-raphael-chart {
-        display: flex;
-        flex-wrap: wrap;
-        flex-direction: row-reverse;
-        justify-content: flex-end;
-      }
     </style>
   </head>
   <body>
     <div id="partition">
-      <h1>On écrit sur les murs - Demis Roussos</h1>
-      <h2>Verse</h2>
+      <h2>On écrit sur les murs - Demis Roussos</h2>
+      <p>Verse - Chorus ×2 - Verse - Chorus ×2</p>
+      <h3>Verse</h3>
       <div id="verse" class="container-raphael-chart"></div>
-      <h2>Chorus</h2>
+      <h3>Chorus</h3>
       <div id="chorus" class="container-raphael-chart"></div>
     </div>
     <script>
       window.onload = function () {
-        Raphael.chord("verse", "F");
-        Raphael.chord("verse", "G");
-        Raphael.chord("verse", "E min");
-        Raphael.chord("verse", "A min");
-        Raphael.chord("verse", "C");
-        Raphael.chord("verse", "G");
-        Raphael.chord("verse", "E min");
-        Raphael.chord("verse", "A min");
-        Raphael.chord("verse", "F");
-        Raphael.chord("verse", "G");
-        Raphael.chord("verse", "E min");
-        Raphael.chord("verse", "A min");
-        Raphael.chord("verse", [-1, -1, 3, 2, 1, 1], "F maj7");
-        Raphael.chord("verse", [-1, -1, 5, 4, 3, 3], "F maj7");
-        Raphael.chord("verse", [-1, -1, 7, 5, 6, 5], "F maj7");
-        Raphael.chord("verse", [-1, -1, 9, 7, 8, 7], "F maj7");
+        const verse = [
+          ["F"],
+          ["G"],
+          ["E min"],
+          ["A min"],
+          ["C"],
+          ["G"],
+          ["E min"],
+          ["A min"],
+          ["F"],
+          ["G"],
+          ["E min"],
+          ["A min"],
+          [[-1, -1, 3, 2, 1, 1], "F maj7"],
+          [[-1, -1, 5, 4, 3, 3], "F maj7"],
+          [[-1, -1, 7, 5, 6, 5], "F maj7"],
+          [[-1, -1, 9, 7, 8, 7], "F maj7"],
+        ];
 
-        Raphael.chord("chorus", "A min");
-        Raphael.chord("chorus", "G");
-        Raphael.chord("chorus", "A min");
-        Raphael.chord("chorus", "C");
-        Raphael.chord("chorus", "G");
-        Raphael.chord("chorus", "C");
-        Raphael.chord("chorus", "F");
-        Raphael.chord("chorus", "G");
-        Raphael.chord("chorus", "E min");
-        Raphael.chord("chorus", "A min");
-        Raphael.chord("chorus", "F");
-        Raphael.chord("chorus", "G");
-        Raphael.chord("chorus", "A min");
+        verse
+          .reverse()
+          .forEach((chord) => Raphael.chord("verse", chord[0], chord[1]));
+
+        const chorus = [
+          ["A min"],
+          ["G"],
+          ["A min"],
+          ["C"],
+          ["G"],
+          ["C"],
+          ["F"],
+          ["G"],
+          ["E min"],
+          ["A min"],
+          ["F"],
+          ["G"],
+          ["A min"],
+        ];
+
+        chorus
+          .reverse()
+          .forEach((chord) => Raphael.chord("chorus", chord[0], chord[1]));
       };
     </script>
   </body>
