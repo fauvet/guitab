@@ -2,8 +2,8 @@
   "theme_color": "#4343BE",
   "background_color": "#3ABCF8",
   "display": "standalone",
-  "scope": "guitab",
-  "start_url": "guitab",
+  "scope": "",
+  "start_url": "",
   "name": "GuiTab",
   "short_name": "GuiTab",
   "icons": [
