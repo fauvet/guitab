@@ -1,0 +1,17 @@
+{
+  "theme_color": "#4343BE",
+  "background_color": "#3ABCF8",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
+  "name": "GuiTab",
+  "short_name": "GuiTab",
+  "icons": [
+    {
+      "src": "logo.svg",
+      "sizes": "48x48 72x72 96x96 128x128 256x256 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
