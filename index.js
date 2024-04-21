@@ -19,38 +19,6 @@ function getEditorContent() {
   return ChordProjectEditor.Main.getEditor().getValue();
 }
 
-async function onButtonOpenFileClicked() {
-  const filePicker = await window.showOpenFilePicker({
-    types: [
-      {
-        description: "ChordPro",
-        accept: {
-          "text/plain": [".cho", ".crd", ".chopro", ".chord", ".pro"],
-        },
-      },
-    ],
-    multiple: false,
-  });
-  fileHandle = await filePicker[0];
-  const file = await fileHandle.getFile();
-  const fileContent = await getFileContent(file);
-  ChordProjectEditor.Main.run(fileContent);
-  renderChordProject(fileContent);
-}
-
-async function onButtonSaveFileClicked() {
-  const writable = await fileHandle.createWritable();
-  const fileContent = getEditorContent();
-  await writable.write(fileContent);
-  await writable.close();
-  const fileName = fileHandle.name;
-  showToast(`${fileName} saved`);
-}
-
-function onButtonZoomInClicked() {}
-
-function onButtonZoomOutClicked() {}
-
 function renderChordProject(chordSheet) {
   const cp = new ChordProjectParser.ChordProParser();
   const song = cp.parse(chordSheet);
@@ -79,20 +47,14 @@ function showToast(content) {
   }).showToast();
 }
 
-const buttonOpenFile = document.getElementById("action-open-file");
-buttonOpenFile.onclick = onButtonOpenFileClicked;
-
-const buttonSaveFile = document.getElementById("action-save-file");
-buttonSaveFile.onclick = onButtonSaveFileClicked;
-
-window.onload = async function () {
+window.addEventListener("load", async function () {
   const fileResponse = await fetch("Praise Adonai.cho");
   const chordSheet = await fileResponse.text();
 
   ChordProjectEditor.Main.init();
   ChordProjectEditor.Main.run(chordSheet);
   renderChordProject(chordSheet);
-};
+});
 
 document.addEventListener("keydown", function (event) {
   if ((event.ctrlKey || event.metaKey) && event.key === "s") {

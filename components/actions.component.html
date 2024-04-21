@@ -1,0 +1,59 @@
+<div id="container-actions">
+  <span id="action-open-file" class="material-icons">file_open</span>
+  <span id="action-save-file" class="material-icons">save</span>
+  <span id="action-zoom-in" class="material-icons">zoom_in</span>
+  <span id="action-zoom-out" class="material-icons">zoom_out</span>
+</div>
+
+<script type="text/javascript">
+  async function onButtonOpenFileClicked() {
+    const filePicker = await window.showOpenFilePicker({
+      types: [
+        {
+          description: "ChordPro",
+          accept: {
+            "text/plain": [".cho", ".crd", ".chopro", ".chord", ".pro"],
+          },
+        },
+      ],
+      multiple: false,
+    });
+    fileHandle = await filePicker[0];
+    const file = await fileHandle.getFile();
+    const fileContent = await getFileContent(file);
+    ChordProjectEditor.Main.run(fileContent);
+    renderChordProject(fileContent);
+  }
+
+  async function onButtonSaveFileClicked() {
+    const writable = await fileHandle.createWritable();
+    const fileContent = getEditorContent();
+    await writable.write(fileContent);
+    await writable.close();
+    const fileName = fileHandle.name;
+    showToast(`${fileName} saved`);
+  }
+
+  function onButtonZoomInClicked() {}
+
+  function onButtonZoomOutClicked() {}
+
+  const buttonOpenFile = document.getElementById("action-open-file");
+  buttonOpenFile.onclick = onButtonOpenFileClicked;
+
+  const buttonSaveFile = document.getElementById("action-save-file");
+  buttonSaveFile.onclick = onButtonSaveFileClicked;
+</script>
+
+<style>
+  #container-actions {
+    display: flex;
+    gap: 5px;
+    padding: 10px;
+    user-select: none;
+
+    .material-icons {
+      cursor: pointer;
+    }
+  }
+</style>
