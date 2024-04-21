@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GuiTab</title>
+    <link rel="icon" href="logo.svg" sizes="any" type="image/svg+xml" />
+    <link rel="manifest" href="manifest.webmanifest" />
+
+    <script type="text/javascript" src="lib/raphael.js"></script>
+    <script type="text/javascript" src="lib/raphael.chord.js"></script>
+
+    <style>
+      * {
+        font-family: system-ui, sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="partition">
+      <h2>On écrit sur les murs - Demis Roussos</h2>
+      <p>Verse - Chorus ×2 - Verse - Chorus ×2</p>
+      <h3>Verse</h3>
+      <div id="verse" class="container-raphael-chart"></div>
+      <h3>Chorus</h3>
+      <div id="chorus" class="container-raphael-chart"></div>
+    </div>
+    <script>
+      window.onload = function () {
+        const verse = [
+          ["F"],
+          ["G"],
+          ["E min"],
+          ["A min"],
+          ["C"],
+          ["G"],
+          ["E min"],
+          ["A min"],
+          ["F"],
+          ["G"],
+          ["E min"],
+          ["A min"],
+          [[-1, -1, 3, 2, 1, 1], "F maj7 D UD D UD DUDU"],
+          [[-1, -1, 5, 4, 3, 3], "F maj7 DUDUDUDU"],
+          [[-1, -1, 7, 5, 6, 5], "F maj7 DDDD"],
+          [[-1, -1, 9, 7, 8, 7], "F maj7 \\/\\/\\"],
+        ];
+
+        verse.reverse().forEach((chord) => Raphael.chord("verse", chord[0], chord[1]));
+
+        const chorus = [
+          ["A min"],
+          ["G"],
+          ["A min"],
+          ["C"],
+          ["G"],
+          ["C"],
+          ["F"],
+          ["G"],
+          ["E min"],
+          ["A min"],
+          ["F"],
+          ["G"],
+          ["A min"],
+        ];
+
+        chorus.reverse().forEach((chord) => Raphael.chord("chorus", chord[0], chord[1]));
+      };
+    </script>
+  </body>
+</html>

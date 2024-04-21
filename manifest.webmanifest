@@ -13,5 +13,13 @@
       "type": "image/svg+xml",
       "purpose": "any"
     }
+  ],
+  "file_handlers": [
+    {
+      "action": "",
+      "accept": {
+        "text/plain": [".cho", ".crd", ".chopro", ".chord", ".pro"]
+      }
+    }
   ]
 }

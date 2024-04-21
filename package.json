@@ -1,0 +1,22 @@
+{
+  "name": "guitab",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.html",
+  "scripts": {
+    "serve": "cd ..; http-server -o ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fauvet/guitab.git"
+  },
+  "author": "Guillaume FAUVET",
+  "license": "MIT",
+  "homepage": "https://github.com/fauvet/guitab#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "chordproject-editor": "^0.1.11",
+    "chordproject-parser": "^0.2.14",
+    "prettier": "^3.2.5"
+  }
+}
