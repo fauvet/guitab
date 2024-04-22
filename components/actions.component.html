@@ -1,6 +1,9 @@
 <div id="container-actions">
   <span id="action-open-file" class="material-icons">file_open</span>
   <span id="action-save-file" class="material-icons">save</span>
+  <span id="action-play" class="material-icons">play_arrow</span>
+  <span id="action-edit" class="material-icons">edit</span>
+  <span id="action-history" class="material-icons">history</span>
   <span id="action-zoom-in" class="material-icons">zoom_in</span>
   <span id="action-zoom-out" class="material-icons">zoom_out</span>
 </div>
@@ -22,7 +25,7 @@
     const file = await app.fileHandle.getFile();
     const fileContent = await getFileContent(file);
     ChordProjectEditor.Main.run(fileContent);
-    renderChordProject(fileContent);
+    await onButtonPlayClicked();
   }
 
   async function onButtonSaveFileClicked() {
@@ -34,9 +37,37 @@
     showToast(`${fileName} saved`);
   }
 
-  function onButtonZoomInClicked() {}
+  async function onButtonPlayClicked() {
+    const fileContent = getEditorContent();
+    renderChordProject(fileContent);
+  }
 
-  function onButtonZoomOutClicked() {}
+  function onButtonEditClicked() {}
+
+  function onButtonHistoryClicked() {}
+
+  function onButtonZoomInClicked() {
+    const zoom = getZoom();
+    const newZoom = zoom * 1.1;
+    setZoom(newZoom);
+  }
+
+  function onButtonZoomOutClicked() {
+    const zoom = getZoom();
+    const newZoom = zoom * 0.9;
+    setZoom(newZoom);
+  }
+
+  function setZoom(zoom) {
+    if (zoom < 25) zoom = 25;
+    if (zoom > 500) zoom = 500;
+    if (!/%$/.test(zoom)) zoom += "%";
+    document.body.style.zoom = zoom;
+  }
+
+  function getZoom() {
+    return (document.body.style.zoom || "100%").replace(/%$/, "");
+  }
 
   (async () => {
     const buttonOpenFile = document.getElementById("action-open-file");
@@ -45,10 +76,29 @@
     const buttonSaveFile = document.getElementById("action-save-file");
     buttonSaveFile.onclick = onButtonSaveFileClicked;
 
+    const buttonPlay = document.getElementById("action-play");
+    buttonPlay.onclick = onButtonPlayClicked;
+
+    const buttonEdit = document.getElementById("action-edit");
+    buttonEdit.onclick = onButtonEditClicked;
+
+    const buttonHistory = document.getElementById("action-history");
+    buttonHistory.onclick = onButtonHistoryClicked;
+
+    const buttonZoomIn = document.getElementById("action-zoom-in");
+    buttonZoomIn.onclick = onButtonZoomInClicked;
+
+    const buttonZoomOut = document.getElementById("action-zoom-out");
+    buttonZoomOut.onclick = onButtonZoomOutClicked;
+
     document.addEventListener("keydown", function (event) {
       if ((event.ctrlKey || event.metaKey) && event.key === "s") {
         event.preventDefault();
         onButtonSaveFileClicked();
+      }
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        event.preventDefault();
+        onButtonPlayClicked();
       }
     });
   })();
