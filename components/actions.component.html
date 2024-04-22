@@ -22,6 +22,10 @@
       multiple: false,
     });
     app.fileHandle = await filePicker[0];
+    await openFileHandle();
+  }
+
+  async function openFileHandle() {
     const file = await app.fileHandle.getFile();
     const fileContent = await getFileContent(file);
     ChordProjectEditor.Main.run(fileContent);
@@ -90,6 +94,14 @@
 
     const buttonZoomOut = document.getElementById("action-zoom-out");
     buttonZoomOut.onclick = onButtonZoomOutClicked;
+
+    if ("launchQueue" in window) {
+      launchQueue.setConsumer(async (launchParams) => {
+        if (!launchParams?.files?.length) return;
+        app.fileHandle = launchParams.files[0];
+        await openFileHandle();
+      });
+    }
 
     document.addEventListener("keydown", function (event) {
       if ((event.ctrlKey || event.metaKey) && event.key === "s") {
