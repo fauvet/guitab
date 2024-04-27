@@ -29,7 +29,7 @@ jobs:
           cp docs/index.html docs/404.html
 
       - name: Deploy
-        uses: crazy-max/ghactions-github-pages@v1
+        uses: crazy-max/ghaction-github-pages@v1
         with:
           target_branch: gh-pages
           build_dir: docs
