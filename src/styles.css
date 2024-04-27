@@ -1,3 +1,6 @@
+@import "material-icons/iconfont/material-icons.css";
+@import "ngx-toastr/toastr";
+
 h1 {
   font-size: 2em;
   font-weight: bold;
@@ -11,4 +14,8 @@ h2 {
 h3 {
   font-size: 1.17em;
   font-weight: bold;
+}
+
+button {
+  cursor: pointer;
 }

@@ -1,0 +1,8 @@
+:host {
+  display: flex;
+
+  #chordProjectEditor {
+    flex: 1;
+    height: auto !important;
+  }
+}

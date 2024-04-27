@@ -1,0 +1,24 @@
+:host {
+  height: 100dvh;
+  width: 100dvw;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-sizing: border-box;
+  padding: 12px;
+
+  .container-chordpro {
+    flex: 1;
+    display: flex;
+    gap: 12px;
+    overflow: auto;
+
+    app-chordpro-editor {
+      flex: 1;
+    }
+
+    app-chordpro-viewer {
+      flex: 1;
+    }
+  }
+}
