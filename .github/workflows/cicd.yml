@@ -1,4 +1,4 @@
-name: Build and Deploy
+name: CICD
 
 on:
   push:
@@ -19,11 +19,19 @@ jobs:
           node-version: "20"
 
       - name: Install dependencies
-        run: npm install
+        run: npm run install
 
-      - name: Build and Deploy
+      - name: Build
         run: |
-          ng build
+          npm run build
           mv docs/browser/* docs
           rm -r docs/browser
           cp docs/index.html docs/404.html
+
+      - name: Deploy
+        uses: crazy-max/ghactions-github-pages@v1
+        with:
+          target_branch: gh-pages
+          build_dir: docs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
