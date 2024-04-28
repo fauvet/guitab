@@ -3,6 +3,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { AppContextService } from "../app-context.service";
 import { ToastrService } from "ngx-toastr";
 import { ChordproEditorComponent } from "../chordpro-editor/chordpro-editor.component";
+import FileSaver from "file-saver";
 
 @Component({
   selector: "app-actions-bar",
@@ -59,6 +60,11 @@ export class ActionsBarComponent implements OnInit {
     await writable.close();
     const fileName = fileHandle.name;
     this.toastr.success(`${fileName} saved`);
+  }
+
+  async onButtonSaveFileAsClicked(): Promise<void> {
+    var file = new File(["Hello, world!"], "hello world.txt", { type: "text/plain;charset=utf-8" });
+    FileSaver.saveAs(file);
   }
 
   async onButtonPlayClicked(): Promise<void> {
