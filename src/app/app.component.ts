@@ -1,9 +1,10 @@
-import { Component, OnInit } from "@angular/core";
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
-import { ActionsBarComponent } from "./actions-bar/actions-bar.component";
-import { ChordproEditorComponent } from "./chordpro-editor/chordpro-editor.component";
-import { ChordproViewerComponent } from "./chordpro-viewer/chordpro-viewer.component";
-import { AppContextService } from "./app-context.service";
+import { ActionsBarComponent } from "./components/actions-bar/actions-bar.component";
+import { ChordproEditorComponent } from "./components/chordpro-editor/chordpro-editor.component";
+import { ChordproViewerComponent } from "./components/chordpro-viewer/chordpro-viewer.component";
+import { AppContextService } from "./services/app-context/app-context.service";
+import { ZoomService } from "./services/zoom/zoom.service";
 
 @Component({
   selector: "app-root",
@@ -12,10 +13,15 @@ import { AppContextService } from "./app-context.service";
   styleUrl: "./app.component.css",
   imports: [RouterOutlet, ActionsBarComponent, ChordproEditorComponent, ChordproViewerComponent],
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, AfterViewInit {
   title = "guitab";
 
-  constructor(private appContextService: AppContextService) {}
+  @ViewChild("containerChordpro") containerChordpro: undefined | ElementRef<HTMLDivElement>;
+
+  constructor(
+    private appContextService: AppContextService,
+    private zoomService: ZoomService,
+  ) {}
 
   ngOnInit(): void {
     if ("launchQueue" in window) {
@@ -25,5 +31,17 @@ export class AppComponent implements OnInit {
         this.appContextService.setFileHandle(fileHandle);
       });
     }
+
+    this.zoomService.getZoom$().subscribe((zoom) => this.onZoomChanged(zoom));
+  }
+
+  ngAfterViewInit(): void {
+    const zoom = this.zoomService.getZoom();
+    this.onZoomChanged(zoom);
+  }
+
+  onZoomChanged(zoom: number): void {
+    if (!this.containerChordpro) return;
+    (this.containerChordpro.nativeElement.style as any).zoom = zoom + "%";
   }
 }

@@ -2,8 +2,8 @@ import { Component, OnDestroy, OnInit } from "@angular/core";
 // @ts-ignore
 import * as ChordProjectEditor from "chordproject-editor";
 import { Subject, takeUntil } from "rxjs";
-import { AppContextService } from "../app-context.service";
-import { FileUtil } from "../utils/file.util";
+import { AppContextService } from "../../services/app-context/app-context.service";
+import { FileUtil } from "../../utils/file.util";
 
 @Component({
   selector: "app-chordpro-editor",
@@ -19,7 +19,12 @@ export class ChordproEditorComponent implements OnInit, OnDestroy {
     this.appContextService
       .getFileHandle$()
       .pipe(takeUntil(this.unsubscribe))
-      .subscribe((fileHandle) => this.onFileHandleChanged(fileHandle));
+      .subscribe((fileHandle) => this.onFileChanged(fileHandle));
+
+    this.appContextService
+      .getFile$()
+      .pipe(takeUntil(this.unsubscribe))
+      .subscribe((file) => this.onFileChanged(file));
   }
 
   ngOnInit(): void {
@@ -30,7 +35,7 @@ export class ChordproEditorComponent implements OnInit, OnDestroy {
     this.unsubscribe.next();
   }
 
-  async onFileHandleChanged(fileHandle: null | FileSystemFileHandle): Promise<void> {
+  async onFileChanged(fileHandle: null | File | FileSystemFileHandle): Promise<void> {
     const fileContent = await FileUtil.getFileContent(fileHandle);
     ChordProjectEditor.Main.run(fileContent);
   }

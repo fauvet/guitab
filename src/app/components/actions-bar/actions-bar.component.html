@@ -1,0 +1,62 @@
+<button
+  aria-label="Open a file"
+  matTooltip="Open file... (Ctrl+O)"
+  #buttonOpenFile
+  mat-icon-button
+  (click)="inputFile.click()">
+  <mat-icon>file_open</mat-icon>
+  <input
+    class="file-input"
+    #inputFile
+    type="file"
+    hidden
+    [accept]="CHORDPRO_EXTENSIONS"
+    (change)="onButtonOpenFileClicked($event)" />
+</button>
+<button
+  aria-label="Save"
+  matTooltip="Save file (Ctrl+S)"
+  #buttonSaveFile
+  mat-icon-button
+  (click)="onButtonSaveFileClicked()">
+  <mat-icon>save</mat-icon>
+</button>
+<button
+  aria-label="Save as"
+  matTooltip="Save file as... (Ctrl+Shift+S)"
+  #buttonSaveFileAs
+  mat-icon-button
+  (click)="onButtonSaveFileAsClicked()">
+  <mat-icon>save_as</mat-icon>
+</button>
+<button
+  aria-label="Render"
+  matTooltip="Render (Ctrl+Enter)"
+  #buttonPlay
+  mat-icon-button
+  (click)="onButtonPlayClicked()">
+  <mat-icon>play_arrow</mat-icon>
+</button>
+<button
+  aria-label="Edit"
+  matTooltip="Edit (F2)"
+  #buttonEdit
+  mat-icon-button
+  (click)="onButtonEditClicked()">
+  <mat-icon>edit</mat-icon>
+</button>
+<div class="separator"></div>
+<button
+  aria-label="Zoom out"
+  matTooltip="Zoom out"
+  mat-icon-button
+  (click)="onButtonZoomOutClicked()">
+  <mat-icon>zoom_out</mat-icon>
+</button>
+<button
+  aria-label="Zoom in"
+  matTooltip="Zoom in"
+  mat-icon-button
+  (click)="onButtonZoomInClicked()">
+  <mat-icon>zoom_in</mat-icon>
+</button>

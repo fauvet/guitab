@@ -1,8 +1,8 @@
 import { Component, ElementRef, OnDestroy, Renderer2 } from "@angular/core";
 import * as ChordProjectParser from "chordproject-parser";
-import { AppContextService } from "../app-context.service";
+import { AppContextService } from "../../services/app-context/app-context.service";
 import { Subject, takeUntil } from "rxjs";
-import { FileUtil } from "../utils/file.util";
+import { FileUtil } from "../../utils/file.util";
 import { ChordproEditorComponent } from "../chordpro-editor/chordpro-editor.component";
 
 @Component({
@@ -23,7 +23,12 @@ export class ChordproViewerComponent implements OnDestroy {
     this.appContextService
       .getFileHandle$()
       .pipe(takeUntil(this.unsubscribe))
-      .subscribe((fileHandle) => this.onFileHandleChanged(fileHandle));
+      .subscribe((fileHandle) => this.onFileChanged(fileHandle));
+
+    this.appContextService
+      .getFile$()
+      .pipe(takeUntil(this.unsubscribe))
+      .subscribe((file) => this.onFileChanged(file));
 
     this.appContextService
       .getRender$()
@@ -60,7 +65,7 @@ export class ChordproViewerComponent implements OnDestroy {
     this.renderer.setProperty(hostElement, "innerHTML", html);
   }
 
-  async onFileHandleChanged(fileHandle: null | FileSystemFileHandle): Promise<void> {
+  async onFileChanged(fileHandle: null | File | FileSystemFileHandle): Promise<void> {
     const fileContent = await FileUtil.getFileContent(fileHandle);
     this.render(fileContent);
   }
