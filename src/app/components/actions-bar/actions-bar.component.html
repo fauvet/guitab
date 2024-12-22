@@ -1,4 +1,21 @@
 <button
+  aria-label="Undo"
+  disabled
+  matTooltip="Undo (Ctrl+Z)"
+  #buttonUndo
+  mat-icon-button
+  (click)="onButtonUndoClicked()">
+  <mat-icon>undo</mat-icon>
+</button>
+<button
+  aria-label="Redo"
+  matTooltip="Redo (Ctrl+Y)"
+  #buttonRedo
+  mat-icon-button
+  (click)="onButtonRedoClicked()">
+  <mat-icon>redo</mat-icon>
+</button>
+<button
   aria-label="Open a file"
   matTooltip="Open file... (Ctrl+O)"
   #buttonOpenFile
@@ -46,6 +63,13 @@
   <mat-icon>edit</mat-icon>
 </button>
 <div class="separator"></div>
+<button
+  aria-label="Reset zoom"
+  matTooltip="Reset zoom"
+  mat-icon-button
+  (click)="onButtonResetZoomClicked()">
+  <mat-icon>search_off</mat-icon>
+</button>
 <button
   aria-label="Zoom out"
   matTooltip="Zoom out"

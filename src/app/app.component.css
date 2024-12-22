@@ -6,6 +6,8 @@
   gap: 12px;
   box-sizing: border-box;
   padding: 12px;
+  font-family: monospace;
+  font-size: 1rem;
 
   .container-chordpro {
     flex: 1;

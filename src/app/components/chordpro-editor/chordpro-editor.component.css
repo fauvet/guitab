@@ -3,6 +3,10 @@
 
   #chordProjectEditor {
     flex: 1;
-    height: auto !important;
+  }
+
+  * {
+    font-family: monospace;
+    font-size: 1rem;
   }
 }

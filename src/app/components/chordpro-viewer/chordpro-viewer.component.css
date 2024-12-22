@@ -39,7 +39,6 @@
     flex-direction: row;
     align-items: flex-end;
     margin-right: 0.33em;
-    /*border: 1px solid red;*/
   }
 
   ::ng-deep .empty-line {
@@ -49,7 +48,6 @@
   ::ng-deep .song-metadata {
     margin-bottom: 20px;
     color: #590000;
-    /*display:none;*/
   }
 
   ::ng-deep .song-content {
@@ -60,5 +58,20 @@
     font-weight: bold;
     border-left: 2px black solid;
     padding-left: 1em;
+  }
+
+  ::ng-deep .comment-line {
+    color: #008702;
+  }
+
+  ::ng-deep .section-title {
+    color: #590000;
+    margin-bottom: 1rem;
+  }
+
+  ::ng-deep .bridge-section {
+    padding: 1rem;
+    margin-right: 1rem;
+    background: #0000000f;
   }
 }

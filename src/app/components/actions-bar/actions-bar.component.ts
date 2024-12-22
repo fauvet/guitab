@@ -18,6 +18,8 @@ import { ZoomService } from "../../services/zoom/zoom.service";
 export class ActionsBarComponent {
   readonly CHORDPRO_EXTENSIONS = ChordproUtil.EXTENSIONS;
 
+  @ViewChild("buttonUndo") buttonUndo!: ElementRef<HTMLButtonElement>;
+  @ViewChild("buttonRedo") buttonRedo!: ElementRef<HTMLButtonElement>;
   @ViewChild("buttonOpenFile") buttonOpenFile!: ElementRef<HTMLButtonElement>;
   @ViewChild("buttonSaveFile") buttonSaveFile!: ElementRef<HTMLButtonElement>;
   @ViewChild("buttonSaveFileAs") buttonSaveFileAs!: ElementRef<HTMLButtonElement>;
@@ -52,6 +54,10 @@ export class ActionsBarComponent {
     this.appContextService.setFile(file);
   }
 
+  async onButtonUndoClicked(): Promise<void> {}
+
+  async onButtonRedoClicked(): Promise<void> {}
+
   async onButtonSaveFileClicked(): Promise<void> {
     const fileHandle = this.appContextService.getFileHandle();
     if (!fileHandle) {
@@ -68,7 +74,11 @@ export class ActionsBarComponent {
   }
 
   async onButtonSaveFileAsClicked(): Promise<void> {
-    var file = new File(["Hello, world!"], "hello world.txt", { type: "text/plain;charset=utf-8" });
+    const chordproContent = ChordproEditorComponent.getEditorContent();
+    const title = ChordproUtil.findTitle(chordproContent);
+    const artist = ChordproUtil.findArtist(chordproContent);
+    const fileName = `${title} (${artist})${ChordproUtil.PREFERRED_EXTENSION}`;
+    var file = new File([chordproContent], fileName, { type: "text/plain;charset=utf-8" });
     FileSaver.saveAs(file);
   }
 
@@ -80,6 +90,10 @@ export class ActionsBarComponent {
 
   onButtonHistoryClicked() {}
 
+  onButtonResetZoomClicked() {
+    this.zoomService.resetZoom();
+  }
+
   onButtonZoomInClicked() {
     this.zoomService.incrementZoom();
   }
@@ -90,7 +104,13 @@ export class ActionsBarComponent {
 
   @HostListener("window:keydown", ["$event"])
   onKeyDown(event: KeyboardEvent) {
-    if (event.ctrlKey && event.key === "o") {
+    if (event.ctrlKey && event.key === "z") {
+      event.preventDefault();
+      (this.buttonUndo as any)._elementRef.nativeElement.click();
+    } else if ((event.ctrlKey && event.key === "y") || (event.ctrlKey && event.shiftKey && event.key === "z")) {
+      event.preventDefault();
+      (this.buttonRedo as any)._elementRef.nativeElement.click();
+    } else if (event.ctrlKey && event.key === "o") {
       event.preventDefault();
       (this.buttonOpenFile as any)._elementRef.nativeElement.click();
     } else if (event.ctrlKey && event.key === "s") {

@@ -5,18 +5,19 @@ import { BehaviorSubject, Observable } from "rxjs";
   providedIn: "root",
 })
 export class ZoomService {
-  private static readonly LOCAL_STORAGE_KEY = `${ZoomService.name}-ZOOM-VALUE`;
+  private static readonly LOCAL_STORAGE_KEY = "ZoomService-ZOOM-VALUE";
   private static readonly STEP_RATIO = 0.1;
-  private static readonly DEFAULT_VALUE = 100;
-  private static readonly MIN_VALUE = 25;
-  private static readonly MAX_VALUE = 500;
+  private static readonly DEFAULT_VALUE = 1;
+  private static readonly MIN_VALUE = 0.5;
+  private static readonly MAX_VALUE = 2;
 
   private zoom$ = new BehaviorSubject<number>(ZoomService.DEFAULT_VALUE);
 
   constructor() {
     const localStorageZoom = localStorage.getItem(ZoomService.LOCAL_STORAGE_KEY);
-    const zoom = Number(localStorageZoom) ?? ZoomService.DEFAULT_VALUE;
+    const zoom = Number(localStorageZoom) || ZoomService.DEFAULT_VALUE;
     this.setZoom(zoom);
+    this.getZoom$().subscribe((zoom) => this.onZoomChanged(zoom));
   }
 
   getZoom$(): Observable<number> {
@@ -48,5 +49,10 @@ export class ZoomService {
 
   resetZoom(): void {
     this.setZoom(ZoomService.DEFAULT_VALUE);
+  }
+
+  onZoomChanged(zoom: number): void {
+    const htmlElement = document.getElementsByTagName("html")[0];
+    htmlElement.style.fontSize = `${zoom}rem`;
   }
 }
