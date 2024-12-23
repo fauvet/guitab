@@ -1,0 +1,87 @@
+{
+  "configVersion": 1,
+  "timestamp": 1734977616953,
+  "index": "/guitab/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/guitab/index.html",
+        "/guitab/main-6N445VCJ.js",
+        "/guitab/manifest.webmanifest",
+        "/guitab/polyfills-RT5I6R6G.js",
+        "/guitab/styles-XX2Y2BQF.css"
+      ],
+      "patterns": []
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/guitab/assets/guitar.json",
+        "/guitab/assets/icons/logo.svg",
+        "/guitab/assets/sample.cho",
+        "/guitab/media/material-icons-JLIDJUWE.woff",
+        "/guitab/media/material-icons-LEZCGFVT.woff2",
+        "/guitab/media/material-icons-outlined-7BWLPMFK.woff2",
+        "/guitab/media/material-icons-outlined-PCUTWIDZ.woff",
+        "/guitab/media/material-icons-round-SLOHZIXU.woff",
+        "/guitab/media/material-icons-round-WEHMTW23.woff2",
+        "/guitab/media/material-icons-sharp-HCCYMPXE.woff2",
+        "/guitab/media/material-icons-sharp-U4OLFP3G.woff",
+        "/guitab/media/material-icons-two-tone-LCGWGE2N.woff",
+        "/guitab/media/material-icons-two-tone-M5N5K6F5.woff2"
+      ],
+      "patterns": []
+    }
+  ],
+  "dataGroups": [],
+  "hashTable": {
+    "/guitab/assets/guitar.json": "30bf45cc3aa54cf474a0eda0dc3f322413133e24",
+    "/guitab/assets/icons/logo.svg": "176f8663bd13b5144850f831dc8529a389caa8a5",
+    "/guitab/assets/sample.cho": "c6f8b00d620d0a2eae563dc0d3611edbbc665f77",
+    "/guitab/index.html": "6902a29b102e4e43f02ae7178284354aa6de4eae",
+    "/guitab/main-6N445VCJ.js": "477ce3a6a017c2b17d74dee6628497e3aead02bd",
+    "/guitab/manifest.webmanifest": "1b57ed08390b6a002840f4a86762246312af65c6",
+    "/guitab/media/material-icons-JLIDJUWE.woff": "e4bb7c1e40d3febee58df963db276b2bf68c117b",
+    "/guitab/media/material-icons-LEZCGFVT.woff2": "0bc0c675480d94ec7e8609dda6227f88c5d08d2c",
+    "/guitab/media/material-icons-outlined-7BWLPMFK.woff2": "2f9e28ab559782402f27332633c843c40209d95a",
+    "/guitab/media/material-icons-outlined-PCUTWIDZ.woff": "b52ccd8fca4199d257b2a9fe377db29862f2853e",
+    "/guitab/media/material-icons-round-SLOHZIXU.woff": "c41bfee3f01218e18d53f4f4cac00f385ac9fbb1",
+    "/guitab/media/material-icons-round-WEHMTW23.woff2": "abe05e0641f1050fbe00ef0dbb10c5ea72c26cff",
+    "/guitab/media/material-icons-sharp-HCCYMPXE.woff2": "cf1c7b4d066d18af44cf7bc664dd2e46652a3a30",
+    "/guitab/media/material-icons-sharp-U4OLFP3G.woff": "829cb48cb2dd17ae5e425b82dc186eb670694a10",
+    "/guitab/media/material-icons-two-tone-LCGWGE2N.woff": "02225d888afe4eebc7312b7432878dc8aef1f50f",
+    "/guitab/media/material-icons-two-tone-M5N5K6F5.woff2": "296ff0bff395a77c2e33e7e31fffe73980bd93cf",
+    "/guitab/polyfills-RT5I6R6G.js": "fe9f024576f21ff6314cf8f8332cde58b9a12416",
+    "/guitab/styles-XX2Y2BQF.css": "9b5cf36257339e5953452cc7c000aff3c8c76d46"
+  },
+  "navigationUrls": [
+    {
+      "positive": true,
+      "regex": "^\\/.*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*\\.[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*\\/.*$"
+    }
+  ],
+  "navigationRequestStrategy": "performance"
+}

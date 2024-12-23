@@ -1,0 +1,84 @@
+{title: A message}
+{artist: Coldplay}
+{album: X&Y}
+{tempo: 117}
+{year: 2005}
+{capo: 1}
+
+{define: G base-fret 1 frets 3 2 0 0 3 3 fingers 2 1 0 0 3 4}
+
+{comment: Play the first verse in finger picking}
+
+{sot}
+.| C               | Em              | G               || F               |
+e|-----------------|-----------------|-------3---------||-----------------|
+B|-------1---------|-----------------|-----3---3-------||-----------------|
+G|-----0---0-------|-------0---------|---0-------0---0-||-------2---------|
+D|---2-------2---2-|-----2---2-------|-----------------||-----3---3-------|
+A|-3-----------3---|---2-------2---2-|-----------------||---3-------3---3-|
+E|-----------------|-0-----------0---|-3-----------3---||-1-----------1---|
+{eot}
+
+
+{comment: Verse & Bridge: DDDDDDDD (accent on time 3, 6 and 8)}
+
+{comment: Chorus: D DUDUD DUDUD DU}
+
+{sov}
+[C]My song is [Em]love [G]
+[C]Love to the [Em]loveless shown[G]
+[C]And it goes [Em]on[G]
+[F]You don't [C]have to [G]be alone[G]
+{eov}
+
+{sov}
+[C]Your heavy [Em]heart[G]
+[C]Is made of [Em]stone[G][F]
+[C]And it's so [Em]hard to see [G]clearly[G]
+[F]You don't [C]have to [G]be on your own[G]
+[F]You don't [C]have to [G]be on your own[G]
+{eov}
+
+{soc}
+[Dm]And I'm not gonna [C]take it [G]back
+[Dm]And I'm not gonna [C]say I don't [G]mean that
+[Dm]You're the target [C]that I'm [G]aiming at
+[F]And I'll get that [C]message [G]home[G]
+{eoc}
+
+{sov}
+[C]My song is love[Em][G]
+[C]My song is love, [Em]unknown[G][F]
+[C]But I'm on fire for [Em]you, clearly[G]
+You don't [F]have to [C]be alone[G]
+You don't [F]have to be on [C]your own[G]
+{eov}
+
+{soc}
+[Dm]And I'm not gonna [C]take it [G]back
+[Dm]And I'm not gonna say [C]I don't [G]mean that
+[Dm]You're the target that [C]I'm [G]aiming at
+[Dm]But I'm nothing on [C]my own[G]
+[F]Got to get that mes[C]sage home[G]
+{eoc}
+
+{sob: Bridge 1}
+{comment: x2}
+[F][C][G][G]
+{eob}
+
+{soc}
+[F]And I'm not gon[C]na stand and [G]wait
+[F]Not gonna leave [C]it until it's [G]much too late
+[F]On a platform [C]I'm gonna stand [G]and say
+[F]That I'm no[C]thing on my [G]own
+[F]And I love [C]you, please come [G]home[G]
+{eoc}
+
+{sob: Bride 2}
+{comment: x2 (play these softly)}
+[F][C][G][Am]
+{eob}
+
+[F]My song [C]is love, [G]is love unknown[Am]
+[F]And I've [C]got to get that [G]message home[C]
