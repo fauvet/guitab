@@ -4,13 +4,14 @@ import { ActionsBarComponent } from "./components/actions-bar/actions-bar.compon
 import { ChordproEditorComponent } from "./components/chordpro-editor/chordpro-editor.component";
 import { ChordproViewerComponent } from "./components/chordpro-viewer/chordpro-viewer.component";
 import { AppContextService } from "./services/app-context/app-context.service";
+import { DiagramChordComponent } from "./diagram-chord/diagram-chord.component";
 
 @Component({
   selector: "app-root",
   standalone: true,
   templateUrl: "./app.component.html",
   styleUrl: "./app.component.css",
-  imports: [RouterOutlet, ActionsBarComponent, ChordproEditorComponent, ChordproViewerComponent],
+  imports: [RouterOutlet, ActionsBarComponent, ChordproEditorComponent, ChordproViewerComponent, DiagramChordComponent],
 })
 export class AppComponent implements OnInit {
   @HostBinding("class.is-editing")

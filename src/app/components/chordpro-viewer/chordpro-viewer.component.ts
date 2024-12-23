@@ -34,6 +34,8 @@ export class ChordproViewerComponent implements OnDestroy {
       .getRender$()
       .pipe(takeUntil(this.unsubscribe))
       .subscribe(() => this.onRenderRequired());
+
+    this.listenChordClick();
   }
 
   ngOnDestroy(): void {
@@ -59,6 +61,19 @@ export class ChordproViewerComponent implements OnDestroy {
     return html.join("");
   }
 
+  private listenChordClick(): void {
+    const listener = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!target || !target.classList.contains("chord")) return;
+
+      const chordName = target.innerText;
+      this.onChordClicked(chordName);
+    };
+
+    document.addEventListener("click", listener);
+    this.unsubscribe.subscribe(() => document.removeEventListener("click", listener));
+  }
+
   render(fileContent: null | string): void {
     const hostElement = this.elementRef.nativeElement;
     const html = ChordproViewerComponent.convertChordSheetToHtml(fileContent ?? "");
@@ -73,5 +88,9 @@ export class ChordproViewerComponent implements OnDestroy {
   onRenderRequired(): void {
     const editorContent = ChordproEditorComponent.getEditorContent();
     this.render(editorContent);
+  }
+
+  onChordClicked(chordName: string): void {
+    // show the chord
   }
 }

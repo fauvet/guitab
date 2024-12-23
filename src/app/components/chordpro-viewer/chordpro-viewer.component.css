@@ -29,6 +29,7 @@
   ::ng-deep .chord {
     font-weight: bold;
     color: #db3e00;
+    cursor: pointer;
   }
 
   ::ng-deep .chord-lyrics:last-child .chord {
