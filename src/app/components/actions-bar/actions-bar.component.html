@@ -16,6 +16,14 @@
   <mat-icon>redo</mat-icon>
 </button>
 <button
+  aria-label="New file"
+  matTooltip="New file (Ctrl+N)"
+  #buttonNewFile
+  mat-icon-button
+  (click)="onButtonNewFileClicked()">
+  <mat-icon>description</mat-icon>
+</button>
+<button
   aria-label="Open a file"
   matTooltip="Open file... (Ctrl+O)"
   #buttonOpenFile
@@ -47,18 +55,30 @@
   <mat-icon>save_as</mat-icon>
 </button>
 <button
-  aria-label="Render"
-  matTooltip="Render (Ctrl+Enter)"
-  #buttonPlay
+  aria-label="Import lyrics"
+  matTooltip="Import lyrics (Ctrl+I)"
+  #buttonImportLyrics
   mat-icon-button
-  (click)="onButtonPlayClicked()">
-  <mat-icon>play_arrow</mat-icon>
+  (click)="onButtonImportLyricsClicked()">
+  <mat-icon>lyrics</mat-icon>
 </button>
 <button
+  class="mobile-only"
+  aria-label="Preview"
+  matTooltip="Preview (Escape)"
+  #buttonPreview
+  mat-icon-button
+  [disabled]="!isEditing"
+  (click)="onButtonPreviewClicked()">
+  <mat-icon>preview</mat-icon>
+</button>
+<button
+  class="mobile-only"
   aria-label="Edit"
   matTooltip="Edit (F2)"
   #buttonEdit
   mat-icon-button
+  [disabled]="isEditing"
   (click)="onButtonEditClicked()">
   <mat-icon>edit</mat-icon>
 </button>

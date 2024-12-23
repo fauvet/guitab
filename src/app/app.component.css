@@ -27,4 +27,18 @@
   router-outlet {
     display: none;
   }
+
+  @media only screen and (max-width: 1440px) {
+    &.is-editing {
+      app-chordpro-viewer {
+        display: none;
+      }
+    }
+
+    &:not(.is-editing) {
+      app-chordpro-editor {
+        display: none;
+      }
+    }
+  }
 }

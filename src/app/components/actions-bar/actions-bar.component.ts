@@ -15,22 +15,29 @@ import { ZoomService } from "../../services/zoom/zoom.service";
   templateUrl: "./actions-bar.component.html",
   styleUrl: "./actions-bar.component.css",
 })
-export class ActionsBarComponent {
+export class ActionsBarComponent implements OnInit {
   readonly CHORDPRO_EXTENSIONS = ChordproUtil.EXTENSIONS;
 
   @ViewChild("buttonUndo") buttonUndo!: ElementRef<HTMLButtonElement>;
   @ViewChild("buttonRedo") buttonRedo!: ElementRef<HTMLButtonElement>;
+  @ViewChild("buttonNewFile") buttonNewFile!: ElementRef<HTMLButtonElement>;
   @ViewChild("buttonOpenFile") buttonOpenFile!: ElementRef<HTMLButtonElement>;
   @ViewChild("buttonSaveFile") buttonSaveFile!: ElementRef<HTMLButtonElement>;
   @ViewChild("buttonSaveFileAs") buttonSaveFileAs!: ElementRef<HTMLButtonElement>;
-  @ViewChild("buttonPlay") buttonPlay!: ElementRef<HTMLButtonElement>;
+  @ViewChild("buttonPreview") buttonPreview!: ElementRef<HTMLButtonElement>;
   @ViewChild("buttonEdit") buttonEdit!: ElementRef<HTMLButtonElement>;
+
+  isEditing = false;
 
   constructor(
     private appContextService: AppContextService,
     private zoomService: ZoomService,
     private toastr: ToastrService,
   ) {}
+
+  ngOnInit(): void {
+    this.appContextService.getIsEditing$().subscribe((isEditing) => (this.isEditing = isEditing));
+  }
 
   async onButtonOpenFileClicked(event: Event): Promise<void> {
     if ("showOpenFilePicker" in window && false) {
@@ -58,6 +65,10 @@ export class ActionsBarComponent {
 
   async onButtonRedoClicked(): Promise<void> {}
 
+  async onButtonNewFileClicked(): Promise<void> {
+    this.appContextService.setFile(null);
+  }
+
   async onButtonSaveFileClicked(): Promise<void> {
     const fileHandle = this.appContextService.getFileHandle();
     if (!fileHandle) {
@@ -82,23 +93,29 @@ export class ActionsBarComponent {
     FileSaver.saveAs(file);
   }
 
-  async onButtonPlayClicked(): Promise<void> {
-    this.appContextService.updateRender();
+  async onButtonImportLyricsClicked(): Promise<void> {
+    // import lyrics
   }
 
-  onButtonEditClicked() {}
+  onButtonPreviewClicked(): void {
+    this.appContextService.setEditing(false);
+  }
 
-  onButtonHistoryClicked() {}
+  onButtonEditClicked(): void {
+    this.appContextService.setEditing(true);
+  }
 
-  onButtonResetZoomClicked() {
+  onButtonHistoryClicked(): void {}
+
+  onButtonResetZoomClicked(): void {
     this.zoomService.resetZoom();
   }
 
-  onButtonZoomInClicked() {
+  onButtonZoomInClicked(): void {
     this.zoomService.incrementZoom();
   }
 
-  onButtonZoomOutClicked() {
+  onButtonZoomOutClicked(): void {
     this.zoomService.decrementZoom();
   }
 
@@ -110,6 +127,9 @@ export class ActionsBarComponent {
     } else if ((event.ctrlKey && event.key === "y") || (event.ctrlKey && event.shiftKey && event.key === "z")) {
       event.preventDefault();
       (this.buttonRedo as any)._elementRef.nativeElement.click();
+    } else if (event.ctrlKey && event.key === "n") {
+      event.preventDefault();
+      (this.buttonNewFile as any)._elementRef.nativeElement.click();
     } else if (event.ctrlKey && event.key === "o") {
       event.preventDefault();
       (this.buttonOpenFile as any)._elementRef.nativeElement.click();
@@ -121,7 +141,7 @@ export class ActionsBarComponent {
       (this.buttonSaveFileAs as any)._elementRef.nativeElement.click();
     } else if (event.ctrlKey && event.key === "Enter") {
       event.preventDefault();
-      (this.buttonPlay as any)._elementRef.nativeElement.click();
+      (this.buttonPreview as any)._elementRef.nativeElement.click();
     } else if (event.key === "F2") {
       event.preventDefault();
       (this.buttonEdit as any)._elementRef.nativeElement.click();

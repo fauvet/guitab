@@ -8,6 +8,7 @@ export class AppContextService {
   private fileHandle$ = new BehaviorSubject<null | FileSystemFileHandle>(null);
   private file$ = new BehaviorSubject<null | File>(null);
   private render$ = new Subject<void>();
+  private isEditing$ = new BehaviorSubject<boolean>(false);
 
   getFileHandle$(): Observable<null | FileSystemFileHandle> {
     return this.fileHandle$.asObservable();
@@ -29,12 +30,20 @@ export class AppContextService {
     return this.render$.asObservable();
   }
 
+  getIsEditing$(): Observable<boolean> {
+    return this.isEditing$.asObservable();
+  }
+
   setFileHandle(fileHandle: null | FileSystemFileHandle): void {
     this.fileHandle$.next(fileHandle);
   }
 
   setFile(file: null | File): void {
     this.file$.next(file);
+  }
+
+  setEditing(isEditing: boolean): void {
+    this.isEditing$.next(isEditing);
   }
 
   updateRender(): void {

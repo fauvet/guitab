@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from "@angular/core";
+import { Component, ElementRef, HostBinding, OnInit, ViewChild } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
 import { ActionsBarComponent } from "./components/actions-bar/actions-bar.component";
 import { ChordproEditorComponent } from "./components/chordpro-editor/chordpro-editor.component";
@@ -13,6 +13,9 @@ import { AppContextService } from "./services/app-context/app-context.service";
   imports: [RouterOutlet, ActionsBarComponent, ChordproEditorComponent, ChordproViewerComponent],
 })
 export class AppComponent implements OnInit {
+  @HostBinding("class.is-editing")
+  isEditing = false;
+
   title = "guitab";
 
   @ViewChild("containerChordpro") containerChordpro: undefined | ElementRef<HTMLDivElement>;
@@ -22,6 +25,7 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     this.handleLaunchQueue();
     this.loadSampleFile();
+    this.appContextService.getIsEditing$().subscribe((isEditing) => (this.isEditing = isEditing));
   }
 
   private handleLaunchQueue(): void {
