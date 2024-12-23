@@ -23,6 +23,7 @@
 
   ::ng-deep .tab-section {
     color: #008702;
+    white-space: nowrap;
   }
 
   ::ng-deep .chord {
