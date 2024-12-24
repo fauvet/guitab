@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, Host, HostBinding, Input, OnChanges, OnInit, SimpleChanges } from "@angular/core";
-import { ChordStyle, Finger, FretLabelPosition, Orientation, Shape, SVGuitarChord } from "svguitar";
+import { Barre, ChordStyle, Finger, FretLabelPosition, Orientation, Shape, SVGuitarChord } from "svguitar";
 import Position from "../../types/position.type";
 
 @Component({
@@ -45,27 +45,41 @@ export class DiagramChordComponent implements AfterViewInit, OnChanges {
           return;
         }
 
+        console.log(this.position);
+
+        const duplicatedFingers = this.position.fingers.filter(
+          (finger, index, array) => finger > 0 && array.slice(index + 1).includes(finger),
+        );
+        const barres: Barre[] = [];
+
+        for (const duplicatedFinger of duplicatedFingers) {
+          const fromString = 6 - this.position.fingers.findIndex((finger) => finger == duplicatedFinger);
+          const toString = 6 - this.position.fingers.findLastIndex((finger) => finger == duplicatedFinger);
+          const fret = this.position.frets[fromString - 6];
+          barres.push({
+            fromString,
+            toString,
+            fret,
+            text: String(duplicatedFinger),
+          });
+        }
+
         const fingers: Finger[] = [];
+
         for (const index in this.position.fingers) {
           const string = 6 - Number(index);
           const finger = this.position.fingers[index];
-          if (finger == 0) continue;
-
           const fret = this.position.frets[index];
-          fingers.push([string, fret, String(finger)]);
+          if ((finger == 0 && fret != -1) || barres.some((barre) => barre.text == String(finger))) continue;
+
+          const newFinger = (fret == -1 ? [string, "x"] : [string, fret, String(finger)]) as Finger;
+          fingers.push(newFinger);
         }
 
         new SVGuitarChord(`#${this.htmlId}`)
           .chord({
             fingers: fingers,
-            barres: [
-              // {
-              //   fromString: 5,
-              //   toString: 1,
-              //   fret: 1,
-              //   text: "1",
-              // },
-            ],
+            barres: barres,
             title: this.title,
             position: this.position.baseFret,
           })
