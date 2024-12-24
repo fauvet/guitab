@@ -1,9 +1,11 @@
-import { Component, ElementRef, OnDestroy, Renderer2 } from "@angular/core";
+import { Component, ElementRef, OnDestroy, OnInit, Renderer2 } from "@angular/core";
 import * as ChordProjectParser from "chordproject-parser";
 import { AppContextService } from "../../services/app-context/app-context.service";
 import { Subject, takeUntil } from "rxjs";
 import { FileUtil } from "../../utils/file.util";
 import { ChordproEditorComponent } from "../chordpro-editor/chordpro-editor.component";
+import { MatDialog } from "@angular/material/dialog";
+import { DialogDiagramChordComponent } from "../dialog-diagram-chord/dialog-diagram-chord.component";
 
 @Component({
   selector: "app-chordpro-viewer",
@@ -12,14 +14,17 @@ import { ChordproEditorComponent } from "../chordpro-editor/chordpro-editor.comp
   templateUrl: "./chordpro-viewer.component.html",
   styleUrl: "./chordpro-viewer.component.css",
 })
-export class ChordproViewerComponent implements OnDestroy {
+export class ChordproViewerComponent implements OnInit, OnDestroy {
   private unsubscribe = new Subject<void>();
 
   constructor(
     private elementRef: ElementRef,
     private renderer: Renderer2,
     private appContextService: AppContextService,
-  ) {
+    private dialog: MatDialog,
+  ) {}
+
+  ngOnInit(): void {
     this.appContextService
       .getFileHandle$()
       .pipe(takeUntil(this.unsubscribe))
@@ -91,6 +96,13 @@ export class ChordproViewerComponent implements OnDestroy {
   }
 
   onChordClicked(chordName: string): void {
-    // show the chord
+    this.dialog
+      .open(DialogDiagramChordComponent, {
+        data: {
+          chordName,
+        },
+      })
+      .afterClosed()
+      .subscribe(() => {});
   }
 }
