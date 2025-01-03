@@ -5,6 +5,7 @@ import { ChordproEditorComponent } from "./components/chordpro-editor/chordpro-e
 import { ChordproViewerComponent } from "./components/chordpro-viewer/chordpro-viewer.component";
 import { AppContextService } from "./services/app-context/app-context.service";
 import { DiagramChordComponent } from "./components/diagram-chord/diagram-chord.component";
+import { FileUtil } from "./utils/file.util";
 
 @Component({
   selector: "app-root",
@@ -25,7 +26,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.handleLaunchQueue();
-    this.loadSampleFile();
+    FileUtil.loadSampleFile().then((file) => this.appContextService.setFile(file));
     this.appContextService.getIsEditing$().subscribe((isEditing) => (this.isEditing = isEditing));
   }
 
@@ -37,17 +38,5 @@ export class AppComponent implements OnInit {
       const fileHandle = launchParams.files[0];
       this.appContextService.setFileHandle(fileHandle);
     });
-  }
-
-  private loadSampleFile(): void {
-    const xhr = new XMLHttpRequest();
-    xhr.open("GET", "./assets/sample.cho");
-    xhr.responseType = "blob";
-    xhr.onload = () => {
-      const blob = xhr.response;
-      const file = new File([blob], "sample.cho", {});
-      this.appContextService.setFile(file);
-    };
-    xhr.send();
   }
 }

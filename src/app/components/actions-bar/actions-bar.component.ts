@@ -7,6 +7,9 @@ import FileSaver from "file-saver";
 import { ChordproUtil } from "../../utils/chordpro.util";
 import { MatButtonModule } from "@angular/material/button";
 import { ZoomService } from "../../services/zoom/zoom.service";
+import { FileUtil } from "../../utils/file.util";
+import { MatDialog } from "@angular/material/dialog";
+import { DialogImportLyricsComponent } from "../dialog-import-lyrics/dialog-import-lyrics.component";
 
 @Component({
   selector: "app-actions-bar",
@@ -32,6 +35,7 @@ export class ActionsBarComponent implements OnInit {
   constructor(
     private appContextService: AppContextService,
     private zoomService: ZoomService,
+    private dialog: MatDialog,
     private toastr: ToastrService,
   ) {}
 
@@ -66,7 +70,8 @@ export class ActionsBarComponent implements OnInit {
   async onButtonRedoClicked(): Promise<void> {}
 
   async onButtonNewFileClicked(): Promise<void> {
-    this.appContextService.setFile(null);
+    const file = await FileUtil.loadEmptyFile();
+    this.appContextService.setFile(file);
   }
 
   async onButtonSaveFileClicked(): Promise<void> {
@@ -94,7 +99,12 @@ export class ActionsBarComponent implements OnInit {
   }
 
   async onButtonImportLyricsClicked(): Promise<void> {
-    // import lyrics
+    this.dialog
+      .open(DialogImportLyricsComponent, {
+        data: {},
+      })
+      .afterClosed()
+      .subscribe(() => {});
   }
 
   onButtonPreviewClicked(): void {
