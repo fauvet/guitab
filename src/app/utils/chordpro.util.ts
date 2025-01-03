@@ -1,4 +1,4 @@
-import Position from "../types/position.type";
+import Variant from "../types/variant.type";
 
 export class ChordproUtil {
   static readonly EXTENSIONS: `.${string}`[] = [".cho", ".crd", ".chopro", ".chord", ".pro"];
@@ -12,7 +12,7 @@ export class ChordproUtil {
     return /{artist:([^}]*)}/.exec(chordproContent)?.[1]?.trim() ?? null;
   }
 
-  static findPosition(chordproContent: string, chordName: string): Position | null {
+  static findCustomVariant(chordproContent: string, chordName: string): Variant | null {
     const regex = new RegExp(`\\{define\\s*:\\s*${chordName} base-fret (\\d) frets ([\\d ]+) fingers ([\\d ]+)\\s*\\}`);
     const match = chordproContent.match(regex);
     if (!match) return null;
@@ -35,5 +35,12 @@ export class ChordproUtil {
       baseFret,
       midi: [],
     };
+  }
+
+  static findChordNames(chordproContent: string): string[] {
+    const match = chordproContent.match(/\[\w+\]/g);
+    if (!match) return [];
+
+    return match.map((singleMatch) => singleMatch.replaceAll(/[\[\]]/g, ""));
   }
 }

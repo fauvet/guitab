@@ -3,10 +3,11 @@ import { DiagramChordComponent } from "../diagram-chord/diagram-chord.component"
 import { MatDialogModule } from "@angular/material/dialog";
 import { MatButtonModule } from "@angular/material/button";
 import { MAT_DIALOG_DATA } from "@angular/material/dialog";
-import guitar from "../../../assets/guitar.json";
-import Position from "../../types/position.type";
+import Variant from "../../types/variant.type";
 import { ChordproUtil } from "../../utils/chordpro.util";
-import { ChordproEditorComponent } from "../chordpro-editor/chordpro-editor.component";
+import { AppContextService } from "../../services/app-context/app-context.service";
+import { Chord } from "svguitar";
+import { SvgGuitarUtil } from "../../utils/svg-guitar.util";
 
 @Component({
   selector: "app-dialog-diagram-chord",
@@ -16,29 +17,25 @@ import { ChordproEditorComponent } from "../chordpro-editor/chordpro-editor.comp
   styleUrl: "./dialog-diagram-chord.component.css",
 })
 export class DialogDiagramChordComponent implements OnInit {
+  private readonly appContextService = inject(AppContextService);
   private readonly data = inject(MAT_DIALOG_DATA);
 
-  title = "";
-  position: Position | null = null;
+  chord: Chord = {
+    barres: [],
+    fingers: [],
+  };
 
   ngOnInit(): void {
     const chordName = this.data.chordName;
-    this.title = chordName;
-    this.initPosition();
+    this.chord.title = chordName;
+    this.initChord();
   }
 
-  initPosition(): void {
-    const chordproContent = ChordproEditorComponent.getEditorContent();
-    this.position = ChordproUtil.findPosition(chordproContent, this.title);
-    if (this.position) return;
+  initChord(): void {
+    const chordName = this.chord.title;
+    if (!chordName) return;
 
-    const chords = Object.values(guitar.chords).flatMap((e) => e);
-
-    for (const chord of chords) {
-      const currentChordName = chord.key + chord.suffix;
-      if (currentChordName != this.title) continue;
-
-      this.position = structuredClone(chord.positions[0] as Position);
-    }
+    const chordproContent = this.appContextService.getChordproContent();
+    this.chord = SvgGuitarUtil.buildChord(chordproContent, chordName) ?? this.chord;
   }
 }

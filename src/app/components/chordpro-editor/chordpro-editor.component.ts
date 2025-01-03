@@ -36,7 +36,7 @@ export class ChordproEditorComponent implements OnInit, OnDestroy {
     this.unsubscribe.next();
   }
 
-  static getEditorContent(): string {
+  private static getEditorContent(): string {
     const editorContent = ChordProjectEditor.Main.getEditor()?.getValue() ?? "";
     return editorContent;
   }
@@ -54,7 +54,8 @@ export class ChordproEditorComponent implements OnInit, OnDestroy {
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         if (mutation.type === "childList") {
-          this.appContextService.updateRender();
+          const chordproContent = ChordproEditorComponent.getEditorContent();
+          this.appContextService.setChordproContent(chordproContent);
           break;
         }
       }

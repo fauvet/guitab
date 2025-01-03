@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, OnInit, ViewChild } from "@angular/core";
+import { Component, ElementRef, HostListener, inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { MatIconModule } from "@angular/material/icon";
 import { AppContextService } from "../../services/app-context/app-context.service";
 import { ToastrService } from "ngx-toastr";
@@ -10,6 +10,7 @@ import { ZoomService } from "../../services/zoom/zoom.service";
 import { FileUtil } from "../../utils/file.util";
 import { MatDialog } from "@angular/material/dialog";
 import { DialogImportLyricsComponent } from "../dialog-import-lyrics/dialog-import-lyrics.component";
+import { Subject, takeUntil } from "rxjs";
 
 @Component({
   selector: "app-actions-bar",
@@ -18,8 +19,12 @@ import { DialogImportLyricsComponent } from "../dialog-import-lyrics/dialog-impo
   templateUrl: "./actions-bar.component.html",
   styleUrl: "./actions-bar.component.css",
 })
-export class ActionsBarComponent implements OnInit {
+export class ActionsBarComponent implements OnInit, OnDestroy {
   readonly CHORDPRO_EXTENSIONS = ChordproUtil.EXTENSIONS;
+  private readonly appContextService = inject(AppContextService);
+  private readonly zoomService = inject(ZoomService);
+  private readonly dialog = inject(MatDialog);
+  private readonly toastr = inject(ToastrService);
 
   @ViewChild("buttonUndo") buttonUndo!: ElementRef<HTMLButtonElement>;
   @ViewChild("buttonRedo") buttonRedo!: ElementRef<HTMLButtonElement>;
@@ -32,15 +37,17 @@ export class ActionsBarComponent implements OnInit {
 
   isEditing = false;
 
-  constructor(
-    private appContextService: AppContextService,
-    private zoomService: ZoomService,
-    private dialog: MatDialog,
-    private toastr: ToastrService,
-  ) {}
+  private readonly unsubscribe = new Subject<void>();
 
   ngOnInit(): void {
-    this.appContextService.getIsEditing$().subscribe((isEditing) => (this.isEditing = isEditing));
+    this.appContextService
+      .getIsEditing$()
+      .pipe(takeUntil(this.unsubscribe))
+      .subscribe((isEditing) => (this.isEditing = isEditing));
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribe.next();
   }
 
   async onButtonOpenFileClicked(event: Event): Promise<void> {
@@ -82,15 +89,15 @@ export class ActionsBarComponent implements OnInit {
     }
 
     const writable = await fileHandle.createWritable();
-    const editorContent = ChordproEditorComponent.getEditorContent();
-    await writable.write(editorContent);
+    const chordproContent = this.appContextService.getChordproContent();
+    await writable.write(chordproContent);
     await writable.close();
     const fileName = fileHandle.name;
     this.toastr.success(`${fileName} saved`);
   }
 
   async onButtonSaveFileAsClicked(): Promise<void> {
-    const chordproContent = ChordproEditorComponent.getEditorContent();
+    const chordproContent = this.appContextService.getChordproContent();
     const title = ChordproUtil.findTitle(chordproContent);
     const artist = ChordproUtil.findArtist(chordproContent);
     const fileName = `${title} (${artist})${ChordproUtil.PREFERRED_EXTENSION}`;

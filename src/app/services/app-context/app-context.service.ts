@@ -7,7 +7,7 @@ import { BehaviorSubject, Observable, Subject } from "rxjs";
 export class AppContextService {
   private fileHandle$ = new BehaviorSubject<null | FileSystemFileHandle>(null);
   private file$ = new BehaviorSubject<null | File>(null);
-  private render$ = new Subject<void>();
+  private chordproContent$ = new BehaviorSubject<string>("");
   private isEditing$ = new BehaviorSubject<boolean>(false);
 
   getFileHandle$(): Observable<null | FileSystemFileHandle> {
@@ -26,27 +26,39 @@ export class AppContextService {
     return this.file$.getValue();
   }
 
-  getRender$(): Observable<void> {
-    return this.render$.asObservable();
+  getChordproContent$(): Observable<string> {
+    return this.chordproContent$.asObservable();
+  }
+
+  getChordproContent(): string {
+    return this.chordproContent$.getValue();
   }
 
   getIsEditing$(): Observable<boolean> {
     return this.isEditing$.asObservable();
   }
 
+  isEditing(): boolean {
+    return this.isEditing$.getValue();
+  }
+
   setFileHandle(fileHandle: null | FileSystemFileHandle): void {
+    if (fileHandle == this.getFileHandle()) return;
     this.fileHandle$.next(fileHandle);
   }
 
   setFile(file: null | File): void {
+    if (file == this.getFile()) return;
     this.file$.next(file);
   }
 
   setEditing(isEditing: boolean): void {
+    if (isEditing == this.isEditing()) return;
     this.isEditing$.next(isEditing);
   }
 
-  updateRender(): void {
-    this.render$.next();
+  setChordproContent(chordproContent: string): void {
+    if (chordproContent == this.getChordproContent()) return;
+    this.chordproContent$.next(chordproContent);
   }
 }

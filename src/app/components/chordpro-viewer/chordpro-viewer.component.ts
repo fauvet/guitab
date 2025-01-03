@@ -1,9 +1,8 @@
-import { Component, ElementRef, OnDestroy, OnInit, Renderer2 } from "@angular/core";
+import { Component, ElementRef, inject, OnDestroy, OnInit, Renderer2 } from "@angular/core";
 import * as ChordProjectParser from "chordproject-parser";
 import { AppContextService } from "../../services/app-context/app-context.service";
 import { Subject, takeUntil } from "rxjs";
 import { FileUtil } from "../../utils/file.util";
-import { ChordproEditorComponent } from "../chordpro-editor/chordpro-editor.component";
 import { MatDialog } from "@angular/material/dialog";
 import { DialogDiagramChordComponent } from "../dialog-diagram-chord/dialog-diagram-chord.component";
 
@@ -15,14 +14,12 @@ import { DialogDiagramChordComponent } from "../dialog-diagram-chord/dialog-diag
   styleUrl: "./chordpro-viewer.component.css",
 })
 export class ChordproViewerComponent implements OnInit, OnDestroy {
-  private unsubscribe = new Subject<void>();
+  private readonly elementRef = inject(ElementRef);
+  private readonly renderer = inject(Renderer2);
+  private readonly appContextService = inject(AppContextService);
+  private readonly dialog = inject(MatDialog);
 
-  constructor(
-    private elementRef: ElementRef,
-    private renderer: Renderer2,
-    private appContextService: AppContextService,
-    private dialog: MatDialog,
-  ) {}
+  private readonly unsubscribe = new Subject<void>();
 
   ngOnInit(): void {
     this.appContextService
@@ -36,9 +33,9 @@ export class ChordproViewerComponent implements OnInit, OnDestroy {
       .subscribe((file) => this.onFileChanged(file));
 
     this.appContextService
-      .getRender$()
+      .getChordproContent$()
       .pipe(takeUntil(this.unsubscribe))
-      .subscribe(() => this.onRenderRequired());
+      .subscribe((chordproContent) => this.onChordproContentChanged(chordproContent));
 
     this.listenChordClick();
   }
@@ -90,9 +87,8 @@ export class ChordproViewerComponent implements OnInit, OnDestroy {
     this.render(fileContent);
   }
 
-  onRenderRequired(): void {
-    const editorContent = ChordproEditorComponent.getEditorContent();
-    this.render(editorContent);
+  onChordproContentChanged(chordproContent: string): void {
+    this.render(chordproContent);
   }
 
   onChordClicked(chordName: string): void {

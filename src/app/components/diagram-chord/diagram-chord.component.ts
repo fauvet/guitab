@@ -1,6 +1,5 @@
-import { AfterViewInit, Component, Host, HostBinding, Input, OnChanges, OnInit, SimpleChanges } from "@angular/core";
-import { Barre, ChordStyle, Finger, FretLabelPosition, Orientation, Shape, SVGuitarChord } from "svguitar";
-import Position from "../../types/position.type";
+import { AfterViewInit, Component, HostBinding, Input, OnChanges, SimpleChanges } from "@angular/core";
+import { Chord, ChordStyle, FretLabelPosition, Orientation, Shape, SVGuitarChord } from "svguitar";
 
 @Component({
   selector: "app-diagram-chord",
@@ -14,19 +13,15 @@ export class DiagramChordComponent implements AfterViewInit, OnChanges {
   htmlId = `${DiagramChordComponent.name}_${Math.floor(100000000 + Math.random() * 900000000)}`;
 
   @Input()
-  title = "";
-  @Input()
-  position: Position | null = null;
+  chord: Chord | null = null;
 
   ngAfterViewInit(): void {
     this.buildSvg();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes["title"]) {
-      this.title = changes["title"].currentValue;
-    } else if (changes["position"]) {
-      this.position = changes["position"].currentValue;
+    if (changes["chord"]) {
+      this.chord = changes["chord"].currentValue;
     }
 
     this.buildSvg();
@@ -41,48 +36,12 @@ export class DiagramChordComponent implements AfterViewInit, OnChanges {
           htmlElement.innerHTML = "";
         }
 
-        if (this.position == null) {
+        if (this.chord == null) {
           return;
         }
 
-        console.log(this.position);
-
-        const duplicatedFingers = this.position.fingers.filter(
-          (finger, index, array) => finger > 0 && array.slice(index + 1).includes(finger),
-        );
-        const barres: Barre[] = [];
-
-        for (const duplicatedFinger of duplicatedFingers) {
-          const fromString = 6 - this.position.fingers.findIndex((finger) => finger == duplicatedFinger);
-          const toString = 6 - this.position.fingers.findLastIndex((finger) => finger == duplicatedFinger);
-          const fret = this.position.frets[fromString - 6];
-          barres.push({
-            fromString,
-            toString,
-            fret,
-            text: String(duplicatedFinger),
-          });
-        }
-
-        const fingers: Finger[] = [];
-
-        for (const index in this.position.fingers) {
-          const string = 6 - Number(index);
-          const finger = this.position.fingers[index];
-          const fret = this.position.frets[index];
-          if ((finger == 0 && fret != -1) || barres.some((barre) => barre.text == String(finger))) continue;
-
-          const newFinger = (fret == -1 ? [string, "x"] : [string, fret, String(finger)]) as Finger;
-          fingers.push(newFinger);
-        }
-
         new SVGuitarChord(`#${this.htmlId}`)
-          .chord({
-            fingers: fingers,
-            barres: barres,
-            title: this.title,
-            position: this.position.baseFret,
-          })
+          .chord(this.chord)
           .configure({
             orientation: Orientation.vertical,
             style: ChordStyle.normal,

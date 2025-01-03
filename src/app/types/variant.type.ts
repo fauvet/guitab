@@ -1,4 +1,4 @@
-export default interface Position {
+export default interface Variant {
   frets: number[];
   fingers: number[];
   barres: number[];
