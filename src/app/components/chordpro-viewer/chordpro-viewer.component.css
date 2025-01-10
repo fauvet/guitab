@@ -1,0 +1,92 @@
+:host {
+  font-family: monospace;
+  height: fit-content;
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  &.hide-lyrics {
+    ::ng-deep .word:not(:has(.chord)) {
+      display: none;
+    }
+
+    ::ng-deep .lyrics {
+      display: none;
+    }
+  }
+
+  ::ng-deep .metadata {
+    margin: 0 0 0.5rem 0;
+  }
+
+  ::ng-deep .lyrics-line {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+
+  ::ng-deep .chord-lyrics {
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+  }
+
+  ::ng-deep .above-lyrics {
+    padding-right: 0.3em;
+  }
+
+  ::ng-deep .tab-section {
+    color: #008702;
+    white-space: nowrap;
+  }
+
+  ::ng-deep .chord {
+    font-weight: bold;
+    color: #db3e00;
+    cursor: pointer;
+  }
+
+  ::ng-deep .chord-lyrics:last-child .chord {
+    padding-right: 0;
+  }
+
+  ::ng-deep .word {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    margin-right: 0.33em;
+  }
+
+  ::ng-deep .empty-line {
+    margin-top: 1.5em;
+  }
+
+  ::ng-deep .song-metadata {
+    margin-bottom: 20px;
+    color: #590000;
+  }
+
+  ::ng-deep .song-content {
+    margin-top: 1.2em;
+  }
+
+  ::ng-deep .chorus-section {
+    font-weight: bold;
+    border-left: 2px black solid;
+    padding-left: 1em;
+  }
+
+  ::ng-deep .comment-line {
+    color: #008702;
+  }
+
+  ::ng-deep .section-title {
+    color: #590000;
+    margin-bottom: 1rem;
+  }
+
+  ::ng-deep .bridge-section {
+    padding: 1rem;
+    margin-right: 1rem;
+    background: #0000000f;
+  }
+}

@@ -1,0 +1,54 @@
+:host {
+  height: 100dvh;
+  width: 100dvw;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-sizing: border-box;
+  padding: 12px;
+  font-family: monospace;
+  font-size: 1rem;
+
+  .content {
+    flex: 1;
+    display: flex;
+    overflow: auto;
+
+    .container-chordpro {
+      flex: 1;
+      display: flex;
+      gap: 12px;
+      overflow: auto;
+
+      app-chordpro-editor {
+        flex: 1;
+      }
+
+      app-chordpro-viewer {
+        flex: 1;
+      }
+    }
+
+    app-chordpro-chords-viewer {
+      overflow: auto;
+    }
+  }
+
+  router-outlet {
+    display: none;
+  }
+
+  @media only screen and (max-width: 1440px) {
+    &.is-editing {
+      app-chordpro-viewer {
+        display: none;
+      }
+    }
+
+    &:not(.is-editing) {
+      app-chordpro-editor {
+        display: none;
+      }
+    }
+  }
+}
