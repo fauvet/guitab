@@ -1,0 +1,10 @@
+:host {
+  display: flex;
+  gap: 12px;
+  user-select: none;
+  overflow-x: auto;
+
+  .separator {
+    flex: 1;
+  }
+}

@@ -1,0 +1,27 @@
+<button
+  aria-label="Remove chord"
+  matTooltip="Remove chord"
+  #buttonRemoveChord
+  mat-icon-button
+  [disabled]="!isRemovableChordEnabled"
+  (click)="onButtonRemoveChordClicked()">
+  <mat-icon svgIcon="variable_remove"></mat-icon>
+</button>
+<button
+  aria-label="Insert chord"
+  disabled
+  matTooltip="Insert chord"
+  #buttonInsertChord
+  mat-icon-button
+  (click)="onButtonInsertChordClicked()">
+  <mat-icon svgIcon="variable_insert"></mat-icon>
+</button>
+<button
+  aria-label="Define chord"
+  disabled
+  matTooltip="Define chord"
+  #buttonDefineChord
+  mat-icon-button
+  (click)="onButtonDefineChordClicked()">
+  <mat-icon svgIcon="variable_add"></mat-icon>
+</button>

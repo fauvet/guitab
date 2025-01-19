@@ -1,0 +1,13 @@
+:host {
+  display: block;
+  width: 15rem;
+  height: fit-content;
+
+  &.medium {
+    width: 9rem;
+  }
+
+  &.small {
+    width: 7rem;
+  }
+}

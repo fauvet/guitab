@@ -1,0 +1,60 @@
+{
+  "name": "guitab",
+  "version": "1.0.0",
+  "author": "Guillaume FAUVET",
+  "license": "MIT",
+  "homepage": "https://github.com/fauvet/guitab#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fauvet/guitab.git"
+  },
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test",
+    "prettier": "prettier --write .",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d docs"
+  },
+  "dependencies": {
+    "@angular/animations": "^17.3.6",
+    "@angular/common": "^17.3.0",
+    "@angular/compiler": "^17.3.0",
+    "@angular/core": "^17.3.0",
+    "@angular/forms": "^17.3.0",
+    "@angular/material": "^17.3.6",
+    "@angular/platform-browser": "^17.3.0",
+    "@angular/platform-browser-dynamic": "^17.3.0",
+    "@angular/router": "^17.3.0",
+    "@angular/service-worker": "^17.3.0",
+    "chordproject-editor": "^0.1.11",
+    "chordproject-parser": "^0.2.14",
+    "file-saver": "^2.0.5",
+    "material-icons": "^1.13.12",
+    "ngx-toastr": "^18.0.0",
+    "rxjs": "~7.8.0",
+    "svguitar": "^2.4.1",
+    "tslib": "^2.3.0",
+    "zone.js": "~0.14.3"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^17.3.5",
+    "@angular/cli": "^17.3.5",
+    "@angular/compiler-cli": "^17.3.0",
+    "@types/file-saver": "^2.0.7",
+    "@types/jasmine": "~5.1.0",
+    "@types/wicg-file-system-access": "^2023.10.5",
+    "gh-pages": "^6.1.1",
+    "jasmine-core": "~5.1.0",
+    "karma": "~6.4.0",
+    "karma-chrome-launcher": "~3.2.0",
+    "karma-coverage": "~2.2.0",
+    "karma-jasmine": "~5.1.0",
+    "karma-jasmine-html-reporter": "~2.1.0",
+    "prettier": "^3.2.5",
+    "prettier-plugin-organize-attributes": "^1.0.0",
+    "typescript": "~5.4.2"
+  }
+}

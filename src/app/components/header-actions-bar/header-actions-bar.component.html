@@ -1,0 +1,120 @@
+<button
+  aria-label="Undo"
+  matTooltip="Undo (Ctrl+Z)"
+  #buttonUndo
+  mat-icon-button
+  [disabled]="!hasEditorUndo"
+  (click)="onButtonUndoClicked()">
+  <mat-icon svgIcon="undo"></mat-icon>
+</button>
+<button
+  aria-label="Redo"
+  matTooltip="Redo (Ctrl+Y)"
+  #buttonRedo
+  mat-icon-button
+  [disabled]="!hasEditorRedo"
+  (click)="onButtonRedoClicked()">
+  <mat-icon svgIcon="redo"></mat-icon>
+</button>
+<button
+  aria-label="New file"
+  matTooltip="New file (Ctrl+N)"
+  #buttonNewFile
+  mat-icon-button
+  (click)="onButtonNewFileClicked()">
+  <mat-icon>description</mat-icon>
+</button>
+<button
+  aria-label="Open a file"
+  matTooltip="Open file... (Ctrl+O)"
+  #buttonOpenFile
+  mat-icon-button
+  (click)="canOpenFilePicker() ? onButtonOpenFileClicked($event) : inputFile.click()">
+  <mat-icon>file_open</mat-icon>
+  <input
+    class="file-input"
+    #inputFile
+    type="file"
+    hidden
+    [accept]="CHORDPRO_EXTENSIONS"
+    (change)="onButtonOpenFileClicked($event)" />
+</button>
+<button
+  aria-label="Save"
+  matTooltip="Save file (Ctrl+S)"
+  #buttonSaveFile
+  mat-icon-button
+  [disabled]="!isSaveExistingFileEnabled"
+  (click)="onButtonSaveFileClicked()">
+  <mat-icon>save</mat-icon>
+</button>
+<button
+  aria-label="Save as"
+  matTooltip="Save file as... (Ctrl+Shift+S)"
+  #buttonSaveFileAs
+  mat-icon-button
+  (click)="onButtonSaveFileAsClicked()">
+  <mat-icon>save_as</mat-icon>
+</button>
+<button
+  aria-label="Import lyrics"
+  disabled
+  matTooltip="Import lyrics (Ctrl+I)"
+  #buttonImportLyrics
+  mat-icon-button
+  (click)="onButtonImportLyricsClicked()">
+  <mat-icon>library_music</mat-icon>
+</button>
+<mat-button-toggle-group
+  name="hide-lyrics"
+  aria-label="Hide lyrics"
+  multiple>
+  <mat-button-toggle
+    value="hide-lyrics"
+    [checked]="areLyricsDisplayed"
+    (change)="onButtonToggleHideLyricsClicked($event)">
+    <mat-icon>lyrics</mat-icon>
+  </mat-button-toggle>
+</mat-button-toggle-group>
+<button
+  class="mobile-only"
+  aria-label="Preview"
+  matTooltip="Preview (Escape)"
+  #buttonPreview
+  mat-icon-button
+  [disabled]="!isEditing"
+  (click)="onButtonPreviewClicked()">
+  <mat-icon>preview</mat-icon>
+</button>
+<button
+  class="mobile-only"
+  aria-label="Edit"
+  matTooltip="Edit (F2)"
+  #buttonEdit
+  mat-icon-button
+  [disabled]="isEditing"
+  (click)="onButtonEditClicked()">
+  <mat-icon>edit</mat-icon>
+</button>
+<div class="separator"></div>
+<button
+  aria-label="Reset zoom"
+  matTooltip="Reset zoom"
+  mat-icon-button
+  (click)="onButtonResetZoomClicked()">
+  <mat-icon>search_off</mat-icon>
+</button>
+<button
+  aria-label="Zoom out"
+  matTooltip="Zoom out"
+  mat-icon-button
+  (click)="onButtonZoomOutClicked()">
+  <mat-icon>zoom_out</mat-icon>
+</button>
+<button
+  aria-label="Zoom in"
+  matTooltip="Zoom in"
+  mat-icon-button
+  (click)="onButtonZoomInClicked()">
+  <mat-icon>zoom_in</mat-icon>
+</button>
