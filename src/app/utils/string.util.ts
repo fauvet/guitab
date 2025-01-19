@@ -20,4 +20,8 @@ export class StringUtil {
 
     return -1;
   }
+
+  static escapeRegExp(string: string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
 }

@@ -1,4 +1,5 @@
 import Variant from "../types/variant.type";
+import { StringUtil } from "./string.util";
 
 export class ChordproUtil {
   static readonly EXTENSIONS: `.${string}`[] = [".cho", ".crd", ".chopro", ".chord", ".pro"];
@@ -13,7 +14,10 @@ export class ChordproUtil {
   }
 
   static findCustomVariant(chordproContent: string, chordName: string): Variant | null {
-    const regex = new RegExp(`\\{define\\s*:\\s*${chordName} base-fret (\\d) frets ([\\d ]+) fingers ([\\d ]+)\\s*\\}`);
+    const escapedChordName = StringUtil.escapeRegExp(chordName);
+    const regex = new RegExp(
+      `\\{define\\s*:\\s*${escapedChordName} base-fret (\\d) frets ([\\d ]+) fingers ([\\d ]+)\\s*\\}`,
+    );
     const match = chordproContent.match(regex);
     if (!match) return null;
 
