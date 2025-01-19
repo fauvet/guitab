@@ -28,7 +28,6 @@ export class ChordproService {
 
   constructor() {
     this.appContextService.getFileHandle$().subscribe((fileHandle) => this.onFileChanged(fileHandle));
-    this.appContextService.getFile$().subscribe((file) => this.onFileChanged(file));
     this.chordproContent$.subscribe((chordproContent) => this.onChordproContentChanged(chordproContent));
   }
 

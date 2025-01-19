@@ -5,24 +5,15 @@ import { BehaviorSubject, Observable } from "rxjs";
   providedIn: "root",
 })
 export class AppContextService {
-  private readonly fileHandle$ = new BehaviorSubject<null | FileSystemFileHandle>(null);
-  private readonly file$ = new BehaviorSubject<null | File>(null);
+  private readonly fileHandle$ = new BehaviorSubject<null | File | FileSystemFileHandle>(null);
   private readonly isEditing$ = new BehaviorSubject<boolean>(false);
 
-  getFileHandle$(): Observable<null | FileSystemFileHandle> {
+  getFileHandle$(): Observable<null | File | FileSystemFileHandle> {
     return this.fileHandle$.asObservable();
   }
 
-  getFileHandle(): null | FileSystemFileHandle {
+  getFileHandle(): null | File | FileSystemFileHandle {
     return this.fileHandle$.getValue();
-  }
-
-  getFile$(): Observable<null | File> {
-    return this.file$.asObservable();
-  }
-
-  getFile(): null | File {
-    return this.file$.getValue();
   }
 
   getIsEditing$(): Observable<boolean> {
@@ -33,14 +24,9 @@ export class AppContextService {
     return this.isEditing$.getValue();
   }
 
-  setFileHandle(fileHandle: null | FileSystemFileHandle): void {
+  setFileHandle(fileHandle: null | File | FileSystemFileHandle): void {
     if (fileHandle == this.getFileHandle()) return;
     this.fileHandle$.next(fileHandle);
-  }
-
-  setFile(file: null | File): void {
-    if (file == this.getFile()) return;
-    this.file$.next(file);
   }
 
   setEditing(isEditing: boolean): void {

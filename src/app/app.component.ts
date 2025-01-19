@@ -45,7 +45,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.handleLaunchQueue();
-    FileUtil.loadSampleFile().then((file) => this.appContextService.setFile(file));
+    FileUtil.loadSampleFile().then((file) => this.appContextService.setFileHandle(file));
     this.appContextService.getIsEditing$().subscribe((isEditing) => (this.isEditing = isEditing));
   }
 

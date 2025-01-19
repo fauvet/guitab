@@ -99,7 +99,7 @@ export class HeaderActionsBarComponent implements OnInit, OnDestroy {
     }
 
     const file = (event.target as HTMLInputElement)?.files?.[0] ?? null;
-    this.appContextService.setFile(file);
+    this.appContextService.setFileHandle(file);
   }
 
   async onButtonUndoClicked(): Promise<void> {
@@ -114,12 +114,12 @@ export class HeaderActionsBarComponent implements OnInit, OnDestroy {
     if (!this.checkUnsavedChanges()) return;
 
     const file = await FileUtil.loadEmptyFile();
-    this.appContextService.setFile(file);
+    this.appContextService.setFileHandle(file);
   }
 
   async onButtonSaveFileClicked(): Promise<void> {
     const fileHandle = this.appContextService.getFileHandle();
-    if (!fileHandle) {
+    if (!fileHandle || !(fileHandle instanceof FileSystemFileHandle)) {
       this.toastr.error("Unable to save");
       return;
     }
