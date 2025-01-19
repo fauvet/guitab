@@ -1,4 +1,5 @@
 import Variant from "../types/variant.type";
+import { NumberUtil } from "./number.util";
 import { StringUtil } from "./string.util";
 
 export class ChordproUtil {
@@ -16,20 +17,21 @@ export class ChordproUtil {
   static findCustomVariant(chordproContent: string, chordName: string): Variant | null {
     const escapedChordName = StringUtil.escapeRegExp(chordName);
     const regex = new RegExp(
-      `\\{define\\s*:\\s*${escapedChordName} base-fret (\\d) frets ([\\d ]+) fingers ([\\d ]+)\\s*\\}`,
+      `\\{define\\s*:\\s*${escapedChordName} base-fret (\\d) frets (.+?)( fingers (.+?))?\\s*\\}`,
     );
     const match = chordproContent.match(regex);
     if (!match) return null;
 
     const baseFret = Number(match[1]);
-    const frets = match[2]
-      .split(" ")
-      .filter((n) => !Number.isNaN(n))
-      .map((n) => Number(n));
-    const fingers = match[3]
-      .split(" ")
-      .filter((n) => !Number.isNaN(n))
-      .map((n) => Number(n));
+    const frets = Object.assign(Array(6), match[2].split(" ").slice(0, 6)).map((fret) =>
+      NumberUtil.isNaN(fret) || fret < 0 ? "x" : fret,
+    );
+    const fingers = Object.assign(Array(6), (match[4]?.split(" ") ?? []).slice(0, 6)).map((finger) => {
+      if (NumberUtil.isNaN(finger)) return finger[0];
+      return finger < 0 ? "x" : finger;
+    });
+
+    match[4]?.split(" ") ?? [];
 
     return {
       frets,

@@ -1,6 +1,6 @@
 export default interface Variant {
-  frets: number[];
-  fingers: number[];
+  frets: string[];
+  fingers: string[];
   barres: number[];
   capo: boolean | undefined;
   baseFret: number;
