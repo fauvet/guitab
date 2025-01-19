@@ -1,18 +1,4 @@
 :host {
-  display: flex;
-
-  #chordProjectEditor {
-    flex: 1;
-
-    ::ng-deep .ace_scroller {
-      overflow-x: auto;
-    }
-
-    ::ng-deep .ace_scrollbar-h {
-      overflow-x: hidden;
-    }
-  }
-
   * {
     font-family: monospace;
     font-size: 1rem;
