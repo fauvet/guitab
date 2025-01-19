@@ -31,10 +31,14 @@ export class SvgGuitarUtil {
       .filter((finger) => String(finger).toLowerCase() != "x");
     const duplicatedFingers = distinctFingers.filter((finger) => {
       const fingerStringIndexes = ArrayUtil.findIndexes(variant.fingers, finger);
-      return (
-        fingerStringIndexes.length > 1 &&
-        fingerStringIndexes.map((stringIndex) => variant.frets[stringIndex]).flatMap(ArrayUtil.unique).length === 1
-      );
+      if (fingerStringIndexes.length <= 1) return false;
+
+      const distinctFingerFrets = fingerStringIndexes
+        .map((stringIndex) => variant.frets[stringIndex])
+        .filter((fret) => !NumberUtil.isNaN(fret))
+        .map(Number)
+        .flatMap(ArrayUtil.unique);
+      return distinctFingerFrets.length === 1 && distinctFingerFrets[0] > 0;
     });
 
     const barres: Barre[] = [];
