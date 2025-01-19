@@ -38,9 +38,9 @@ export class ChordproUtil {
   }
 
   static findChordNames(chordproContent: string): string[] {
-    const match = chordproContent.match(/\[\w+\]/g);
+    const match = chordproContent.match(/\[ *[^\]\n]+? *\]/g);
     if (!match) return [];
 
-    return match.map((singleMatch) => singleMatch.replaceAll(/[\[\]]/g, ""));
+    return match.map((singleMatch) => singleMatch.replaceAll(/[\[\]]/g, "").trim());
   }
 }
