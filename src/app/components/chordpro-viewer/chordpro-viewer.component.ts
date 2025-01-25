@@ -41,7 +41,7 @@ export class ChordproViewerComponent implements OnInit, OnDestroy {
     this.unsubscribe.next();
   }
 
-  static convertChordSheetToHtml(chordSheet: string): string {
+  private static convertChordSheetToHtml(chordSheet: string): string {
     const chordParser = new ChordProjectParser.ChordProParser();
     const song = chordParser.parse(chordSheet);
     // const transposedSong = ChordProjectParser.Transposer.transpose(
@@ -58,6 +58,18 @@ export class ChordproViewerComponent implements OnInit, OnDestroy {
     const formatter = new ChordProjectParser.HtmlFormatter(settings);
     const html = formatter.format(song);
     return html.join("");
+  }
+
+  private updateMaxChordWidth(): void {
+    const spans: HTMLSpanElement[] = this.elementRef.nativeElement.querySelectorAll("span.above-lyrics.chord");
+
+    const maxChordLength = Array.from(spans).reduce((maxWidth, span) => {
+      const chordLength = span.innerText.length;
+      return Math.max(maxWidth, chordLength);
+    }, 1);
+
+    const maxChordWidth = maxChordLength * 10;
+    document.documentElement.style.setProperty("--max-chord-width", `${maxChordWidth}px`);
   }
 
   private listenChordClick(): void {
@@ -77,6 +89,8 @@ export class ChordproViewerComponent implements OnInit, OnDestroy {
     const hostElement = this.elementRef.nativeElement;
     const html = ChordproViewerComponent.convertChordSheetToHtml(chordproContent);
     this.renderer.setProperty(hostElement, "innerHTML", html);
+
+    this.updateMaxChordWidth();
   }
 
   onChordClicked(chordName: string): void {
