@@ -1,0 +1,50 @@
+<mat-list>
+  <mat-list-item
+    matRipple
+    (click)="onButtonNewFileClicked()">
+    <mat-icon
+      matListItemIcon
+      fontSet="material-icons-outlined">
+      description
+    </mat-icon>
+    <div matListItemTitle>{{ "New file" }}</div>
+  </mat-list-item>
+  <mat-list-item
+    matRipple
+    (click)="canOpenFilePicker() ? onButtonOpenFileClicked($event) : inputFile.click()">
+    <mat-icon
+      matListItemIcon
+      fontSet="material-icons-outlined">
+      file_open
+    </mat-icon>
+    <div matListItemTitle>{{ "Open file" }}</div>
+    <input
+      class="file-input"
+      #inputFile
+      type="file"
+      hidden
+      [accept]="CHORDPRO_EXTENSIONS"
+      (change)="onButtonOpenFileClicked($event)" />
+  </mat-list-item>
+  <mat-list-item
+    [attr.matRipple]="isSaveExistingFileEnabled"
+    [class.disabled]="!isSaveExistingFileEnabled"
+    (click)="onButtonSaveFileClicked()">
+    <mat-icon
+      matListItemIcon
+      fontSet="material-icons-outlined">
+      save
+    </mat-icon>
+    <div matListItemTitle>{{ "Save file" }}</div>
+  </mat-list-item>
+  <mat-list-item
+    matRipple
+    (click)="onButtonSaveFileAsClicked()">
+    <mat-icon
+      matListItemIcon
+      fontSet="material-icons-outlined">
+      save_as
+    </mat-icon>
+    <div matListItemTitle>{{ "Save file as..." }}</div>
+  </mat-list-item>
+</mat-list>

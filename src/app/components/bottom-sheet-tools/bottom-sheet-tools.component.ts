@@ -1,7 +1,6 @@
 import { Component, inject } from "@angular/core";
 import { MatBottomSheetRef } from "@angular/material/bottom-sheet";
 import { MatListModule } from "@angular/material/list";
-import { DialogDiagramChordComponent } from "../dialog-diagram-chord/dialog-diagram-chord.component";
 import { MatDialog } from "@angular/material/dialog";
 import { DialogExternalToolComponent } from "../dialog-external-tool/dialog-external-tool.component";
 import { MatIcon } from "@angular/material/icon";

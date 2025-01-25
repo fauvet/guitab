@@ -17,69 +17,35 @@
   <mat-icon svgIcon="redo"></mat-icon>
 </button>
 <button
-  aria-label="New file"
-  matTooltip="New file (Ctrl+N)"
-  #buttonNewFile
+  aria-label="File..."
+  matTooltip="Open file menu..."
   mat-icon-button
-  (click)="onButtonNewFileClicked()">
-  <mat-icon>description</mat-icon>
+  (click)="onButtonManageFileClicked()">
+  <mat-icon svgIcon="folder_open"></mat-icon>
 </button>
 <button
-  aria-label="Open a file"
-  matTooltip="Open file... (Ctrl+O)"
-  #buttonOpenFile
-  mat-icon-button
-  (click)="canOpenFilePicker() ? onButtonOpenFileClicked($event) : inputFile.click()">
-  <mat-icon>file_open</mat-icon>
-  <input
-    class="file-input"
-    #inputFile
-    type="file"
-    hidden
-    [accept]="CHORDPRO_EXTENSIONS"
-    (change)="onButtonOpenFileClicked($event)" />
-</button>
-<button
-  aria-label="Save"
-  matTooltip="Save file (Ctrl+S)"
-  #buttonSaveFile
-  mat-icon-button
-  [disabled]="!isSaveExistingFileEnabled"
-  (click)="onButtonSaveFileClicked()">
-  <mat-icon>save</mat-icon>
-</button>
-<button
-  aria-label="Save as"
-  matTooltip="Save file as... (Ctrl+Shift+S)"
-  #buttonSaveFileAs
-  mat-icon-button
-  (click)="onButtonSaveFileAsClicked()">
-  <mat-icon>save_as</mat-icon>
-</button>
-<button
-  aria-label="Tools"
-  matTooltip="Tools (Ctrl+?)"
-  #buttonTools
+  aria-label="Tools..."
+  matTooltip="Open tools menu..."
   mat-icon-button
   (click)="onButtonToolsClicked()">
-  <mat-icon>extension</mat-icon>
+  <mat-icon fontSet="material-icons-outlined">extension</mat-icon>
 </button>
 <mat-button-toggle-group
-  name="hide-lyrics"
+  name="show-hide-lyrics"
   aria-label="Hide lyrics"
   multiple>
   <mat-button-toggle
-    value="hide-lyrics"
+    value="show-hide-lyrics"
+    [matTooltip]="areLyricsDisplayed ? 'Hide lyrics' : 'Show lyrics'"
     [checked]="areLyricsDisplayed"
     (change)="onButtonToggleHideLyricsClicked($event)">
-    <mat-icon>lyrics</mat-icon>
+    <mat-icon [fontSet]="areLyricsDisplayed ? '' : 'material-icons-outlined'">lyrics</mat-icon>
   </mat-button-toggle>
 </mat-button-toggle-group>
 <button
   class="mobile-only"
   aria-label="Preview"
-  matTooltip="Preview (Escape)"
-  #buttonPreview
+  matTooltip="Preview"
   mat-icon-button
   [disabled]="!isEditing"
   (click)="onButtonPreviewClicked()">
@@ -88,8 +54,7 @@
 <button
   class="mobile-only"
   aria-label="Edit"
-  matTooltip="Edit (F2)"
-  #buttonEdit
+  matTooltip="Edit"
   mat-icon-button
   [disabled]="isEditing"
   (click)="onButtonEditClicked()">

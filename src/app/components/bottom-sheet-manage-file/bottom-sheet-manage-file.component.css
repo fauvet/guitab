@@ -1,0 +1,16 @@
+:host {
+  mat-list-item {
+    cursor: pointer;
+
+    &.disabled {
+      cursor: default;
+      opacity: 0.38;
+    }
+
+    [matListItemIcon] {
+      color: #000000;
+      margin: auto !important;
+      padding: 0 20px;
+    }
+  }
+}
