@@ -8,16 +8,16 @@ import { ChordproUtil } from "../../utils/chordpro.util";
 import { MatButtonModule } from "@angular/material/button";
 import { ZoomService } from "../../services/zoom/zoom.service";
 import { FileUtil } from "../../utils/file.util";
-import { MatDialog } from "@angular/material/dialog";
-import { DialogImportLyricsComponent } from "../dialog-import-lyrics/dialog-import-lyrics.component";
 import { Subject, takeUntil } from "rxjs";
 import { MatTooltipModule } from "@angular/material/tooltip";
+import { MatBottomSheet, MatBottomSheetModule } from "@angular/material/bottom-sheet";
 import { ChordproService } from "../../services/chordpro/chordpro.service";
+import { BottomSheetToolsComponent } from "../bottom-sheet-tools/bottom-sheet-tools.component";
 
 @Component({
   selector: "app-header-actions-bar",
   standalone: true,
-  imports: [MatButtonModule, MatIconModule, MatButtonToggleModule, MatTooltipModule],
+  imports: [MatButtonModule, MatIconModule, MatButtonToggleModule, MatTooltipModule, MatBottomSheetModule],
   templateUrl: "./header-actions-bar.component.html",
   styleUrl: "./header-actions-bar.component.css",
 })
@@ -27,7 +27,7 @@ export class HeaderActionsBarComponent implements OnInit, OnDestroy {
   private readonly appContextService = inject(AppContextService);
   private readonly chordproService = inject(ChordproService);
   private readonly zoomService = inject(ZoomService);
-  private readonly dialog = inject(MatDialog);
+  private readonly bottomSheet = inject(MatBottomSheet);
   private readonly toastr = inject(ToastrService);
 
   @ViewChild("buttonUndo") buttonUndo!: ElementRef<HTMLButtonElement>;
@@ -141,13 +141,8 @@ export class HeaderActionsBarComponent implements OnInit, OnDestroy {
     FileSaver.saveAs(blob, fileName);
   }
 
-  async onButtonImportLyricsClicked(): Promise<void> {
-    this.dialog
-      .open(DialogImportLyricsComponent, {
-        data: {},
-      })
-      .afterClosed()
-      .subscribe(() => {});
+  async onButtonToolsClicked(): Promise<void> {
+    this.bottomSheet.open(BottomSheetToolsComponent);
   }
 
   onButtonToggleHideLyricsClicked(event: MatButtonToggleChange): void {

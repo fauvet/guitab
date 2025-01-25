@@ -1,0 +1,10 @@
+:host {
+  mat-list-item {
+    cursor: pointer;
+
+    [matListItemIcon] {
+      margin: auto !important;
+      padding: 0 20px;
+    }
+  }
+}

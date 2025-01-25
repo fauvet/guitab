@@ -57,13 +57,12 @@
   <mat-icon>save_as</mat-icon>
 </button>
 <button
-  aria-label="Import lyrics"
-  disabled
-  matTooltip="Import lyrics (Ctrl+I)"
-  #buttonImportLyrics
+  aria-label="Tools"
+  matTooltip="Tools (Ctrl+?)"
+  #buttonTools
   mat-icon-button
-  (click)="onButtonImportLyricsClicked()">
-  <mat-icon>library_music</mat-icon>
+  (click)="onButtonToolsClicked()">
+  <mat-icon>extension</mat-icon>
 </button>
 <mat-button-toggle-group
   name="hide-lyrics"
