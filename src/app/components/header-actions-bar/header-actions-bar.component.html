@@ -1,7 +1,6 @@
 <button
   aria-label="Undo"
   matTooltip="Undo (Ctrl+Z)"
-  #buttonUndo
   mat-icon-button
   [disabled]="!hasEditorUndo"
   (click)="onButtonUndoClicked()">
@@ -10,7 +9,6 @@
 <button
   aria-label="Redo"
   matTooltip="Redo (Ctrl+Y)"
-  #buttonRedo
   mat-icon-button
   [disabled]="!hasEditorRedo"
   (click)="onButtonRedoClicked()">

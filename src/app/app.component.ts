@@ -11,6 +11,7 @@ import { FooterActionsBarComponent } from "./components/footer-actions-bar/foote
 import { MatIconRegistry } from "@angular/material/icon";
 import { DomSanitizer } from "@angular/platform-browser";
 import { MaterialIconsUtil } from "./utils/material-icons.util";
+import { KeyboardShortcutService } from "./services/keyboard-shortcut/keyboard-shortcut.service";
 
 @Component({
   selector: "app-root",
@@ -29,6 +30,7 @@ import { MaterialIconsUtil } from "./utils/material-icons.util";
 })
 export class AppComponent implements OnInit {
   private readonly appContextService = inject(AppContextService);
+  private readonly keyboardShortcutService = inject(KeyboardShortcutService);
   private readonly matIconRegistry = inject(MatIconRegistry);
   private readonly domSanitizer = inject(DomSanitizer);
 
@@ -41,6 +43,7 @@ export class AppComponent implements OnInit {
 
   constructor() {
     MaterialIconsUtil.registerIcons(this.matIconRegistry, this.domSanitizer);
+    this.keyboardShortcutService.initialize();
   }
 
   ngOnInit(): void {

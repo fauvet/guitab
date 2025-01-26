@@ -10,6 +10,7 @@ import { MatBottomSheet, MatBottomSheetModule } from "@angular/material/bottom-s
 import { ChordproService } from "../../services/chordpro/chordpro.service";
 import { BottomSheetToolsComponent } from "../bottom-sheet-tools/bottom-sheet-tools.component";
 import { BottomSheetManageFileComponent } from "../bottom-sheet-manage-file/bottom-sheet-manage-file.component";
+import { KeyboardShortcutService } from "../../services/keyboard-shortcut/keyboard-shortcut.service";
 
 @Component({
   selector: "app-header-actions-bar",
@@ -21,11 +22,9 @@ import { BottomSheetManageFileComponent } from "../bottom-sheet-manage-file/bott
 export class HeaderActionsBarComponent implements OnInit, OnDestroy {
   private readonly appContextService = inject(AppContextService);
   private readonly chordproService = inject(ChordproService);
+  private readonly keyboardShortcutService = inject(KeyboardShortcutService);
   private readonly zoomService = inject(ZoomService);
   private readonly bottomSheet = inject(MatBottomSheet);
-
-  @ViewChild("buttonUndo") buttonUndo!: ElementRef<HTMLButtonElement>;
-  @ViewChild("buttonRedo") buttonRedo!: ElementRef<HTMLButtonElement>;
 
   isEditing = false;
   areLyricsDisplayed = false;
@@ -61,11 +60,11 @@ export class HeaderActionsBarComponent implements OnInit, OnDestroy {
   }
 
   async onButtonUndoClicked(): Promise<void> {
-    this.chordproService.undoContent();
+    this.keyboardShortcutService.undo();
   }
 
   async onButtonRedoClicked(): Promise<void> {
-    this.chordproService.redoContent();
+    this.keyboardShortcutService.redo();
   }
 
   async onButtonManageFileClicked(): Promise<void> {
@@ -101,16 +100,5 @@ export class HeaderActionsBarComponent implements OnInit, OnDestroy {
 
   onButtonZoomOutClicked(): void {
     this.zoomService.decrementZoom();
-  }
-
-  @HostListener("window:keydown", ["$event"])
-  onKeyDown(event: KeyboardEvent) {
-    if (event.ctrlKey && event.key === "z") {
-      event.preventDefault();
-      (this.buttonUndo as any)._elementRef.nativeElement.click();
-    } else if ((event.ctrlKey && event.key === "y") || (event.ctrlKey && event.shiftKey && event.key === "z")) {
-      event.preventDefault();
-      (this.buttonRedo as any)._elementRef.nativeElement.click();
-    }
   }
 }
