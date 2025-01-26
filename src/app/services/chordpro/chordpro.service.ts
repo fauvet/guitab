@@ -5,6 +5,7 @@ import { AppContextService } from "../app-context/app-context.service";
 // @ts-ignore
 import * as ChordProjectEditor from "chordproject-editor";
 import { StringUtil } from "../../utils/string.util";
+import ChordproSaveState, { areChordproSaveStatesEquals } from "../../types/chordpro-save-state.type";
 
 type RemovableChordPosition = {
   openSquareBracketIndex: number;
@@ -21,6 +22,7 @@ export class ChordproService {
 
   private readonly chordproContent$ = new BehaviorSubject<string>("");
   private readonly chordproCaretPositionIndex$ = new BehaviorSubject<number>(0);
+  private readonly chordproSaveState$ = new BehaviorSubject<ChordproSaveState>(this.buildChordproSaveState());
   private readonly areLyricsDisplayed$ = new BehaviorSubject<boolean>(true);
   private readonly hasEditorUndo$ = new BehaviorSubject<boolean>(false);
   private readonly hasEditorRedo$ = new BehaviorSubject<boolean>(false);
@@ -39,6 +41,7 @@ export class ChordproService {
     const fileContent = await FileUtil.getFileContent(fileHandle);
     this.setChordproContent(fileContent ?? "");
     this.resetHistoryState();
+    this.updateChordproSaveState();
   }
 
   private onChordproContentChanged(chordproContent: string): void {
@@ -52,6 +55,13 @@ export class ChordproService {
     this.editor.setValue(chordproContent);
     this.editor.clearSelection();
     this.editor.moveCursorToPosition(cursorPosition);
+  }
+
+  private buildChordproSaveState(): ChordproSaveState {
+    return {
+      fileHandle: this.appContextService.getFileHandle(),
+      chordproContent: this.getChordproContent(),
+    };
   }
 
   private getEditorContent(): string {
@@ -94,12 +104,22 @@ export class ChordproService {
     return this.isRemovableChordEnabled$.asObservable();
   }
 
+  hasUnsavedChanges(): boolean {
+    const chordproSaveState = this.getChordproSaveState();
+    const newChordproSaveState = this.buildChordproSaveState();
+    return !areChordproSaveStatesEquals(chordproSaveState, newChordproSaveState);
+  }
+
   private hasEditorUndo(): boolean {
     return this.hasEditorUndo$.getValue();
   }
 
   private hasEditorRedo(): boolean {
     return this.hasEditorRedo$.getValue();
+  }
+
+  private getChordproSaveState(): ChordproSaveState {
+    return this.chordproSaveState$.getValue();
   }
 
   private isRemovableChordEnabled(): boolean {
@@ -133,6 +153,11 @@ export class ChordproService {
   private setChordproContent(chordproContent: string): void {
     if (chordproContent == this.getChordproContent()) return;
     this.chordproContent$.next(chordproContent);
+  }
+
+  private setChordproSaveState(chordproSaveState: ChordproSaveState): void {
+    if (chordproSaveState === this.getChordproSaveState()) return;
+    this.chordproSaveState$.next(chordproSaveState);
   }
 
   setChordproCaretPositionIndex(chordproCaretPositionIndex: number): void {
@@ -172,6 +197,11 @@ export class ChordproService {
     const hasRedo = undoManager.hasRedo();
     this.setEditorUndo(hasUndo);
     this.setEditorRedo(hasRedo);
+  }
+
+  updateChordproSaveState(): void {
+    const chordproSaveState = this.buildChordproSaveState();
+    this.setChordproSaveState(chordproSaveState);
   }
 
   undoContent(): void {

@@ -95,6 +95,7 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
     await writable.close();
     const fileName = fileHandle.name;
     this.toastr.success(`${fileName} saved`);
+    this.chordproService.updateChordproSaveState();
   }
 
   async onButtonSaveFileAsClicked(): Promise<void> {
@@ -106,10 +107,16 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
     const fileName = `${title} (${artist})${ChordproUtil.PREFERRED_EXTENSION}`;
     const blob = new Blob([chordproContent], { type: "text/plain;charset=utf-8" });
     FileSaver.saveAs(blob, fileName);
+
+    setTimeout(() => {
+      if (!confirm("Please confirm that the file has been successfully downloaded.")) return;
+      this.toastr.success(`${fileName} saved`);
+      this.chordproService.updateChordproSaveState();
+    });
   }
 
   private checkUnsavedChanges(): boolean {
-    const hasUnsavedChanges = this.chordproService.getHasEditorUndo();
+    const hasUnsavedChanges = this.chordproService.hasUnsavedChanges();
     return !hasUnsavedChanges || confirm("You have unsaved changes. Are you sure you want to discard them?");
   }
 
