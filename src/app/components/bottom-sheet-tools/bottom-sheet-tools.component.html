@@ -6,7 +6,7 @@
       matListItemIcon
       src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABCklEQVR4Ae2XgQYCQRCGNwB6tRIB0CPVhtADBBIpKqDbI0AVgIr2ul1UCgLCTTscznQR9lrHDv9hjJmPW7v/sGxwca5zES24kA+jlxFYEva681DO20FUYzR6y2vVFIyM4B/qBnKIMxkGAFS64jQhRYWrI6Ixw+ChbGLChTrhqcHwn2eT/ZWE3VHBWWnQ2o6w1/aosDeFmDHzuWWTWGhrMNXmoCjABQGSbDJOi1vtgVVhz1hpCpAwkgBdIACKzvMAPwPYOogeoPQA7g+hByjNPeAewAP417A0AO4tGTGl631cmCld55rSQE4/bXkMyqItx147asvT5cT5YuJ8NXO/nH5Zz58FDH7mredvLgNYRf4Se30AAAAASUVORK5CYII=" />
     <div matListItemTitle>{{ "Chord identifier" }}</div>
-    <div matListItemLine>{{ "all-guitar-chords.com (open external link)" }}</div>
+    <div matListItemLine>{{ "all-guitar-chords.com (opens a new tab)" }}</div>
   </mat-list-item>
   <mat-list-item
     matRipple
@@ -14,5 +14,14 @@
     <mat-icon matListItemIcon>language</mat-icon>
     <div matListItemTitle>{{ "Find lyrics" }}</div>
     <div matListItemLine>{{ "lyrics.ovh" }}</div>
+  </mat-list-item>
+  <mat-list-item
+    matRipple
+    (click)="onItemSongBpmComClicked()">
+    <img
+      matListItemIcon
+      src="https://songbpm.com/favicon.svg" />
+    <div matListItemTitle>{{ "Find temo" }}</div>
+    <div matListItemLine>{{ "songbpm.com" }}</div>
   </mat-list-item>
 </mat-list>

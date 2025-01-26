@@ -17,22 +17,30 @@ export class BottomSheetToolsComponent {
   private bottomSheetRef = inject(MatBottomSheetRef<BottomSheetToolsComponent>);
   private readonly dialog = inject(MatDialog);
 
-  onItemAllGuitarChordsComClicked(): void {
-    this.bottomSheetRef.dismiss();
-    window.open("https://www.all-guitar-chords.com/chords/identifier", "_blank");
-  }
-
-  onItemLyricsOvhClicked(): void {
+  private openDialogExternalTool(url: string): void {
     this.bottomSheetRef.dismiss();
     this.dialog
       .open(DialogExternalToolComponent, {
         data: {
-          src: "https://lyrics.ovh",
+          src: url,
         },
         height: "95%",
         width: "95%",
       })
       .afterClosed()
       .subscribe(() => {});
+  }
+
+  onItemAllGuitarChordsComClicked(): void {
+    this.bottomSheetRef.dismiss();
+    window.open("https://www.all-guitar-chords.com/chords/identifier", "_blank");
+  }
+
+  onItemLyricsOvhClicked(): void {
+    this.openDialogExternalTool("https://lyrics.ovh");
+  }
+
+  onItemSongBpmComClicked(): void {
+    this.openDialogExternalTool("https://songbpm.com");
   }
 }
