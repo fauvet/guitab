@@ -1,10 +1,4 @@
 export class StringUtil {
-  static findIndexFromCoordinates(string: string, rowIndex: number, columnIndex: number): number {
-    const lines = string.split("\n");
-    const truncatedLines = lines.slice(0, rowIndex);
-    return truncatedLines.reduce((acc, line) => acc + line.length, 0) + columnIndex + truncatedLines.length;
-  }
-
   static findFirst(
     string: string,
     startIndex: number,

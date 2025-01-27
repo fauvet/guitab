@@ -49,4 +49,28 @@ export class ChordproUtil {
 
     return match.map((singleMatch) => singleMatch.replaceAll(/[\[\]]/g, "").trim());
   }
+
+  static findIndexFromCoordinates(string: string, rowIndex: number, columnIndex: number): number {
+    const lines = string.split("\n");
+    const truncatedLines = lines.slice(0, rowIndex);
+    return truncatedLines.reduce((acc, line) => acc + line.length, 0) + columnIndex + truncatedLines.length;
+  }
+
+  static findCoordinatesFromIndex(string: string, index: number): { row: number; column: number } {
+    const lines = string.split("\n");
+    let currentIndex = 0;
+
+    for (let rowIndex = 0; rowIndex < lines.length; rowIndex++) {
+      const lineLength = lines[rowIndex].length;
+
+      if (currentIndex + lineLength >= index) {
+        const columnIndex = index - currentIndex;
+        return { row: rowIndex, column: columnIndex };
+      }
+
+      currentIndex += lineLength + 1;
+    }
+
+    return { row: -1, column: -1 };
+  }
 }

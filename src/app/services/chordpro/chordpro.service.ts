@@ -6,6 +6,7 @@ import { AppContextService } from "../app-context/app-context.service";
 import * as ChordProjectEditor from "chordproject-editor";
 import { StringUtil } from "../../utils/string.util";
 import ChordproSaveState, { areChordproSaveStatesEquals } from "../../types/chordpro-save-state.type";
+import { ChordproUtil } from "../../utils/chordpro.util";
 
 type RemovableChordPosition = {
   openSquareBracketIndex: number;
@@ -174,7 +175,7 @@ export class ChordproService {
     this.editor.session.selection.on("changeCursor", () => {
       const cursorPosition = this.editor.getCursorPosition();
       const chordproContent = this.getChordproContent();
-      const chordproCaretPositionIndex = StringUtil.findIndexFromCoordinates(
+      const chordproCaretPositionIndex = ChordproUtil.findIndexFromCoordinates(
         chordproContent,
         cursorPosition.row,
         cursorPosition.column,
@@ -233,12 +234,17 @@ export class ChordproService {
     const removableChordPosition = this.findRemovableChordPosition(chordproContent);
     if (removableChordPosition == null) return;
 
+    const chordproContentFirstHalf = chordproContent.slice(0, removableChordPosition.openSquareBracketIndex);
     const newChordproContent =
-      chordproContent.slice(0, removableChordPosition.openSquareBracketIndex) +
+      chordproContentFirstHalf +
       chordproContent.slice(removableChordPosition.closeSquareBracketIndex + 1, chordproContent.length);
-    const deletedLength = newChordproContent.length - chordproContent.length;
-    const newCursorPosition = structuredClone(this.editor.getCursorPosition());
-    newCursorPosition.column += deletedLength;
+
+    const closeSquareBracketLastIndex = chordproContentFirstHalf.lastIndexOf("]");
+    const newCursorPosition =
+      closeSquareBracketLastIndex != -1
+        ? ChordproUtil.findCoordinatesFromIndex(newChordproContent, closeSquareBracketLastIndex)
+        : ChordproUtil.findCoordinatesFromIndex(newChordproContent, removableChordPosition.openSquareBracketIndex);
+    if (closeSquareBracketLastIndex != -1) newCursorPosition.column++;
 
     this.setChordproContent(newChordproContent);
     this.editor.moveCursorToPosition(newCursorPosition);
