@@ -13,10 +13,16 @@ export class SvgGuitarUtil {
     }
 
     const chords = Object.values(guitar.chords).flatMap((e) => e);
+    const normalizedChordName = chordName
+      .replace("D#", "Eb")
+      .replace("G#", "Ab")
+      .replace("A#", "Bb")
+      .replace("Db", "C#")
+      .replace("Gb", "F#");
 
     for (const chord of chords) {
       const currentChordName = chord.key + chord.suffix;
-      if (currentChordName != chordName) continue;
+      if (currentChordName != normalizedChordName) continue;
 
       const variant = structuredClone(chord.variants[0]) as Variant;
       return SvgGuitarUtil.toChord(chordName, variant);
