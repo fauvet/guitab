@@ -21,7 +21,7 @@ export class SvgGuitarUtil {
       .replace("Gb", "F#");
 
     for (const chord of chords) {
-      const currentChordName = chord.key + chord.suffix;
+      const currentChordName = ChordproUtil.buildChordName(chord);
       if (currentChordName != normalizedChordName) continue;
 
       const variant = structuredClone(chord.variants[0]) as Variant;
@@ -31,7 +31,7 @@ export class SvgGuitarUtil {
     return null;
   }
 
-  private static toChord(chordName: string, variant: Variant): Chord {
+  public static toChord(chordName: string, variant: Variant): Chord {
     const distinctFingers = variant.fingers
       .flatMap(ArrayUtil.unique)
       .filter((finger) => String(finger).toLowerCase() != "x");

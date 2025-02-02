@@ -21,24 +21,24 @@ export class ChordproViewerComponent implements OnInit, OnDestroy {
   @HostBinding("class.hide-lyrics")
   hideLyrics = false;
 
-  private readonly unsubscribe = new Subject<void>();
+  private readonly unsubscribe$ = new Subject<void>();
 
   ngOnInit(): void {
     this.chordproService
       .getChordproContent$()
-      .pipe(takeUntil(this.unsubscribe))
+      .pipe(takeUntil(this.unsubscribe$))
       .subscribe((chordproContent) => this.onChordproContentChanged(chordproContent));
 
     this.chordproService
       .getAreLyricsDisplayed$()
-      .pipe(takeUntil(this.unsubscribe))
+      .pipe(takeUntil(this.unsubscribe$))
       .subscribe((areLyricsDisplayed) => (this.hideLyrics = !areLyricsDisplayed));
 
     this.listenChordClick();
   }
 
   ngOnDestroy(): void {
-    this.unsubscribe.next();
+    this.unsubscribe$.next();
   }
 
   private static convertChordSheetToHtml(chordSheet: string): string {
@@ -82,7 +82,7 @@ export class ChordproViewerComponent implements OnInit, OnDestroy {
     };
 
     document.addEventListener("click", listener);
-    this.unsubscribe.subscribe(() => document.removeEventListener("click", listener));
+    this.unsubscribe$.subscribe(() => document.removeEventListener("click", listener));
   }
 
   onChordproContentChanged(chordproContent: string): void {

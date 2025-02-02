@@ -1,0 +1,53 @@
+<h2 mat-dialog-title>Insert a chord</h2>
+<mat-dialog-content>
+  <div>
+    <h3>Key</h3>
+    <div>
+      @for (chordEntry of chordEntries; track chordEntry) {
+        <button
+          mat-flat-button
+          [color]="(selectedKeyChordObjects$ | async)?.[0]?.key == chordEntry[0] ? 'primary' : ''"
+          (click)="onButtonChordKeyClicked(chordEntry[1])">
+          {{ chordEntry[0] }}
+        </button>
+      }
+    </div>
+  </div>
+  <div>
+    <h3>Chord</h3>
+    <div>
+      @for (keyChordObject of selectedKeyChordObjects$ | async; track keyChordObject) {
+        <button
+          mat-flat-button
+          [color]="buildChordName(selectedChordObject$ | async) == buildChordName(keyChordObject) ? 'primary' : ''"
+          (click)="onButtonChordNameClicked(keyChordObject)">
+          {{ buildChordName(keyChordObject) }}
+        </button>
+      }
+    </div>
+  </div>
+  <div>
+    <h3>Variant</h3>
+    <div class="container-chord-variants">
+      @for (chordVariant of selectedChordObject$.getValue()?.variants ?? []; track chordVariant) {
+        <app-diagram-chord
+          matRipple
+          color="primary"
+          [class.selected]="(selectedChordVariant$ | async) == chordVariant"
+          [chord]="toChord(buildChordName(selectedChordObject$ | async), chordVariant)"
+          [size]="'m'"
+          (click)="onDiagramChordClicked(chordVariant)"></app-diagram-chord>
+      }
+    </div>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button>Cancel</button>
+  <button
+    mat-flat-button
+    disabled
+    color="primary"
+    cdkFocusInitial>
+    Insert
+  </button>
+</mat-dialog-actions>

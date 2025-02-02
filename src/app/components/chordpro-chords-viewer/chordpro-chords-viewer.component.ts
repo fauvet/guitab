@@ -21,17 +21,17 @@ export class ChordproChordsViewerComponent implements OnInit, OnDestroy {
 
   chords: Chord[] = [];
 
-  private readonly unsubscribe = new Subject<void>();
+  private readonly unsubscribe$ = new Subject<void>();
 
   ngOnInit(): void {
     this.chordproService
       .getChordproContent$()
-      .pipe(takeUntil(this.unsubscribe))
+      .pipe(takeUntil(this.unsubscribe$))
       .subscribe((chordproContent) => this.onChordproContentChanged(chordproContent));
   }
 
   ngOnDestroy(): void {
-    this.unsubscribe.next();
+    this.unsubscribe$.next();
   }
 
   onChordproContentChanged(chordproContent: string): void {

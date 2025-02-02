@@ -6,6 +6,11 @@ export class ChordproUtil {
   static readonly EXTENSIONS: `.${string}`[] = [".cho", ".crd", ".chopro", ".chord", ".pro"];
   static readonly PREFERRED_EXTENSION = ChordproUtil.EXTENSIONS[0];
 
+  static buildChordName(chordObject: any): string {
+    if (!chordObject) return "";
+    return chordObject.key + chordObject.suffix;
+  }
+
   static findTitle(chordproContent: string): string | null {
     return /{title:([^}]*)}/.exec(chordproContent)?.[1]?.trim() ?? null;
   }

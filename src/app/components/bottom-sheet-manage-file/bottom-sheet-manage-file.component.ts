@@ -25,19 +25,19 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
 
   isSaveExistingFileEnabled = false;
 
-  private readonly unsubscribe = new Subject<void>();
+  private readonly unsubscribe$ = new Subject<void>();
 
   ngOnInit(): void {
     this.appContextService
       .getFileHandle$()
-      .pipe(takeUntil(this.unsubscribe))
+      .pipe(takeUntil(this.unsubscribe$))
       .subscribe(
         (fileHandle) => (this.isSaveExistingFileEnabled = !!fileHandle && fileHandle instanceof FileSystemFileHandle),
       );
   }
 
   ngOnDestroy(): void {
-    this.unsubscribe.next();
+    this.unsubscribe$.next();
   }
 
   async onButtonNewFileClicked(): Promise<void> {

@@ -3,6 +3,8 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { ChordproService } from "../../services/chordpro/chordpro.service";
+import { MatDialog } from "@angular/material/dialog";
+import { DialogSelectChordComponent } from "../dialog-select-chord/dialog-select-chord.component";
 
 @Component({
   selector: "app-footer-actions-bar",
@@ -13,6 +15,7 @@ import { ChordproService } from "../../services/chordpro/chordpro.service";
 })
 export class FooterActionsBarComponent implements OnInit {
   private readonly chordproService = inject(ChordproService);
+  private readonly dialog = inject(MatDialog);
 
   isRemovableChordEnabled = false;
 
@@ -27,7 +30,12 @@ export class FooterActionsBarComponent implements OnInit {
   }
 
   onButtonInsertChordClicked() {
-    throw new Error("Method not implemented.");
+    this.dialog
+      .open(DialogSelectChordComponent, {
+        data: {},
+      })
+      .afterClosed()
+      .subscribe(() => {});
   }
 
   onButtonDefineChordClicked() {

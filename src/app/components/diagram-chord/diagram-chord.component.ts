@@ -70,7 +70,6 @@ export class DiagramChordComponent implements AfterViewInit, OnChanges {
             fretSize: 1.5,
             sidePadding: 0.2,
             fontFamily: "sans-serif",
-            title: "F# minor",
             titleFontSize: 48,
             titleBottomMargin: 0,
             color: "#000000",

@@ -12,7 +12,7 @@ import { ChordproService } from "../../services/chordpro/chordpro.service";
 export class ChordproEditorComponent implements OnInit, OnDestroy {
   private readonly chordproService = inject(ChordproService);
 
-  private unsubscribe = new Subject<void>();
+  private unsubscribe$ = new Subject<void>();
 
   ngOnInit(): void {
     document.addEventListener("mousedown", (e) => {
@@ -24,7 +24,7 @@ export class ChordproEditorComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.unsubscribe.next();
+    this.unsubscribe$.next();
   }
 
   listenEditorChanges(): void {
@@ -41,6 +41,6 @@ export class ChordproEditorComponent implements OnInit, OnDestroy {
       }
     });
     observer.observe(targetNode, config);
-    this.unsubscribe.subscribe(() => observer.disconnect());
+    this.unsubscribe$.subscribe(() => observer.disconnect());
   }
 }

@@ -31,32 +31,32 @@ export class HeaderActionsBarComponent implements OnInit, OnDestroy {
   hasEditorUndo = false;
   hasEditorRedo = false;
 
-  private readonly unsubscribe = new Subject<void>();
+  private readonly unsubscribe$ = new Subject<void>();
 
   ngOnInit(): void {
     this.appContextService
       .getIsEditing$()
-      .pipe(takeUntil(this.unsubscribe))
+      .pipe(takeUntil(this.unsubscribe$))
       .subscribe((isEditing) => (this.isEditing = isEditing));
 
     this.chordproService
       .getAreLyricsDisplayed$()
-      .pipe(takeUntil(this.unsubscribe))
+      .pipe(takeUntil(this.unsubscribe$))
       .subscribe((areLyricsDisplayed) => (this.areLyricsDisplayed = areLyricsDisplayed));
 
     this.chordproService
       .getHasEditorUndo$()
-      .pipe(takeUntil(this.unsubscribe))
+      .pipe(takeUntil(this.unsubscribe$))
       .subscribe((hasEditorUndo) => (this.hasEditorUndo = hasEditorUndo));
 
     this.chordproService
       .getHasEditorRedo$()
-      .pipe(takeUntil(this.unsubscribe))
+      .pipe(takeUntil(this.unsubscribe$))
       .subscribe((hasEditorRedo) => (this.hasEditorRedo = hasEditorRedo));
   }
 
   ngOnDestroy(): void {
-    this.unsubscribe.next();
+    this.unsubscribe$.next();
   }
 
   async onButtonUndoClicked(): Promise<void> {
