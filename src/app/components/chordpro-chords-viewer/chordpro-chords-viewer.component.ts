@@ -42,6 +42,6 @@ export class ChordproChordsViewerComponent implements OnInit, OnDestroy {
   }
 
   onDiagramChordClicked(chord: Chord): void {
-    this.chordproService.addChord(chord.title ?? "");
+    this.chordproService.insertChord(chord.title ?? "");
   }
 }

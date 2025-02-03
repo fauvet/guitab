@@ -24,11 +24,15 @@ export class FooterActionsBarComponent implements OnInit {
       .subscribe((isRemovableChordEnabled) => (this.isRemovableChordEnabled = isRemovableChordEnabled));
   }
 
-  onButtonRemoveChordClicked() {
+  onButtonInsertSpaceClicked(): void {
+    this.chordproService.insertUnsecableSpace();
+  }
+
+  onButtonRemoveChordClicked(): void {
     this.chordproService.removeChord();
   }
 
-  onButtonInsertChordClicked() {
+  onButtonInsertChordClicked(): void {
     this.dialog
       .open(DialogSelectChordComponent, {
         data: {},
@@ -37,7 +41,7 @@ export class FooterActionsBarComponent implements OnInit {
       .subscribe(() => {});
   }
 
-  onButtonDefineChordClicked() {
+  onButtonDefineChordClicked(): void {
     throw new Error("Method not implemented.");
   }
 }

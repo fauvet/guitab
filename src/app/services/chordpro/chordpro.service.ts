@@ -215,18 +215,13 @@ export class ChordproService {
     this.editor.clearSelection();
   }
 
-  addChord(chordName: string): void {
-    const chordproCaretPositionIndex = this.getChordproCaretPositionIndex();
-    const chordproContent = this.getChordproContent();
-    const trueCaretPositionIndex = Math.min(chordproContent.length, chordproCaretPositionIndex);
-    const newText = `[${chordName}]`;
-    const newCursorPosition = structuredClone(this.editor.getCursorPosition());
-    newCursorPosition.column += newText.length;
-    const newChordproContent =
-      chordproContent.slice(0, trueCaretPositionIndex) + newText + chordproContent.slice(trueCaretPositionIndex);
+  insertUnsecableSpace(): void {
+    this.insertContentAtCurrentCaret(" ");
+  }
 
-    this.setChordproContent(newChordproContent);
-    this.editor.moveCursorToPosition(newCursorPosition);
+  insertChord(chordName: string): void {
+    const newText = `[${chordName}]`;
+    this.insertContentAtCurrentCaret(newText);
   }
 
   removeChord(): void {
@@ -286,5 +281,18 @@ export class ChordproService {
     this.editor.getSession().getUndoManager().reset();
     this.setEditorUndo(false);
     this.setEditorRedo(false);
+  }
+
+  private insertContentAtCurrentCaret(content: string): void {
+    const chordproCaretPositionIndex = this.getChordproCaretPositionIndex();
+    const chordproContent = this.getChordproContent();
+    const trueCaretPositionIndex = Math.min(chordproContent.length, chordproCaretPositionIndex);
+    const newCursorPosition = structuredClone(this.editor.getCursorPosition());
+    newCursorPosition.column += content.length;
+    const newChordproContent =
+      chordproContent.slice(0, trueCaretPositionIndex) + content + chordproContent.slice(trueCaretPositionIndex);
+
+    this.setChordproContent(newChordproContent);
+    this.editor.moveCursorToPosition(newCursorPosition);
   }
 }

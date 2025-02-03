@@ -1,7 +1,13 @@
 <button
+  aria-label="Insert insecable space"
+  title="Insert insecable space"
+  mat-icon-button
+  (click)="onButtonInsertSpaceClicked()">
+  <mat-icon>space_bar</mat-icon>
+</button>
+<button
   aria-label="Remove chord"
   title="Remove chord"
-  #buttonRemoveChord
   mat-icon-button
   [disabled]="!isRemovableChordEnabled"
   (click)="onButtonRemoveChordClicked()">
@@ -10,7 +16,6 @@
 <button
   aria-label="Insert chord"
   title="Insert chord"
-  #buttonInsertChord
   mat-icon-button
   (click)="onButtonInsertChordClicked()">
   <mat-icon svgIcon="variable_insert"></mat-icon>
@@ -19,7 +24,6 @@
   aria-label="Define chord"
   disabled
   title="Define chord"
-  #buttonDefineChord
   mat-icon-button
   (click)="onButtonDefineChordClicked()">
   <mat-icon svgIcon="variable_add"></mat-icon>
