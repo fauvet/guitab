@@ -7,7 +7,7 @@
 
 {comment: Play the first verse in finger picking}
 
-{sot}
+{start_of_tab}
 .| C               | Em              | G               || F               |
 e|-----------------|-----------------|-------3---------||-----------------|
 B|-------1---------|-----------------|-----3---3-------||-----------------|
@@ -15,67 +15,67 @@ G|-----0---0-------|-------0---------|---0-------0---0-||-------2---------|
 D|---2-------2---2-|-----2---2-------|-----------------||-----3---3-------|
 A|-3-----------3---|---2-------2---2-|-----------------||---3-------3---3-|
 E|-----------------|-0-----------0---|-3-----------3---||-1-----------1---|
-{eot}
+{end_of_tab}
 
 {comment: Verse & Bridge: DDDDDDDD (accent on time 3, 6 and 8)}
 
 {comment: Chorus: D DUDUD DUDUD DU}
 
-{sov}
+{start_of_verse}
 [C]My song is [Em]love [G]
 [C]Love to the [Em]loveless shown[G]
 [C]And it goes [Em]on[G]
 You don't [F]have to [C]be a[G]lone
-{eov}
+{end_of_verse}
 
-{sov}
+{start_of_verse}
 [C]Your heavy [Em]heart[G]
 [C]Is made of [Em]stone[G][F]
 [C]And it's so [Em]hard to [G]see clearly
 You don't [F]have to [C]be on your [G]own
 You don't [F]have to [C]be on your [G]own
-{eov}
+{end_of_verse}
 
-{soc}
+{start_of_chorus}
 [Dm]And I'm not gonna [C]take it [G]back
 [Dm]And I'm not gonna say I [C]don't mean [G]that
 [Dm]You're the target that I'm [C]aiming [G]at
 And I'll [F]get that [C]message [G]home
-{eoc}
+{end_of_chorus}
 
-{sov}
+{start_of_verse}
 [C]My song is [Em]love[G]
 [C]My song is [Em]love, un[G]known[F]
 [C]But I'm on [Em]fire for [G]you, clearly
 You don't [F]have to [C]be a[G]lone
 You don't [F]have to be [C]on your [G]own
-{eov}
+{end_of_verse}
 
-{soc}
+{start_of_chorus}
 [Dm]And I'm not gonna [C]take it [G]back
 [Dm]And I'm not gonna say I [C]don't mean [G]that
 [Dm]You're the target that I'm [C]aiming [G]at
 But I'm [F]nothing [C]on my [G]own
 Got to [F]get that [C]message [G]home
-{eoc}
+{end_of_chorus}
 
-{sob: Bridge 1}
+{start_of_bridge: Bridge 1}
 {comment: x2}
 [F][C][G][G]
-{eob}
+{end_of_bridge}
 
-{soc}
+{start_of_chorus}
 [Dm]And I'm not gonna [C]stand and [G]wait
 [Dm]Not gonna leave it until it's [C]much too [G]late
 [Dm]On a platform I'm gonna [C]stand and [G]say
 That I'm [F]nothing [C]on my [G]own
 And I love [F]you, [C]please come [G]home
-{eoc}
+{end_of_chorus}
 
-{sob: Brigde 2}
+{start_of_bridge: Brigde 2}
 {comment: x2 (play these softly)}
 [F][C][G][Am]
-{eob}
+{end_of_bridge}
 
 My [F]song is [C]love, is [G]love [Am]unknown
 And I've [F]got to [C]get that [G]message [C]home

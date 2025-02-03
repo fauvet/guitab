@@ -215,6 +215,22 @@ export class ChordproService {
     this.editor.clearSelection();
   }
 
+  insertDirectiveTab(): void {
+    this.insertDirective("tab");
+  }
+
+  insertDirectiveVerse(): void {
+    this.insertDirective("verse");
+  }
+
+  insertDirectiveChorus(): void {
+    this.insertDirective("chorus");
+  }
+
+  insertDirectiveBridge(): void {
+    this.insertDirective("bridge");
+  }
+
   insertUnsecableSpace(): void {
     this.insertContentAtCurrentCaret(" ");
   }
@@ -294,5 +310,29 @@ export class ChordproService {
 
     this.setChordproContent(newChordproContent);
     this.editor.moveCursorToPosition(newCursorPosition);
+  }
+
+  private insertDirective(directiveName: string) {
+    const directiveStart = `{start_of_${directiveName}}\n`;
+    const directiveEnd = `\n{end_of_${directiveName}}`;
+    const selectionRange = this.editor.getSelectionRange();
+
+    if (selectionRange.isEmpty()) {
+      const newCursorPosition = structuredClone(this.editor.getCursorPosition());
+      newCursorPosition.row += 1;
+      newCursorPosition.column = 0;
+      this.insertContentAtCurrentCaret(directiveStart + directiveEnd);
+      this.editor.moveCursorToPosition(newCursorPosition);
+      return;
+    }
+
+    const selectionRangeStart = selectionRange.start;
+    this.editor.moveCursorToPosition(selectionRangeStart);
+    this.insertContentAtCurrentCaret(directiveStart);
+
+    const selectionRangeEnd = selectionRange.end;
+    selectionRangeEnd.row += 1;
+    this.editor.moveCursorToPosition(selectionRangeEnd);
+    this.insertContentAtCurrentCaret(directiveEnd);
   }
 }
