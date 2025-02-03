@@ -1,6 +1,6 @@
 <button
   aria-label="Remove chord"
-  matTooltip="Remove chord"
+  title="Remove chord"
   #buttonRemoveChord
   mat-icon-button
   [disabled]="!isRemovableChordEnabled"
@@ -9,7 +9,7 @@
 </button>
 <button
   aria-label="Insert chord"
-  matTooltip="Insert chord"
+  title="Insert chord"
   #buttonInsertChord
   mat-icon-button
   (click)="onButtonInsertChordClicked()">
@@ -18,7 +18,7 @@
 <button
   aria-label="Define chord"
   disabled
-  matTooltip="Define chord"
+  title="Define chord"
   #buttonDefineChord
   mat-icon-button
   (click)="onButtonDefineChordClicked()">

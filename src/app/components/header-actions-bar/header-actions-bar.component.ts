@@ -5,7 +5,6 @@ import { MatButtonToggleChange, MatButtonToggleModule } from "@angular/material/
 import { MatButtonModule } from "@angular/material/button";
 import { ZoomService } from "../../services/zoom/zoom.service";
 import { Subject, takeUntil } from "rxjs";
-import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatBottomSheet, MatBottomSheetModule } from "@angular/material/bottom-sheet";
 import { ChordproService } from "../../services/chordpro/chordpro.service";
 import { BottomSheetToolsComponent } from "../bottom-sheet-tools/bottom-sheet-tools.component";
@@ -15,7 +14,7 @@ import { KeyboardShortcutService } from "../../services/keyboard-shortcut/keyboa
 @Component({
   selector: "app-header-actions-bar",
   standalone: true,
-  imports: [MatButtonModule, MatIconModule, MatButtonToggleModule, MatTooltipModule, MatBottomSheetModule],
+  imports: [MatButtonModule, MatIconModule, MatButtonToggleModule, MatBottomSheetModule],
   templateUrl: "./header-actions-bar.component.html",
   styleUrl: "./header-actions-bar.component.css",
 })

@@ -1,6 +1,6 @@
 <button
   aria-label="Undo"
-  matTooltip="Undo (Ctrl+Z)"
+  title="Undo (Ctrl+Z)"
   mat-icon-button
   [disabled]="!hasEditorUndo"
   (click)="onButtonUndoClicked()">
@@ -8,7 +8,7 @@
 </button>
 <button
   aria-label="Redo"
-  matTooltip="Redo (Ctrl+Y)"
+  title="Redo (Ctrl+Y)"
   mat-icon-button
   [disabled]="!hasEditorRedo"
   (click)="onButtonRedoClicked()">
@@ -16,14 +16,14 @@
 </button>
 <button
   aria-label="File..."
-  matTooltip="Open file menu..."
+  title="Open file menu..."
   mat-icon-button
   (click)="onButtonManageFileClicked()">
   <mat-icon svgIcon="folder_open"></mat-icon>
 </button>
 <button
   aria-label="Tools..."
-  matTooltip="Open tools menu..."
+  title="Open tools menu..."
   mat-icon-button
   (click)="onButtonToolsClicked()">
   <mat-icon fontSet="material-icons-outlined">extension</mat-icon>
@@ -34,7 +34,7 @@
   multiple>
   <mat-button-toggle
     value="show-hide-lyrics"
-    [matTooltip]="areLyricsDisplayed ? 'Hide lyrics' : 'Show lyrics'"
+    [title]="areLyricsDisplayed ? 'Hide lyrics' : 'Show lyrics'"
     [checked]="areLyricsDisplayed"
     (change)="onButtonToggleHideLyricsClicked($event)">
     <mat-icon [fontSet]="areLyricsDisplayed ? '' : 'material-icons-outlined'">lyrics</mat-icon>
@@ -43,7 +43,7 @@
 <button
   class="mobile-only"
   aria-label="Preview"
-  matTooltip="Preview"
+  title="Preview"
   mat-icon-button
   [disabled]="!isEditing"
   (click)="onButtonPreviewClicked()">
@@ -52,7 +52,7 @@
 <button
   class="mobile-only"
   aria-label="Edit"
-  matTooltip="Edit"
+  title="Edit"
   mat-icon-button
   [disabled]="isEditing"
   (click)="onButtonEditClicked()">
@@ -61,21 +61,21 @@
 <div class="separator"></div>
 <button
   aria-label="Reset zoom"
-  matTooltip="Reset zoom"
+  title="Reset zoom"
   mat-icon-button
   (click)="onButtonResetZoomClicked()">
   <mat-icon>search_off</mat-icon>
 </button>
 <button
   aria-label="Zoom out"
-  matTooltip="Zoom out"
+  title="Zoom out"
   mat-icon-button
   (click)="onButtonZoomOutClicked()">
   <mat-icon>zoom_out</mat-icon>
 </button>
 <button
   aria-label="Zoom in"
-  matTooltip="Zoom in"
+  title="Zoom in"
   mat-icon-button
   (click)="onButtonZoomInClicked()">
   <mat-icon>zoom_in</mat-icon>
