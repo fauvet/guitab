@@ -22,7 +22,7 @@ export class ChordproUtil {
   static findCustomVariant(chordproContent: string, chordName: string): Variant | null {
     const escapedChordName = StringUtil.escapeRegExp(chordName);
     const regex = new RegExp(
-      `\\{define\\s*:\\s*${escapedChordName} base-fret (\\d) frets (.+?)( fingers (.+?))?\\s*\\}`,
+      `\\{define\\s*:\\s*${escapedChordName} base-fret (\\d+) frets (.+?)( fingers (.+?))?\\s*\\}`,
     );
     const match = chordproContent.match(regex);
     if (!match) return null;
