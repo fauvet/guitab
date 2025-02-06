@@ -215,6 +215,10 @@ export class ChordproService {
     this.editor.clearSelection();
   }
 
+  insertDirectiveComment(): void {
+    this.insertDirective("comment", false);
+  }
+
   insertDirectiveTab(): void {
     this.insertDirective("tab");
   }
@@ -312,15 +316,16 @@ export class ChordproService {
     this.editor.moveCursorToPosition(newCursorPosition);
   }
 
-  private insertDirective(directiveName: string) {
-    const directiveStart = `{start_of_${directiveName}}\n`;
-    const directiveEnd = `\n{end_of_${directiveName}}`;
+  private insertDirective(directiveName: string, isPair = true) {
+    const directiveStart = isPair ? `{start_of_${directiveName}}\n` : `{${directiveName}: `;
+    const directiveEnd = isPair ? `\n{end_of_${directiveName}}` : "}";
     const selectionRange = this.editor.getSelectionRange();
 
     if (selectionRange.isEmpty()) {
       const newCursorPosition = structuredClone(this.editor.getCursorPosition());
-      newCursorPosition.row += 1;
-      newCursorPosition.column = 0;
+      newCursorPosition.row += isPair ? 1 : 0;
+      newCursorPosition.column = isPair ? 0 : newCursorPosition.column + directiveStart.length;
+      console.debug({ newCursorPosition });
       this.insertContentAtCurrentCaret(directiveStart + directiveEnd);
       this.editor.moveCursorToPosition(newCursorPosition);
       return;
@@ -331,8 +336,16 @@ export class ChordproService {
     this.insertContentAtCurrentCaret(directiveStart);
 
     const selectionRangeEnd = selectionRange.end;
-    selectionRangeEnd.row += 1;
+    selectionRangeEnd.row += isPair ? 1 : 0;
+    selectionRangeEnd.column = isPair ? selectionRangeEnd.column : Number.MAX_SAFE_INTEGER;
     this.editor.moveCursorToPosition(selectionRangeEnd);
     this.insertContentAtCurrentCaret(directiveEnd);
+
+    if (isPair) return;
+
+    const newCursorPosition = structuredClone(this.editor.getCursorPosition());
+    newCursorPosition.column -= 1;
+    console.log({ newCursorPosition });
+    this.editor.moveCursorToPosition(newCursorPosition);
   }
 }

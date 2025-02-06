@@ -1,6 +1,11 @@
 <mat-list>
   <mat-list-item
     matRipple
+    (click)="onButtonInsertCommentClicked()">
+    <div matListItemTitle>{{ "Insert {comment}" }}</div>
+  </mat-list-item>
+  <mat-list-item
+    matRipple
     (click)="onButtonInsertTabClicked()">
     <div matListItemTitle>{{ "Insert {tab}" }}</div>
   </mat-list-item>
