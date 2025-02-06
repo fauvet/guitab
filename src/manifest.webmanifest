@@ -18,7 +18,7 @@
     {
       "action": "index.html",
       "accept": {
-        "text/plain": [".cho", ".crd", ".chopro", ".chord", ".pro"]
+        "*/*": [".cho", ".crd", ".chopro", ".chord", ".pro"]
       }
     }
   ]

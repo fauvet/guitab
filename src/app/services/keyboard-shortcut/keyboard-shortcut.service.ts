@@ -67,7 +67,7 @@ export class KeyboardShortcutService {
           {
             description: "ChordPro",
             accept: {
-              "text/plain": ChordproUtil.EXTENSIONS,
+              "*/*": ChordproUtil.EXTENSIONS,
             },
           },
         ],
