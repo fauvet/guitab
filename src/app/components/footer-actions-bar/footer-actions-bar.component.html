@@ -1,37 +1,47 @@
-<button
-  aria-label="Insert directive"
-  title="Insert directive"
-  mat-icon-button
-  (click)="onButtonInsertDirectiveClicked()">
-  <mat-icon>data_object</mat-icon>
-</button>
-<button
-  aria-label="Insert insecable space"
-  title="Insert insecable space"
-  mat-icon-button
-  (click)="onButtonInsertSpaceClicked()">
-  <mat-icon>space_bar</mat-icon>
-</button>
-<button
-  aria-label="Remove chord"
-  title="Remove chord"
-  mat-icon-button
-  [disabled]="!isRemovableChordEnabled"
-  (click)="onButtonRemoveChordClicked()">
-  <mat-icon svgIcon="variable_remove"></mat-icon>
-</button>
-<button
-  aria-label="Insert chord"
-  title="Insert chord"
-  mat-icon-button
-  (click)="onButtonInsertChordClicked()">
-  <mat-icon svgIcon="variable_insert"></mat-icon>
-</button>
-<button
-  aria-label="Define chord"
-  disabled
-  title="Define chord"
-  mat-icon-button
-  (click)="onButtonDefineChordClicked()">
-  <mat-icon svgIcon="variable_add"></mat-icon>
-</button>
+<div class="container-edition">
+  <button
+    aria-label="Insert directive"
+    title="Insert directive"
+    mat-icon-button
+    (click)="onButtonInsertDirectiveClicked()">
+    <mat-icon>data_object</mat-icon>
+  </button>
+  <button
+    aria-label="Insert insecable space"
+    title="Insert insecable space"
+    mat-icon-button
+    (click)="onButtonInsertSpaceClicked()">
+    <mat-icon>space_bar</mat-icon>
+  </button>
+  <button
+    aria-label="Remove chord"
+    title="Remove chord"
+    mat-icon-button
+    [disabled]="!isRemovableChordEnabled"
+    (click)="onButtonRemoveChordClicked()">
+    <mat-icon svgIcon="variable_remove"></mat-icon>
+  </button>
+  <button
+    aria-label="Insert chord"
+    title="Insert chord"
+    mat-icon-button
+    (click)="onButtonInsertChordClicked()">
+    <mat-icon svgIcon="variable_insert"></mat-icon>
+  </button>
+  <button
+    aria-label="Define chord"
+    disabled
+    title="Define chord"
+    mat-icon-button
+    (click)="onButtonDefineChordClicked()">
+    <mat-icon svgIcon="variable_add"></mat-icon>
+  </button>
+</div>
+<div class="container-play">
+  @if (youTubeUrl) {
+    <iframe
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen
+      [src]="sanitizeYouTubeUrl()"></iframe>
+  }
+</div>

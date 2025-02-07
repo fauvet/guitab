@@ -2,6 +2,7 @@
 {artist: Coldplay}
 {tempo: 117}
 {capo: 1}
+{meta:youtube https://youtu.be/1bDz2MZWKlM}
 
 {define: G base-fret 1 frets 3 2 0 0 3 3 fingers 2 1 x x 3 4}
 

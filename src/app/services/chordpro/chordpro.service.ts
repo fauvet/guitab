@@ -22,6 +22,7 @@ export class ChordproService {
   private readonly appContextService = inject(AppContextService);
 
   private readonly chordproContent$ = new BehaviorSubject<string>("");
+  private readonly youTubeUrl$ = new BehaviorSubject<string>("");
   private readonly chordproCaretPositionIndex$ = new BehaviorSubject<number>(0);
   private readonly chordproSaveState$ = new BehaviorSubject<ChordproSaveState>(this.buildChordproSaveState());
   private readonly areLyricsDisplayed$ = new BehaviorSubject<boolean>(true);
@@ -49,6 +50,9 @@ export class ChordproService {
     if (!this.editor) return;
 
     this.updateHistoryState();
+    const youTubeUrl = this.parseMetaYouTube(chordproContent);
+    this.setYouTubeUrl(youTubeUrl);
+
     const editorContent = this.getEditorContent();
     if (editorContent == chordproContent) return;
 
@@ -56,6 +60,22 @@ export class ChordproService {
     this.editor.setValue(chordproContent);
     this.editor.clearSelection();
     this.editor.moveCursorToPosition(cursorPosition);
+  }
+
+  private parseMetaYouTube(chordproContent: string): string {
+    const metaYouTubePrefix = "{meta:youtube ";
+    const metaYouTubeIndex = chordproContent.indexOf(metaYouTubePrefix);
+    if (metaYouTubeIndex === -1) return "";
+
+    const endOfLineFound = chordproContent.indexOf("\n", metaYouTubeIndex);
+    const endOfLineIndex = endOfLineFound === -1 ? chordproContent.length : endOfLineFound;
+    const line = chordproContent.slice(metaYouTubeIndex, endOfLineIndex).trim();
+
+    const metaYouTubeSuffix = "}";
+    if (!line.endsWith(metaYouTubeSuffix)) return "";
+
+    const youTubeUrl = line.replace(metaYouTubePrefix, "").replace(metaYouTubeSuffix, "").trim();
+    return youTubeUrl;
   }
 
   private buildChordproSaveState(): ChordproSaveState {
@@ -75,6 +95,14 @@ export class ChordproService {
 
   getChordproContent(): string {
     return this.chordproContent$.getValue();
+  }
+
+  getYouTubeUrl$(): Observable<string> {
+    return this.youTubeUrl$.asObservable();
+  }
+
+  getYouTubeUrl(): string {
+    return this.youTubeUrl$.getValue();
   }
 
   getChordproCaretPositionIndex$(): Observable<number> {
@@ -154,6 +182,11 @@ export class ChordproService {
   private setChordproContent(chordproContent: string): void {
     if (chordproContent == this.getChordproContent()) return;
     this.chordproContent$.next(chordproContent);
+  }
+
+  private setYouTubeUrl(youTubeUrl: string): void {
+    if (youTubeUrl == this.getYouTubeUrl()) return;
+    this.youTubeUrl$.next(youTubeUrl);
   }
 
   private setChordproSaveState(chordproSaveState: ChordproSaveState): void {
