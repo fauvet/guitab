@@ -37,8 +37,6 @@ export class AppComponent implements OnInit {
   @HostBinding("class.is-editing")
   isEditing = false;
 
-  title = "guitab";
-
   @ViewChild("containerChordpro") containerChordpro: undefined | ElementRef<HTMLDivElement>;
 
   constructor() {
