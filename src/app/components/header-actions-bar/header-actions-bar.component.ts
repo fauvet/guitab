@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { Component, inject, OnDestroy, OnInit } from "@angular/core";
 import { MatIconModule } from "@angular/material/icon";
 import { AppContextService } from "../../services/app-context/app-context.service";
 import { MatButtonToggleChange, MatButtonToggleModule } from "@angular/material/button-toggle";
@@ -67,11 +67,23 @@ export class HeaderActionsBarComponent implements OnInit, OnDestroy {
   }
 
   async onButtonManageFileClicked(): Promise<void> {
-    this.bottomSheet.open(BottomSheetManageFileComponent);
+    const body = document.getElementsByTagName("body")[0];
+    body.classList.add("js-is-top-sheet-enabled");
+
+    this.bottomSheet
+      .open(BottomSheetManageFileComponent)
+      .afterDismissed()
+      .subscribe(() => body.classList.remove("js-is-top-sheet-enabled"));
   }
 
   async onButtonToolsClicked(): Promise<void> {
-    this.bottomSheet.open(BottomSheetToolsComponent);
+    const body = document.getElementsByTagName("body")[0];
+    body.classList.add("js-is-top-sheet-enabled");
+
+    this.bottomSheet
+      .open(BottomSheetToolsComponent)
+      .afterDismissed()
+      .subscribe(() => body.classList.remove("js-is-top-sheet-enabled"));
   }
 
   onButtonToggleHideLyricsClicked(event: MatButtonToggleChange): void {
