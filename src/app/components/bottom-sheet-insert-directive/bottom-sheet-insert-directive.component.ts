@@ -16,6 +16,11 @@ export class BottomSheetInsertDirectiveComponent {
   private chordproService = inject(ChordproService);
   private bottomSheetRef = inject(MatBottomSheetRef<BottomSheetInsertDirectiveComponent>);
 
+  onButtonInsertMetaYouTubeClicked(): void {
+    this.chordproService.insertDirectiveMetaYouTube();
+    this.bottomSheetRef.dismiss();
+  }
+
   onButtonInsertCommentClicked(): void {
     this.chordproService.insertDirectiveComment();
     this.bottomSheetRef.dismiss();

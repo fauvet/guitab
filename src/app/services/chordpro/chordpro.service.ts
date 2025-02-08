@@ -248,8 +248,12 @@ export class ChordproService {
     this.editor.clearSelection();
   }
 
+  insertDirectiveMetaYouTube(): void {
+    this.insertDirective("meta:youtube", false);
+  }
+
   insertDirectiveComment(): void {
-    this.insertDirective("comment", false);
+    this.insertDirective("comment:", false);
   }
 
   insertDirectiveTab(): void {
@@ -350,7 +354,7 @@ export class ChordproService {
   }
 
   private insertDirective(directiveName: string, isPair = true) {
-    const directiveStart = isPair ? `{start_of_${directiveName}}\n` : `{${directiveName}: `;
+    const directiveStart = isPair ? `{start_of_${directiveName}}\n` : `{${directiveName} `;
     const directiveEnd = isPair ? `\n{end_of_${directiveName}}` : "}";
     const selectionRange = this.editor.getSelectionRange();
 

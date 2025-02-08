@@ -1,6 +1,11 @@
 <mat-list>
   <mat-list-item
     matRipple
+    (click)="onButtonInsertMetaYouTubeClicked()">
+    <div matListItemTitle>{{ "Insert {meta:youtube}" }}</div>
+  </mat-list-item>
+  <mat-list-item
+    matRipple
     (click)="onButtonInsertCommentClicked()">
     <div matListItemTitle>{{ "Insert {comment}" }}</div>
   </mat-list-item>
