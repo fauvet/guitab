@@ -45,7 +45,7 @@ export class FooterActionsBarComponent implements OnInit {
 
   private sanitizeYouTubeUrl(youTubeUrl: string): SafeResourceUrl | null {
     if (!youTubeUrl) return null;
-    const embedYouTubeUrl = youTubeUrl.replace("youtu.be/", "youtube.com/embed/").replace("/watch?v=", "embed/");
+    const embedYouTubeUrl = youTubeUrl.replace("youtu.be/", "youtube.com/embed/").replace("/watch?v=", "/embed/");
     return this.domSanitizer.bypassSecurityTrustResourceUrl(embedYouTubeUrl);
   }
 
