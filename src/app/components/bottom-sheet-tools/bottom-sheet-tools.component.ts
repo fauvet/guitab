@@ -38,10 +38,17 @@ export class BottomSheetToolsComponent {
   }
 
   onItemLyricsOvhClicked(): void {
+    this.bottomSheetRef.dismiss();
     this.openDialogExternalTool("https://lyrics.ovh");
   }
 
   onItemSongBpmComClicked(): void {
+    this.bottomSheetRef.dismiss();
     this.openDialogExternalTool("https://songbpm.com");
+  }
+
+  onItemYouTubeComClicked(): void {
+    this.bottomSheetRef.dismiss();
+    window.open("https://www.youtube.com", "_blank");
   }
 }

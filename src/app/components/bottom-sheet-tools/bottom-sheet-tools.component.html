@@ -21,7 +21,16 @@
     <img
       matListItemIcon
       src="https://songbpm.com/favicon.svg" />
-    <div matListItemTitle>{{ "Find temo" }}</div>
+    <div matListItemTitle>{{ "Find tempo" }}</div>
     <div matListItemLine>{{ "songbpm.com" }}</div>
+  </mat-list-item>
+  <mat-list-item
+    matRipple
+    (click)="onItemYouTubeComClicked()">
+    <img
+      matListItemIcon
+      src="https://www.youtube.com/s/desktop/eb0437e6/img/logos/favicon_96x96.png" />
+    <div matListItemTitle>{{ "Search YouTube URL" }}</div>
+    <div matListItemLine>{{ "youtube.com (opens a new tab)" }}</div>
   </mat-list-item>
 </mat-list>
