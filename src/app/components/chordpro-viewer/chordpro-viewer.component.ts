@@ -1,4 +1,13 @@
-import { Component, ElementRef, HostBinding, inject, OnDestroy, OnInit, Renderer2 } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  HostBinding,
+  inject,
+  OnDestroy,
+  OnInit,
+  Renderer2,
+} from "@angular/core";
 import * as ChordProjectParser from "chordproject-parser";
 import { Subject, takeUntil } from "rxjs";
 import { MatDialog } from "@angular/material/dialog";
@@ -11,6 +20,7 @@ import { ChordproService } from "../../services/chordpro/chordpro.service";
   imports: [],
   templateUrl: "./chordpro-viewer.component.html",
   styleUrl: "./chordpro-viewer.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChordproViewerComponent implements OnInit, OnDestroy {
   private readonly elementRef = inject(ElementRef);

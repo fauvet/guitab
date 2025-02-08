@@ -1,4 +1,4 @@
-import { Component, inject } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { MatBottomSheetRef } from "@angular/material/bottom-sheet";
 import { MatRipple } from "@angular/material/core";
 import { MatListModule } from "@angular/material/list";
@@ -10,6 +10,7 @@ import { ChordproService } from "../../services/chordpro/chordpro.service";
   imports: [MatListModule, MatRipple],
   templateUrl: "./bottom-sheet-insert-directive.component.html",
   styleUrl: "./bottom-sheet-insert-directive.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BottomSheetInsertDirectiveComponent {
   private chordproService = inject(ChordproService);

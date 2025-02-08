@@ -2,7 +2,7 @@
   aria-label="Undo"
   title="Undo (Ctrl+Z)"
   mat-icon-button
-  [disabled]="!hasEditorUndo"
+  [disabled]="!(hasEditorUndo$ | async)"
   (click)="onButtonUndoClicked()">
   <mat-icon svgIcon="undo"></mat-icon>
 </button>
@@ -10,7 +10,7 @@
   aria-label="Redo"
   title="Redo (Ctrl+Y)"
   mat-icon-button
-  [disabled]="!hasEditorRedo"
+  [disabled]="!(hasEditorRedo$ | async)"
   (click)="onButtonRedoClicked()">
   <mat-icon svgIcon="redo"></mat-icon>
 </button>
@@ -34,10 +34,10 @@
   multiple>
   <mat-button-toggle
     value="show-hide-lyrics"
-    [title]="areLyricsDisplayed ? 'Hide lyrics' : 'Show lyrics'"
-    [checked]="areLyricsDisplayed"
+    [title]="(areLyricsDisplayed$ | async) ? 'Hide lyrics' : 'Show lyrics'"
+    [checked]="areLyricsDisplayed$ | async"
     (change)="onButtonToggleHideLyricsClicked($event)">
-    <mat-icon [fontSet]="areLyricsDisplayed ? '' : 'material-icons-outlined'">lyrics</mat-icon>
+    <mat-icon [fontSet]="(areLyricsDisplayed$ | async) ? '' : 'material-icons-outlined'">lyrics</mat-icon>
   </mat-button-toggle>
 </mat-button-toggle-group>
 <button
@@ -45,7 +45,7 @@
   aria-label="Preview"
   title="Preview"
   mat-icon-button
-  [disabled]="!isEditing"
+  [disabled]="!(isEditing$ | async)"
   (click)="onButtonPreviewClicked()">
   <mat-icon>preview</mat-icon>
 </button>
@@ -54,7 +54,7 @@
   aria-label="Edit"
   title="Edit"
   mat-icon-button
-  [disabled]="isEditing"
+  [disabled]="isEditing$ | async"
   (click)="onButtonEditClicked()">
   <mat-icon>edit</mat-icon>
 </button>

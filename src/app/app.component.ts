@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostBinding, inject, OnInit, ViewChild } from "@angular/core";
+import { ChangeDetectionStrategy, Component, ElementRef, HostBinding, inject, OnInit, ViewChild } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
 import { ChordproEditorComponent } from "./components/chordpro-editor/chordpro-editor.component";
 import { ChordproViewerComponent } from "./components/chordpro-viewer/chordpro-viewer.component";
@@ -27,6 +27,7 @@ import { KeyboardShortcutService } from "./services/keyboard-shortcut/keyboard-s
     HeaderActionsBarComponent,
     FooterActionsBarComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent implements OnInit {
   private readonly appContextService = inject(AppContextService);

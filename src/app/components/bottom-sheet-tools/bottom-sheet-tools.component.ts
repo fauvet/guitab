@@ -1,4 +1,4 @@
-import { Component, inject } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { MatBottomSheetRef } from "@angular/material/bottom-sheet";
 import { MatListModule } from "@angular/material/list";
 import { MatDialog } from "@angular/material/dialog";
@@ -12,6 +12,7 @@ import { MatRipple } from "@angular/material/core";
   imports: [MatListModule, MatIcon, MatRipple],
   templateUrl: "./bottom-sheet-tools.component.html",
   styleUrl: "./bottom-sheet-tools.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BottomSheetToolsComponent {
   private bottomSheetRef = inject(MatBottomSheetRef<BottomSheetToolsComponent>);

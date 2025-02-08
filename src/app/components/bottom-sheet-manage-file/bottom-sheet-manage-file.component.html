@@ -27,8 +27,8 @@
       (change)="onButtonOpenFileClicked($event)" />
   </mat-list-item>
   <mat-list-item
-    [attr.matRipple]="isSaveExistingFileEnabled"
-    [class.disabled]="!isSaveExistingFileEnabled"
+    [attr.matRipple]="isSaveExistingFileEnabled$ | async"
+    [class.disabled]="!(isSaveExistingFileEnabled$ | async)"
     (click)="onButtonSaveFileClicked()">
     <mat-icon
       matListItemIcon

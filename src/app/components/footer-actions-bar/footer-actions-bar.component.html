@@ -17,7 +17,7 @@
     aria-label="Remove chord"
     title="Remove chord"
     mat-icon-button
-    [disabled]="!isRemovableChordEnabled"
+    [disabled]="!(isRemovableChordEnabled$ | async)"
     (click)="onButtonRemoveChordClicked()">
     <mat-icon svgIcon="variable_remove"></mat-icon>
   </button>
@@ -38,10 +38,10 @@
   </button>
 </div>
 <div class="container-play">
-  @if (youTubeUrl) {
+  @if (sanitizedYouTubeUrl$ | async) {
     <iframe
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
       allowfullscreen
-      [src]="sanitizeYouTubeUrl()"></iframe>
+      [src]="sanitizedYouTubeUrl$ | async"></iframe>
   }
 </div>

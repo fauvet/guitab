@@ -1,22 +1,24 @@
-import { Component, inject, OnDestroy, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit } from "@angular/core";
 import { MatIconModule } from "@angular/material/icon";
 import { AppContextService } from "../../services/app-context/app-context.service";
 import { MatButtonToggleChange, MatButtonToggleModule } from "@angular/material/button-toggle";
 import { MatButtonModule } from "@angular/material/button";
 import { ZoomService } from "../../services/zoom/zoom.service";
-import { Subject, takeUntil } from "rxjs";
+import { BehaviorSubject, Subject, takeUntil } from "rxjs";
 import { MatBottomSheet, MatBottomSheetModule } from "@angular/material/bottom-sheet";
 import { ChordproService } from "../../services/chordpro/chordpro.service";
 import { BottomSheetToolsComponent } from "../bottom-sheet-tools/bottom-sheet-tools.component";
 import { BottomSheetManageFileComponent } from "../bottom-sheet-manage-file/bottom-sheet-manage-file.component";
 import { KeyboardShortcutService } from "../../services/keyboard-shortcut/keyboard-shortcut.service";
+import { AsyncPipe } from "@angular/common";
 
 @Component({
   selector: "app-header-actions-bar",
   standalone: true,
-  imports: [MatButtonModule, MatIconModule, MatButtonToggleModule, MatBottomSheetModule],
+  imports: [MatButtonModule, MatIconModule, MatButtonToggleModule, MatBottomSheetModule, AsyncPipe],
   templateUrl: "./header-actions-bar.component.html",
   styleUrl: "./header-actions-bar.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HeaderActionsBarComponent implements OnInit, OnDestroy {
   private readonly appContextService = inject(AppContextService);
@@ -25,10 +27,10 @@ export class HeaderActionsBarComponent implements OnInit, OnDestroy {
   private readonly zoomService = inject(ZoomService);
   private readonly bottomSheet = inject(MatBottomSheet);
 
-  isEditing = false;
-  areLyricsDisplayed = false;
-  hasEditorUndo = false;
-  hasEditorRedo = false;
+  isEditing$ = new BehaviorSubject(false);
+  areLyricsDisplayed$ = new BehaviorSubject(false);
+  hasEditorUndo$ = new BehaviorSubject(false);
+  hasEditorRedo$ = new BehaviorSubject(false);
 
   private readonly unsubscribe$ = new Subject<void>();
 
@@ -36,22 +38,22 @@ export class HeaderActionsBarComponent implements OnInit, OnDestroy {
     this.appContextService
       .getIsEditing$()
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((isEditing) => (this.isEditing = isEditing));
+      .subscribe((isEditing) => this.isEditing$.next(isEditing));
 
     this.chordproService
       .getAreLyricsDisplayed$()
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((areLyricsDisplayed) => (this.areLyricsDisplayed = areLyricsDisplayed));
+      .subscribe((areLyricsDisplayed) => this.areLyricsDisplayed$.next(areLyricsDisplayed));
 
     this.chordproService
       .getHasEditorUndo$()
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((hasEditorUndo) => (this.hasEditorUndo = hasEditorUndo));
+      .subscribe((hasEditorUndo) => this.hasEditorUndo$.next(hasEditorUndo));
 
     this.chordproService
       .getHasEditorRedo$()
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((hasEditorRedo) => (this.hasEditorRedo = hasEditorRedo));
+      .subscribe((hasEditorRedo) => this.hasEditorRedo$.next(hasEditorRedo));
   }
 
   ngOnDestroy(): void {

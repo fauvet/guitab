@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit } from "@angular/core";
 import { Subject } from "rxjs";
 import { ChordproService } from "../../services/chordpro/chordpro.service";
 
@@ -8,6 +8,7 @@ import { ChordproService } from "../../services/chordpro/chordpro.service";
   imports: [],
   templateUrl: "./chordpro-editor.component.html",
   styleUrl: "./chordpro-editor.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChordproEditorComponent implements OnInit, OnDestroy {
   private readonly chordproService = inject(ChordproService);

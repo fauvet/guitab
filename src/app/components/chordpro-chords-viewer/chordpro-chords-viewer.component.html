@@ -1,4 +1,4 @@
-@for (chord of chords; track chord.title) {
+@for (chord of chords$ | async; track chord.title) {
   <button
     mat-button
     (click)="onDiagramChordClicked(chord)">
