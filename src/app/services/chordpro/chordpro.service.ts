@@ -362,7 +362,6 @@ export class ChordproService {
       const newCursorPosition = structuredClone(this.editor.getCursorPosition());
       newCursorPosition.row += isPair ? 1 : 0;
       newCursorPosition.column = isPair ? 0 : newCursorPosition.column + directiveStart.length;
-      console.debug({ newCursorPosition });
       this.insertContentAtCurrentCaret(directiveStart + directiveEnd);
       this.editor.moveCursorToPosition(newCursorPosition);
       return;
@@ -382,7 +381,6 @@ export class ChordproService {
 
     const newCursorPosition = structuredClone(this.editor.getCursorPosition());
     newCursorPosition.column -= 1;
-    console.log({ newCursorPosition });
     this.editor.moveCursorToPosition(newCursorPosition);
   }
 }
