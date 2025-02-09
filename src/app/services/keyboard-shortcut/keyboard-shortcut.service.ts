@@ -75,6 +75,7 @@ export class KeyboardShortcutService {
       });
       const fileHandle = filePicker[0];
       this.appContextService.setFileHandle(fileHandle);
+      return true;
     }
 
     const file = (event.target as HTMLInputElement)?.files?.[0] ?? null;
@@ -89,6 +90,10 @@ export class KeyboardShortcutService {
       return this.saveFileAs();
     }
 
+    return await this.saveFileHandle(fileHandle);
+  }
+
+  private async saveFileHandle(fileHandle: FileSystemFileHandle): Promise<boolean> {
     const writable = await fileHandle.createWritable();
     const chordproContent = this.chordproService.getChordproContent();
     await writable.write(chordproContent);
@@ -100,11 +105,28 @@ export class KeyboardShortcutService {
   }
 
   async saveFileAs(): Promise<boolean> {
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
       const chordproContent = this.chordproService.getChordproContent();
       const title = ChordproUtil.findTitle(chordproContent);
       const artist = ChordproUtil.findArtist(chordproContent);
       const fileName = `${title} (${artist})${ChordproUtil.PREFERRED_EXTENSION}`;
+
+      if (this.canSaveFilePicker()) {
+        const fileHandle = await window.showSaveFilePicker({
+          types: [
+            {
+              description: "ChordPro",
+              accept: {
+                "text/plain": ChordproUtil.EXTENSIONS,
+              },
+            },
+          ],
+        });
+        await this.saveFileHandle(fileHandle);
+        this.appContextService.setFileHandle(fileHandle);
+        return;
+      }
+
       const blob = new Blob([chordproContent], { type: "text/plain;charset=utf-8" });
       FileSaver.saveAs(blob, fileName);
 
@@ -126,7 +148,11 @@ export class KeyboardShortcutService {
     return !hasUnsavedChanges || confirm("You have unsaved changes. Are you sure you want to discard them?");
   }
 
-  private canOpenFilePicker(): boolean {
+  public canOpenFilePicker(): boolean {
     return "showOpenFilePicker" in window;
+  }
+
+  private canSaveFilePicker(): boolean {
+    return "showSaveFilePicker" in window;
   }
 }

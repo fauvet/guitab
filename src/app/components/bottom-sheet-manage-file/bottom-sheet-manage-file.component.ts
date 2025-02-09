@@ -73,6 +73,6 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
   }
 
   canOpenFilePicker(): boolean {
-    return "showOpenFilePicker" in window;
+    return this.keyboardShortcutService.canOpenFilePicker();
   }
 }
