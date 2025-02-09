@@ -113,6 +113,7 @@ export class KeyboardShortcutService {
 
       if (this.canSaveFilePicker()) {
         const fileHandle = await window.showSaveFilePicker({
+          suggestedName: fileName,
           types: [
             {
               description: "ChordPro",
