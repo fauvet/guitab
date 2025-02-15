@@ -55,6 +55,7 @@ export class KeyboardShortcutService {
 
     const file = await FileUtil.loadEmptyFile();
     this.appContextService.setFileHandle(file);
+    this.appContextService.setEditing(true);
     return true;
   }
 
@@ -75,11 +76,14 @@ export class KeyboardShortcutService {
       });
       const fileHandle = filePicker[0];
       this.appContextService.setFileHandle(fileHandle);
+      this.appContextService.setEditing(false);
       return true;
     }
 
     const file = (event.target as HTMLInputElement)?.files?.[0] ?? null;
     this.appContextService.setFileHandle(file);
+    this.appContextService.setEditing(false);
+
     return true;
   }
 

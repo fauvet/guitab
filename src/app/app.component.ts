@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ElementRef, HostBinding, inject, OnInit, ViewChild } from "@angular/core";
-import { RouterOutlet } from "@angular/router";
+import { ActivatedRoute, RouterOutlet } from "@angular/router";
 import { ChordproEditorComponent } from "./components/chordpro-editor/chordpro-editor.component";
 import { ChordproViewerComponent } from "./components/chordpro-viewer/chordpro-viewer.component";
 import { AppContextService } from "./services/app-context/app-context.service";
@@ -34,6 +34,7 @@ export class AppComponent implements OnInit {
   private readonly keyboardShortcutService = inject(KeyboardShortcutService);
   private readonly matIconRegistry = inject(MatIconRegistry);
   private readonly domSanitizer = inject(DomSanitizer);
+  private readonly acivatedRoute = inject(ActivatedRoute);
 
   @HostBinding("class.is-editing")
   isEditing = false;
@@ -47,8 +48,14 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.handleLaunchQueue();
-    FileUtil.loadSampleFile().then((file) => this.appContextService.setFileHandle(file));
     this.appContextService.getIsEditing$().subscribe((isEditing) => (this.isEditing = isEditing));
+    this.acivatedRoute.queryParamMap.subscribe((params) => {
+      const loadValue = params.get("load");
+      const isDemo = loadValue === "demo";
+      const promiseLoadFile = isDemo ? FileUtil.loadSampleFile() : FileUtil.loadEmptyFile();
+      this.appContextService.setEditing(!isDemo);
+      promiseLoadFile.then((file) => this.appContextService.setFileHandle(file));
+    });
   }
 
   private handleLaunchQueue(): void {
@@ -58,6 +65,7 @@ export class AppComponent implements OnInit {
       if (!launchParams?.files?.length) return;
       const fileHandle = launchParams.files[0];
       this.appContextService.setFileHandle(fileHandle);
+      this.appContextService.setEditing(false);
     });
   }
 }
