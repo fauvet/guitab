@@ -40,14 +40,25 @@
 
   @media only screen and (max-width: 1440px) {
     &.is-editing {
-      app-chordpro-viewer {
-        display: none;
+      .content {
+        .container-chordpro {
+          app-chordpro-viewer {
+            display: none;
+          }
+        }
       }
     }
 
     &:not(.is-editing) {
-      app-chordpro-editor {
-        display: none;
+      .content {
+        .container-chordpro {
+          gap: 0;
+
+          app-chordpro-editor {
+            flex: 0;
+            flex-basis: 1px;
+          }
+        }
       }
     }
   }
