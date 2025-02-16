@@ -57,6 +57,7 @@
           app-chordpro-editor {
             flex: 0;
             flex-basis: 1px;
+            overflow: hidden;
           }
         }
       }
