@@ -55,3 +55,8 @@ h3 {
     display: none !important;
   }
 }
+@media screen and (max-width: 1439px) {
+  .opposite-of-mobile-only {
+    display: none !important;
+  }
+}

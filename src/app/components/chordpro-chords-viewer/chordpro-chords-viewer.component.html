@@ -1,7 +1,16 @@
 @for (chord of chords$ | async; track chord.title) {
   <button
+    class="mobile-only"
     mat-button
-    (click)="onDiagramChordClicked(chord)">
+    (click)="onDiagramChordClicked(chord, true)">
+    <app-diagram-chord
+      [chord]="chord"
+      [size]="'m'"></app-diagram-chord>
+  </button>
+  <button
+    class="opposite-of-mobile-only"
+    mat-button
+    (click)="onDiagramChordClicked(chord, false)">
     <app-diagram-chord
       [chord]="chord"
       [size]="'m'"></app-diagram-chord>

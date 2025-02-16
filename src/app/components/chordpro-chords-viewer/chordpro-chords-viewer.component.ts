@@ -20,6 +20,7 @@ import _ from "lodash";
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChordproChordsViewerComponent implements OnInit, OnDestroy {
+  private readonly appContextService = inject(AppContextService);
   private readonly chordproService = inject(ChordproService);
 
   chords$ = new BehaviorSubject<Chord[]>([]);
@@ -50,7 +51,8 @@ export class ChordproChordsViewerComponent implements OnInit, OnDestroy {
     this.setChords(newChords);
   }
 
-  onDiagramChordClicked(chord: Chord): void {
-    this.chordproService.insertChord(chord.title ?? "");
+  onDiagramChordClicked(chord: Chord, fromMobile: boolean): void {
+    if ((fromMobile && !this.appContextService.isEditing()) || !chord.title) return;
+    this.chordproService.insertChord(chord.title);
   }
 }
