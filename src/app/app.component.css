@@ -58,6 +58,14 @@
             flex: 0;
             flex-basis: 1px;
             overflow: hidden;
+
+            ::ng-deep .ace-tm .ace_gutter {
+              background: transparent;
+            }
+
+            ::ng-deep .ace-tm .ace_gutter-active-line {
+              background: transparent;
+            }
           }
         }
       }
