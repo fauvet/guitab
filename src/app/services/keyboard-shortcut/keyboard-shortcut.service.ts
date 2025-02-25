@@ -5,6 +5,7 @@ import { ToastrService } from "ngx-toastr";
 import { FileUtil } from "../../utils/file.util";
 import { ChordproUtil } from "../../utils/chordpro.util";
 import FileSaver from "file-saver";
+import { LocalStorageService } from "../local-storage/local-storage.service";
 
 @Injectable({
   providedIn: "root",
@@ -12,6 +13,7 @@ import FileSaver from "file-saver";
 export class KeyboardShortcutService {
   private readonly appContextService = inject(AppContextService);
   private readonly chordproService = inject(ChordproService);
+  private readonly localStorageService = inject(LocalStorageService);
   private readonly toastr = inject(ToastrService);
 
   constructor() {
@@ -62,6 +64,7 @@ export class KeyboardShortcutService {
   async openFile(event: Event): Promise<boolean> {
     if (!this.checkUnsavedChanges()) return false;
 
+    let file: null | File | FileSystemFileHandle = (event.target as HTMLInputElement)?.files?.[0] ?? null;
     if (this.canOpenFilePicker()) {
       const filePicker = await window.showOpenFilePicker({
         types: [
@@ -74,15 +77,14 @@ export class KeyboardShortcutService {
         ],
         multiple: false,
       });
-      const fileHandle = filePicker[0];
-      this.appContextService.setFileHandle(fileHandle);
-      this.appContextService.setEditing(false);
-      return true;
+      file = filePicker[0];
     }
 
-    const file = (event.target as HTMLInputElement)?.files?.[0] ?? null;
     this.appContextService.setFileHandle(file);
     this.appContextService.setEditing(false);
+
+    const chordproContent = (await FileUtil.getFileContent(file)) ?? "";
+    this.localStorageService.saveFile(chordproContent);
 
     return true;
   }
@@ -90,11 +92,15 @@ export class KeyboardShortcutService {
   async saveFile(): Promise<boolean> {
     const fileHandle = this.appContextService.getFileHandle();
 
-    if (!fileHandle || !(fileHandle instanceof FileSystemFileHandle)) {
-      return this.saveFileAs();
-    }
+    const isActionPerformed =
+      !fileHandle || !(fileHandle instanceof FileSystemFileHandle)
+        ? await this.saveFileAs()
+        : await this.saveFileHandle(fileHandle);
+    if (!isActionPerformed) return false;
 
-    return await this.saveFileHandle(fileHandle);
+    const chordproContent = this.chordproService.getChordproContent();
+    this.localStorageService.saveFile(chordproContent);
+    return true;
   }
 
   private async saveFileHandle(fileHandle: FileSystemFileHandle): Promise<boolean> {
@@ -111,9 +117,7 @@ export class KeyboardShortcutService {
   async saveFileAs(): Promise<boolean> {
     return new Promise(async (resolve) => {
       const chordproContent = this.chordproService.getChordproContent();
-      const title = ChordproUtil.findTitle(chordproContent);
-      const artist = ChordproUtil.findArtist(chordproContent);
-      const fileName = `${title} (${artist})${ChordproUtil.PREFERRED_EXTENSION}`;
+      const fileName = ChordproUtil.buildFileName(chordproContent);
 
       if (this.canSaveFilePicker()) {
         const fileHandle = await window.showSaveFilePicker({

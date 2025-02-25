@@ -4,28 +4,43 @@ import { AppContextService } from "../../services/app-context/app-context.servic
 import { MatListModule } from "@angular/material/list";
 import { MatIcon } from "@angular/material/icon";
 import { MatRipple } from "@angular/material/core";
-import { BehaviorSubject, Subject, takeUntil } from "rxjs";
+import { BehaviorSubject, map, Subject, takeUntil } from "rxjs";
 import { MatButtonModule } from "@angular/material/button";
 import { MatBottomSheetRef } from "@angular/material/bottom-sheet";
 import { KeyboardShortcutService } from "../../services/keyboard-shortcut/keyboard-shortcut.service";
 import { AsyncPipe } from "@angular/common";
+import { MatDividerModule } from "@angular/material/divider";
+import { LocalStorageService } from "../../services/local-storage/local-storage.service";
+import { ChordproService } from "../../services/chordpro/chordpro.service";
+import CachedFile from "../../types/cached-file.type";
+import DateUtil from "../../utils/date.util";
 
 @Component({
   selector: "app-bottom-sheet-manage-file",
   standalone: true,
-  imports: [MatListModule, MatIcon, MatRipple, MatButtonModule, AsyncPipe],
+  imports: [MatListModule, MatIcon, MatRipple, MatButtonModule, AsyncPipe, MatDividerModule],
   templateUrl: "./bottom-sheet-manage-file.component.html",
   styleUrl: "./bottom-sheet-manage-file.component.css",
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
   readonly CHORDPRO_EXTENSIONS = ChordproUtil.EXTENSIONS;
+  readonly BUILD_TIME_AGO = DateUtil.buildTimeAgo;
 
   private readonly appContextService = inject(AppContextService);
+  private readonly chordproService = inject(ChordproService);
   private readonly keyboardShortcutService = inject(KeyboardShortcutService);
+  private readonly localStorageService = inject(LocalStorageService);
   private bottomSheetRef = inject(MatBottomSheetRef<BottomSheetManageFileComponent>);
 
   isSaveExistingFileEnabled$ = new BehaviorSubject(false);
+  cachedFiles$ = this.localStorageService
+    .getCachedFiles$()
+    .pipe(
+      map((cachedFiles: CachedFile[]) =>
+        [...cachedFiles].sort((cachedFile1, cachedFile2) => cachedFile2.date.getTime() - cachedFile1.date.getTime()),
+      ),
+    );
 
   private readonly unsubscribe$ = new Subject<void>();
 
@@ -68,6 +83,17 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
   async onButtonSaveFileAsClicked(): Promise<void> {
     const actionPerformed = await this.keyboardShortcutService.saveFileAs();
     if (!actionPerformed) return;
+
+    this.bottomSheetRef.dismiss();
+  }
+
+  async onButtonCachedFileClicked(cachedFile: CachedFile): Promise<void> {
+    this.appContextService.setFileHandle(
+      new File([cachedFile.chordproContent], "cached_file.cho", {
+        type: "text/plain",
+      }),
+    );
+    this.appContextService.setEditing(false);
 
     this.bottomSheetRef.dismiss();
   }

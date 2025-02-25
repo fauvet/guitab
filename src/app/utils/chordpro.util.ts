@@ -11,12 +11,23 @@ export class ChordproUtil {
     return chordObject.key + chordObject.suffix;
   }
 
-  static findTitle(chordproContent: string): string | null {
+  private static findTitle(chordproContent: string): string | null {
     return /{title:([^}]*)}/.exec(chordproContent)?.[1]?.trim() ?? null;
   }
 
-  static findArtist(chordproContent: string): string | null {
+  private static findArtist(chordproContent: string): string | null {
     return /{artist:([^}]*)}/.exec(chordproContent)?.[1]?.trim() ?? null;
+  }
+
+  static buildFileName(chordproContent: string): string {
+    const fileBaseName = this.buildFileBaseName(chordproContent);
+    return `${fileBaseName}${ChordproUtil.PREFERRED_EXTENSION}`;
+  }
+
+  static buildFileBaseName(chordproContent: string): string {
+    const title = ChordproUtil.findTitle(chordproContent);
+    const artist = ChordproUtil.findArtist(chordproContent);
+    return `${title} (${artist})`;
   }
 
   static findCustomVariant(chordproContent: string, chordName: string): Variant | null {

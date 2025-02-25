@@ -31,7 +31,7 @@ export class ChordproService {
   private readonly isRemovableChordEnabled$ = new BehaviorSubject<boolean>(false);
 
   constructor() {
-    this.appContextService.getFileHandle$().subscribe((fileHandle) => this.onFileChanged(fileHandle));
+    this.appContextService.getFileHandle$().subscribe(async (fileHandle) => await this.onFileChanged(fileHandle));
     this.chordproContent$.subscribe((chordproContent) => this.onChordproContentChanged(chordproContent));
   }
 
