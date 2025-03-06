@@ -18,4 +18,8 @@ export class StringUtil {
   static escapeRegExp(string: string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
+
+  static insert(string: string, insertion: string, index: number): string {
+    return string.slice(0, index) + insertion + string.slice(index);
+  }
 }

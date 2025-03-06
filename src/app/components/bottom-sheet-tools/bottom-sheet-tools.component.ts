@@ -5,6 +5,7 @@ import { MatDialog } from "@angular/material/dialog";
 import { DialogExternalToolComponent } from "../dialog-external-tool/dialog-external-tool.component";
 import { MatIcon } from "@angular/material/icon";
 import { MatRipple } from "@angular/material/core";
+import { DialogSoloTabEditorComponent } from "../dialog-solo-tab-editor/dialog-solo-tab-editor.component";
 
 @Component({
   selector: "app-bottom-sheet-tools",
@@ -50,5 +51,17 @@ export class BottomSheetToolsComponent {
   onItemYouTubeComClicked(): void {
     this.bottomSheetRef.dismiss();
     window.open("https://www.youtube.com", "_blank");
+  }
+
+  onItemSoloTabEditorClicked(): void {
+    this.bottomSheetRef.dismiss();
+    this.dialog
+      .open(DialogSoloTabEditorComponent, {
+        data: {},
+        height: "95%",
+        width: "95%",
+      })
+      .afterClosed()
+      .subscribe(() => {});
   }
 }

@@ -1,0 +1,30 @@
+<h2 mat-dialog-title>Solo tab editor</h2>
+<mat-dialog-content>
+  <div class="left-pan">
+    <h3>Editor</h3>
+    <textarea
+      #editor
+      placeholder="Type your solo tab..."
+      [ngModel]="soloTab$ | async"
+      (ngModelChange)="setSoloTab($event)"></textarea>
+  </div>
+  <div class="middle-pan">
+    <h3>Suggestions</h3>
+    <div class="container-handy-rows">
+      @for (handyRow of handyRows$ | async; track handyRow) {
+        <button (click)="onButtonHandyRowClicked(handyRow)">{{ handyRow.output.join(" ") }}</button>
+      }
+    </div>
+  </div>
+  <div class="right-pan">
+    <h3>Preview</h3>
+    <div class="viewer">{{ generatedSoloTab$ | async }}</div>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button
+    mat-button
+    mat-dialog-close>
+    Close
+  </button>
+</mat-dialog-actions>

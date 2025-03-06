@@ -33,4 +33,11 @@
     <div matListItemTitle>{{ "Search YouTube URL" }}</div>
     <div matListItemLine>{{ "youtube.com (opens a new tab)" }}</div>
   </mat-list-item>
+  <mat-list-item
+    matRipple
+    (click)="onItemSoloTabEditorClicked()">
+    <mat-icon matListItemIcon>format_list_numbered_rtl</mat-icon>
+    <div matListItemTitle>{{ "Solo tab editor" }}</div>
+    <div matListItemLine>{{ "Fast solo tab builder" }}</div>
+  </mat-list-item>
 </mat-list>

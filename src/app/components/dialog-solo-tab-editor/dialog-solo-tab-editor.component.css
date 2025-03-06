@@ -1,0 +1,54 @@
+:host {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  mat-dialog-content {
+    flex: 1;
+    max-height: none;
+    display: flex;
+    gap: 12px;
+
+    .left-pan {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+
+      textarea {
+        flex: 1;
+        padding: 12px;
+        resize: none;
+      }
+    }
+
+    .middle-pan {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+
+      .container-handy-rows {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        button {
+          cursor: pointer;
+          font-family: monospace;
+        }
+      }
+    }
+
+    .right-pan {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+
+      .viewer {
+        flex: 1;
+        white-space: pre;
+        font-family: monospace;
+      }
+    }
+  }
+}
