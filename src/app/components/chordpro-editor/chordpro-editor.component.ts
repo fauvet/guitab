@@ -16,10 +16,6 @@ export class ChordproEditorComponent implements OnInit, OnDestroy {
   private unsubscribe$ = new Subject<void>();
 
   ngOnInit(): void {
-    document.addEventListener("mousedown", (e) => {
-      e.preventDefault();
-    });
-
     this.chordproService.initialize();
     this.listenEditorChanges();
   }
