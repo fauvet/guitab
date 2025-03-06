@@ -28,7 +28,6 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
   readonly BUILD_TIME_AGO = DateUtil.buildTimeAgo;
 
   private readonly appContextService = inject(AppContextService);
-  private readonly chordproService = inject(ChordproService);
   private readonly keyboardShortcutService = inject(KeyboardShortcutService);
   private readonly localStorageService = inject(LocalStorageService);
   private bottomSheetRef = inject(MatBottomSheetRef<BottomSheetManageFileComponent>);
@@ -94,6 +93,7 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
       }),
     );
     this.appContextService.setEditing(false);
+    this.localStorageService.saveFile(cachedFile.chordproContent);
 
     this.bottomSheetRef.dismiss();
   }
