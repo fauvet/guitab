@@ -17,30 +17,30 @@ export class KeyboardShortcutService {
   private readonly toastr = inject(ToastrService);
 
   constructor() {
-    document.addEventListener("keydown", (event) => this.onKeyDown(event));
+    document.addEventListener("keydown", async (event) => await this.onKeyDown(event));
   }
 
   initialize(): void {} // does nothing explictly but creates the service and calls the constructor
 
-  private onKeyDown(event: KeyboardEvent) {
+  private async onKeyDown(event: KeyboardEvent): Promise<void> {
     if (event.ctrlKey && event.key === "z") {
       event.preventDefault();
-      this.undo();
+      await this.undo();
     } else if ((event.ctrlKey && event.key === "y") || (event.ctrlKey && event.shiftKey && event.key === "z")) {
       event.preventDefault();
-      this.redo();
+      await this.redo();
     } else if (event.ctrlKey && event.altKey && event.key === "n") {
       event.preventDefault();
-      this.newFile();
+      await this.newFile();
     } else if (event.ctrlKey && event.key === "o") {
       event.preventDefault();
-      this.openFile(event);
+      await this.openFile(event);
     } else if (event.ctrlKey && event.key === "s") {
       event.preventDefault();
-      this.saveFile();
+      await this.saveFile();
     } else if (event.ctrlKey && event.shiftKey && event.key === "s") {
       event.preventDefault();
-      this.saveFileAs();
+      await this.saveFileAs();
     }
   }
 
@@ -133,6 +133,7 @@ export class KeyboardShortcutService {
         });
         await this.saveFileHandle(fileHandle);
         this.appContextService.setFileHandle(fileHandle);
+        resolve(true);
         return;
       }
 
