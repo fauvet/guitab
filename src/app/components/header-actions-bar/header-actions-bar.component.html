@@ -28,18 +28,13 @@
   (click)="onButtonToolsClicked()">
   <mat-icon fontSet="material-icons-outlined">extension</mat-icon>
 </button>
-<mat-button-toggle-group
-  name="show-hide-lyrics"
-  aria-label="Hide lyrics"
-  multiple>
-  <mat-button-toggle
-    value="show-hide-lyrics"
-    [title]="(areLyricsDisplayed$ | async) ? 'Hide lyrics' : 'Show lyrics'"
-    [checked]="areLyricsDisplayed$ | async"
-    (change)="onButtonToggleHideLyricsClicked($event)">
-    <mat-icon [fontSet]="(areLyricsDisplayed$ | async) ? '' : 'material-icons-outlined'">lyrics</mat-icon>
-  </mat-button-toggle>
-</mat-button-toggle-group>
+<button
+  aria-label="Settings..."
+  title="Open settings menu..."
+  mat-icon-button
+  (click)="onButtonSettingsClicked()">
+  <mat-icon fontSet="material-icons-outlined">settings</mat-icon>
+</button>
 <button
   class="mobile-only"
   aria-label="Preview"

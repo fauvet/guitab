@@ -28,9 +28,6 @@ export class ChordproViewerComponent implements OnInit, OnDestroy {
   private readonly chordproService = inject(ChordproService);
   private readonly dialog = inject(MatDialog);
 
-  @HostBinding("class.hide-lyrics")
-  hideLyrics = false;
-
   private readonly unsubscribe$ = new Subject<void>();
 
   ngOnInit(): void {
@@ -38,11 +35,6 @@ export class ChordproViewerComponent implements OnInit, OnDestroy {
       .getChordproContent$()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((chordproContent) => this.onChordproContentChanged(chordproContent));
-
-    this.chordproService
-      .getAreLyricsDisplayed$()
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((areLyricsDisplayed) => (this.hideLyrics = !areLyricsDisplayed));
 
     this.listenChordClick();
   }

@@ -3,7 +3,6 @@
     cursor: pointer;
 
     [matListItemIcon] {
-      color: #000000;
       margin: auto !important;
       padding: 0 20px;
     }

@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit } from "@angular/core";
 import { MatIconModule } from "@angular/material/icon";
 import { AppContextService } from "../../services/app-context/app-context.service";
-import { MatButtonToggleChange, MatButtonToggleModule } from "@angular/material/button-toggle";
 import { MatButtonModule } from "@angular/material/button";
 import { ZoomService } from "../../services/zoom/zoom.service";
 import { BehaviorSubject, Subject, takeUntil } from "rxjs";
@@ -11,11 +10,13 @@ import { BottomSheetToolsComponent } from "../bottom-sheet-tools/bottom-sheet-to
 import { BottomSheetManageFileComponent } from "../bottom-sheet-manage-file/bottom-sheet-manage-file.component";
 import { KeyboardShortcutService } from "../../services/keyboard-shortcut/keyboard-shortcut.service";
 import { AsyncPipe } from "@angular/common";
+import { BottomSheetSettingsComponent } from "../bottom-sheet-settings/bottom-sheet-settings.component";
+import { ComponentType } from "@angular/cdk/portal";
 
 @Component({
   selector: "app-header-actions-bar",
   standalone: true,
-  imports: [MatButtonModule, MatIconModule, MatButtonToggleModule, MatBottomSheetModule, AsyncPipe],
+  imports: [MatButtonModule, MatIconModule, MatBottomSheetModule, AsyncPipe],
   templateUrl: "./header-actions-bar.component.html",
   styleUrl: "./header-actions-bar.component.css",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,22 +29,17 @@ export class HeaderActionsBarComponent implements OnInit, OnDestroy {
   private readonly bottomSheet = inject(MatBottomSheet);
 
   isEditing$ = new BehaviorSubject(false);
-  areLyricsDisplayed$ = new BehaviorSubject(false);
   hasEditorUndo$ = new BehaviorSubject(false);
   hasEditorRedo$ = new BehaviorSubject(false);
 
   private readonly unsubscribe$ = new Subject<void>();
+  private lastComponentTypeOpened: ComponentType<unknown> | null = null;
 
   ngOnInit(): void {
     this.appContextService
       .getIsEditing$()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((isEditing) => this.isEditing$.next(isEditing));
-
-    this.chordproService
-      .getAreLyricsDisplayed$()
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((areLyricsDisplayed) => this.areLyricsDisplayed$.next(areLyricsDisplayed));
 
     this.chordproService
       .getHasEditorUndo$()
@@ -60,37 +56,24 @@ export class HeaderActionsBarComponent implements OnInit, OnDestroy {
     this.unsubscribe$.next();
   }
 
-  async onButtonUndoClicked(): Promise<void> {
+  onButtonUndoClicked(): void {
     this.keyboardShortcutService.undo();
   }
 
-  async onButtonRedoClicked(): Promise<void> {
+  onButtonRedoClicked(): void {
     this.keyboardShortcutService.redo();
   }
 
-  async onButtonManageFileClicked(): Promise<void> {
-    const body = document.getElementsByTagName("body")[0];
-    body.classList.add("js-is-top-sheet-enabled");
-
-    this.bottomSheet
-      .open(BottomSheetManageFileComponent)
-      .afterDismissed()
-      .subscribe(() => body.classList.remove("js-is-top-sheet-enabled"));
+  onButtonManageFileClicked(): void {
+    this.openBottomSheetComponent(BottomSheetManageFileComponent);
   }
 
-  async onButtonToolsClicked(): Promise<void> {
-    const body = document.getElementsByTagName("body")[0];
-    body.classList.add("js-is-top-sheet-enabled");
-
-    this.bottomSheet
-      .open(BottomSheetToolsComponent)
-      .afterDismissed()
-      .subscribe(() => body.classList.remove("js-is-top-sheet-enabled"));
+  onButtonToolsClicked(): void {
+    this.openBottomSheetComponent(BottomSheetToolsComponent);
   }
 
-  onButtonToggleHideLyricsClicked(event: MatButtonToggleChange): void {
-    const isChecked = event.source.checked;
-    this.chordproService.setLyricsDisplayed(isChecked);
+  onButtonSettingsClicked(): void {
+    this.openBottomSheetComponent(BottomSheetSettingsComponent);
   }
 
   onButtonPreviewClicked(): void {
@@ -100,8 +83,6 @@ export class HeaderActionsBarComponent implements OnInit, OnDestroy {
   onButtonEditClicked(): void {
     this.appContextService.setEditing(true);
   }
-
-  onButtonHistoryClicked(): void {}
 
   onButtonResetZoomClicked(): void {
     this.zoomService.resetZoom();
@@ -113,5 +94,19 @@ export class HeaderActionsBarComponent implements OnInit, OnDestroy {
 
   onButtonZoomOutClicked(): void {
     this.zoomService.decrementZoom();
+  }
+
+  openBottomSheetComponent(componentType: ComponentType<unknown>): void {
+    this.lastComponentTypeOpened = componentType;
+    const body = document.getElementsByTagName("body")[0];
+    body.classList.add("js-is-top-sheet-enabled");
+
+    this.bottomSheet
+      .open(componentType)
+      .afterDismissed()
+      .subscribe(() => {
+        if (this.lastComponentTypeOpened !== componentType) return;
+        body.classList.remove("js-is-top-sheet-enabled");
+      });
   }
 }

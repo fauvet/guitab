@@ -33,6 +33,7 @@ export class ChordproService {
   constructor() {
     this.appContextService.getFileHandle$().subscribe(async (fileHandle) => await this.onFileChanged(fileHandle));
     this.chordproContent$.subscribe((chordproContent) => this.onChordproContentChanged(chordproContent));
+    this.areLyricsDisplayed$.subscribe((areLyricsDisplayed) => this.onAreLyricsDisplayed(areLyricsDisplayed));
   }
 
   get editor() {
@@ -60,6 +61,17 @@ export class ChordproService {
     this.editor.setValue(chordproContent);
     this.editor.clearSelection();
     this.editor.moveCursorToPosition(cursorPosition);
+  }
+
+  private onAreLyricsDisplayed(areLyricsDisplayed: boolean): void {
+    const body = document.getElementsByTagName("body")[0];
+
+    if (areLyricsDisplayed) {
+      body.classList.remove("js-are-lyrics-hided");
+      return;
+    }
+
+    body.classList.add("js-are-lyrics-hided");
   }
 
   private parseMetaYouTube(chordproContent: string): string {

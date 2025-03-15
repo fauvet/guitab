@@ -1,0 +1,39 @@
+<mat-list>
+  <mat-list-item
+    matRipple
+    (click)="onItemShowLyricsClicked()">
+    <mat-icon
+      matListItemIcon
+      [color]="(chordproService.getAreLyricsDisplayed$() | async) ? 'primary' : ''"
+      [fontSet]="(chordproService.getAreLyricsDisplayed$() | async) ? '' : 'material-icons-outlined'">
+      lyrics
+    </mat-icon>
+    <div matListItemTitle>{{ "Show lyrics" }}</div>
+    <div matListItemLine>{{ "Displays lyrics in addition to chords" }}</div>
+  </mat-list-item>
+  <mat-divider />
+  <mat-list-item
+    matRipple
+    (click)="onItemWakeLockClicked()">
+    <mat-icon
+      matListItemIcon
+      [color]="(appContextService.getIsWakeLock$() | async) ? 'primary' : ''"
+      [fontSet]="(appContextService.getIsWakeLock$() | async) ? '' : 'material-icons-outlined'">
+      fluorescent
+    </mat-icon>
+    <div matListItemTitle>{{ "Wake lock" }}</div>
+    <div matListItemLine>{{ "Prevents device screens from dimming or locking" }}</div>
+  </mat-list-item>
+  <mat-list-item
+    matRipple
+    (click)="onItemKeepBluetoothAliveClicked()">
+    <mat-icon
+      matListItemIcon
+      [color]="(appContextService.getIsBluetoothKeptAlive$() | async) ? 'primary' : ''"
+      [fontSet]="(appContextService.getIsBluetoothKeptAlive$() | async) ? '' : 'material-icons-outlined'">
+      media_bluetooth_on
+    </mat-icon>
+    <div matListItemTitle>{{ "Keep Bluetooth alive" }}</div>
+    <div matListItemLine>{{ "Plays a permanent inaudible sound" }}</div>
+  </mat-list-item>
+</mat-list>

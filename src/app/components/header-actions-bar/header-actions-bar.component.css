@@ -4,10 +4,6 @@
   user-select: none;
   overflow-x: auto;
 
-  mat-button-toggle-group {
-    display: contents;
-  }
-
   .separator {
     flex: 1;
   }

@@ -4,20 +4,6 @@
   overflow-x: auto;
   overflow-y: hidden;
 
-  &.hide-lyrics {
-    ::ng-deep .word:not(:has(.chord)) {
-      display: none;
-    }
-
-    ::ng-deep .lyrics {
-      display: none;
-    }
-
-    ::ng-deep span.above-lyrics.chord {
-      width: var(--max-chord-width);
-    }
-  }
-
   ::ng-deep .metadata {
     margin: 0 0 0.5rem 0;
   }
