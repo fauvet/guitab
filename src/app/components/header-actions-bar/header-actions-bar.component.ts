@@ -33,7 +33,7 @@ export class HeaderActionsBarComponent implements OnInit, OnDestroy {
   hasEditorRedo$ = new BehaviorSubject(false);
 
   private readonly unsubscribe$ = new Subject<void>();
-  private lastComponentTypeOpened: ComponentType<unknown> | null = null;
+  private lastBottomSheetOpenedIndex = 0;
 
   ngOnInit(): void {
     this.appContextService
@@ -97,7 +97,9 @@ export class HeaderActionsBarComponent implements OnInit, OnDestroy {
   }
 
   openBottomSheetComponent(componentType: ComponentType<unknown>): void {
-    this.lastComponentTypeOpened = componentType;
+    this.lastBottomSheetOpenedIndex += 1;
+    const localBottomSheetOpenedIndex = this.lastBottomSheetOpenedIndex;
+
     const body = document.getElementsByTagName("body")[0];
     body.classList.add("js-is-top-sheet-enabled");
 
@@ -105,7 +107,7 @@ export class HeaderActionsBarComponent implements OnInit, OnDestroy {
       .open(componentType)
       .afterDismissed()
       .subscribe(() => {
-        if (this.lastComponentTypeOpened !== componentType) return;
+        if (this.lastBottomSheetOpenedIndex !== localBottomSheetOpenedIndex) return;
         body.classList.remove("js-is-top-sheet-enabled");
       });
   }
