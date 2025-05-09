@@ -23,6 +23,8 @@ export class KeyboardShortcutService {
   initialize(): void {} // does nothing explictly but creates the service and calls the constructor
 
   private async onKeyDown(event: KeyboardEvent): Promise<void> {
+    if (document.querySelector(".cdk-overlay-backdrop-showing") !== null) return;
+
     if (event.ctrlKey && event.key === "z") {
       event.preventDefault();
       await this.undo();
