@@ -1,6 +1,6 @@
 import { inject, Injectable } from "@angular/core";
 import { ChordproUtil } from "../../utils/chordpro.util";
-import { BehaviorSubject, map, Observable } from "rxjs";
+import { map, Observable } from "rxjs";
 import _ from "lodash";
 import CachedFile from "../../types/cached-file.type";
 import { LocalStorageService } from "../local-storage/local-storage.service";

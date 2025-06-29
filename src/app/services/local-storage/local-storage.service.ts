@@ -1,6 +1,5 @@
 import { Injectable } from "@angular/core";
 import { BehaviorSubject } from "rxjs";
-import { CachedFilesService } from "../cached-files/cached-files.service";
 
 @Injectable({
   providedIn: "root",

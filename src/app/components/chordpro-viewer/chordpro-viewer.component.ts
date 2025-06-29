@@ -1,13 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  HostBinding,
-  inject,
-  OnDestroy,
-  OnInit,
-  Renderer2,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, ElementRef, inject, OnDestroy, OnInit, Renderer2 } from "@angular/core";
 import * as ChordProjectParser from "chordproject-parser";
 import { Subject, takeUntil } from "rxjs";
 import { MatDialog } from "@angular/material/dialog";

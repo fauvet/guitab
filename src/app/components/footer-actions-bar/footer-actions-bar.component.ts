@@ -7,7 +7,7 @@ import { DialogSelectChordComponent } from "../dialog-select-chord/dialog-select
 import { MatBottomSheet, MatBottomSheetModule } from "@angular/material/bottom-sheet";
 import { BottomSheetInsertDirectiveComponent } from "../bottom-sheet-insert-directive/bottom-sheet-insert-directive.component";
 import { AppContextService } from "../../services/app-context/app-context.service";
-import { DomSanitizer, SafeResourceUrl, SafeUrl } from "@angular/platform-browser";
+import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
 import { BehaviorSubject } from "rxjs";
 import { AsyncPipe } from "@angular/common";
 
