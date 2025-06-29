@@ -295,6 +295,7 @@ export class ChordproService {
   insertChord(chordName: string): void {
     const newText = `[${chordName}]`;
     this.insertContentAtCurrentCaret(newText);
+    this.editor.focus();
   }
 
   removeChord(): void {
