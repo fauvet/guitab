@@ -1,0 +1,101 @@
+{
+  "configVersion": 1,
+  "timestamp": 1751211774711,
+  "index": "/guitab/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/guitab/index.html",
+        "/guitab/main-O4SRLNPS.js",
+        "/guitab/manifest.webmanifest",
+        "/guitab/polyfills-RT5I6R6G.js",
+        "/guitab/styles-THYPZ6GB.css"
+      ],
+      "patterns": []
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/guitab/assets/empty.cho",
+        "/guitab/assets/guitar.json",
+        "/guitab/assets/icons/logo.svg",
+        "/guitab/assets/icons/material/folder_open.svg",
+        "/guitab/assets/icons/material/redo.svg",
+        "/guitab/assets/icons/material/undo.svg",
+        "/guitab/assets/icons/material/variable-add.svg",
+        "/guitab/assets/icons/material/variable-insert.svg",
+        "/guitab/assets/icons/material/variable-remove.svg",
+        "/guitab/assets/sample.cho",
+        "/guitab/media/material-icons-JLIDJUWE.woff",
+        "/guitab/media/material-icons-LEZCGFVT.woff2",
+        "/guitab/media/material-icons-outlined-7BWLPMFK.woff2",
+        "/guitab/media/material-icons-outlined-PCUTWIDZ.woff",
+        "/guitab/media/material-icons-round-SLOHZIXU.woff",
+        "/guitab/media/material-icons-round-WEHMTW23.woff2",
+        "/guitab/media/material-icons-sharp-HCCYMPXE.woff2",
+        "/guitab/media/material-icons-sharp-U4OLFP3G.woff",
+        "/guitab/media/material-icons-two-tone-LCGWGE2N.woff",
+        "/guitab/media/material-icons-two-tone-M5N5K6F5.woff2"
+      ],
+      "patterns": []
+    }
+  ],
+  "dataGroups": [],
+  "hashTable": {
+    "/guitab/assets/empty.cho": "53eb8c43dce5a30fda36b123e17a2544b54be275",
+    "/guitab/assets/guitar.json": "816431e3834e1309b3e65db93dd424a384cbe90f",
+    "/guitab/assets/icons/logo.svg": "3636430c255dd4164fc58fabadcd1f18e4aecd29",
+    "/guitab/assets/icons/material/folder_open.svg": "68ab119480b9d07a3961f986e9b0ba5a96733450",
+    "/guitab/assets/icons/material/redo.svg": "1b99a6e0e833339070977fa22f65cfc6a7258613",
+    "/guitab/assets/icons/material/undo.svg": "2c76e77deee4f58b13ad2767cff5d71066897e0d",
+    "/guitab/assets/icons/material/variable-add.svg": "974d655b98bbe5d5ad24872efa41cc594f4ffa5d",
+    "/guitab/assets/icons/material/variable-insert.svg": "c5ab964c5dd4b5592a9cf84b308b7cc4be881441",
+    "/guitab/assets/icons/material/variable-remove.svg": "e665759921f1039636f75de4585800e43d8167ac",
+    "/guitab/assets/sample.cho": "64ea4e3d8924609b168d374d9468c7efa1501d09",
+    "/guitab/index.html": "da9a555e3c7b05aada1550e368b02cc94dbb8995",
+    "/guitab/main-O4SRLNPS.js": "3b8f03b10ee8023ed6780984c26b57d98c1e2bb9",
+    "/guitab/manifest.webmanifest": "8fe025a796dcc9bb5d72544dd5c81eeffe200052",
+    "/guitab/media/material-icons-JLIDJUWE.woff": "e4bb7c1e40d3febee58df963db276b2bf68c117b",
+    "/guitab/media/material-icons-LEZCGFVT.woff2": "0bc0c675480d94ec7e8609dda6227f88c5d08d2c",
+    "/guitab/media/material-icons-outlined-7BWLPMFK.woff2": "2f9e28ab559782402f27332633c843c40209d95a",
+    "/guitab/media/material-icons-outlined-PCUTWIDZ.woff": "b52ccd8fca4199d257b2a9fe377db29862f2853e",
+    "/guitab/media/material-icons-round-SLOHZIXU.woff": "c41bfee3f01218e18d53f4f4cac00f385ac9fbb1",
+    "/guitab/media/material-icons-round-WEHMTW23.woff2": "abe05e0641f1050fbe00ef0dbb10c5ea72c26cff",
+    "/guitab/media/material-icons-sharp-HCCYMPXE.woff2": "cf1c7b4d066d18af44cf7bc664dd2e46652a3a30",
+    "/guitab/media/material-icons-sharp-U4OLFP3G.woff": "829cb48cb2dd17ae5e425b82dc186eb670694a10",
+    "/guitab/media/material-icons-two-tone-LCGWGE2N.woff": "02225d888afe4eebc7312b7432878dc8aef1f50f",
+    "/guitab/media/material-icons-two-tone-M5N5K6F5.woff2": "296ff0bff395a77c2e33e7e31fffe73980bd93cf",
+    "/guitab/polyfills-RT5I6R6G.js": "fe9f024576f21ff6314cf8f8332cde58b9a12416",
+    "/guitab/styles-THYPZ6GB.css": "927b250cd1659e039df26618c6a94ea2d57a146b"
+  },
+  "navigationUrls": [
+    {
+      "positive": true,
+      "regex": "^\\/.*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*\\.[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*\\/.*$"
+    }
+  ],
+  "navigationRequestStrategy": "performance"
+}
