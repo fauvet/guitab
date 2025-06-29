@@ -5,7 +5,7 @@ import { ToastrService } from "ngx-toastr";
 import { FileUtil } from "../../utils/file.util";
 import { ChordproUtil } from "../../utils/chordpro.util";
 import FileSaver from "file-saver";
-import { LocalStorageService } from "../local-storage/local-storage.service";
+import { CachedFilesService } from "../cached-files/cached-files.service";
 
 @Injectable({
   providedIn: "root",
@@ -13,7 +13,7 @@ import { LocalStorageService } from "../local-storage/local-storage.service";
 export class KeyboardShortcutService {
   private readonly appContextService = inject(AppContextService);
   private readonly chordproService = inject(ChordproService);
-  private readonly localStorageService = inject(LocalStorageService);
+  private readonly cachedFilesService = inject(CachedFilesService);
   private readonly toastr = inject(ToastrService);
 
   constructor() {
@@ -92,7 +92,7 @@ export class KeyboardShortcutService {
     this.appContextService.setEditing(false);
 
     const chordproContent = (await FileUtil.getFileContent(file)) ?? "";
-    this.localStorageService.saveFile(chordproContent);
+    this.cachedFilesService.saveFile(chordproContent);
 
     return true;
   }
@@ -107,7 +107,7 @@ export class KeyboardShortcutService {
     if (!isActionPerformed) return false;
 
     const chordproContent = this.chordproService.getChordproContent();
-    this.localStorageService.saveFile(chordproContent);
+    this.cachedFilesService.saveFile(chordproContent);
     return true;
   }
 

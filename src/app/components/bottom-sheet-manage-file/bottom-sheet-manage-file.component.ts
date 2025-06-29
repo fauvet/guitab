@@ -10,10 +10,9 @@ import { MatBottomSheetRef } from "@angular/material/bottom-sheet";
 import { KeyboardShortcutService } from "../../services/keyboard-shortcut/keyboard-shortcut.service";
 import { AsyncPipe } from "@angular/common";
 import { MatDividerModule } from "@angular/material/divider";
-import { LocalStorageService } from "../../services/local-storage/local-storage.service";
-import { ChordproService } from "../../services/chordpro/chordpro.service";
 import CachedFile from "../../types/cached-file.type";
 import DateUtil from "../../utils/date.util";
+import { CachedFilesService } from "../../services/cached-files/cached-files.service";
 
 @Component({
   selector: "app-bottom-sheet-manage-file",
@@ -29,11 +28,11 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
 
   private readonly appContextService = inject(AppContextService);
   private readonly keyboardShortcutService = inject(KeyboardShortcutService);
-  private readonly localStorageService = inject(LocalStorageService);
+  private readonly cachedFilesService = inject(CachedFilesService);
   private bottomSheetRef = inject(MatBottomSheetRef<BottomSheetManageFileComponent>);
 
   isSaveExistingFileEnabled$ = new BehaviorSubject(false);
-  cachedFiles$ = this.localStorageService
+  cachedFiles$ = this.cachedFilesService
     .getCachedFiles$()
     .pipe(
       map((cachedFiles: CachedFile[]) =>
@@ -93,7 +92,7 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
       }),
     );
     this.appContextService.setEditing(false);
-    this.localStorageService.saveFile(cachedFile.chordproContent);
+    this.cachedFilesService.saveFile(cachedFile.chordproContent);
 
     this.bottomSheetRef.dismiss();
   }
