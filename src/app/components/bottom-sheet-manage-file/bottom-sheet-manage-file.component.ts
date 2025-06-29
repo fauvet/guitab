@@ -61,6 +61,10 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
       .subscribe((fileHandle) =>
         this.isSaveExistingFileEnabled$.next(!!fileHandle && fileHandle instanceof FileSystemFileHandle),
       );
+
+    this.bottomSheetRef.afterDismissed().subscribe(() => {
+      this.chordproService.requestEditorFocus();
+    });
   }
 
   ngOnDestroy(): void {

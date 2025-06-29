@@ -36,7 +36,7 @@ export class ChordproService {
     this.areLyricsDisplayed$.subscribe((areLyricsDisplayed) => this.onAreLyricsDisplayed(areLyricsDisplayed));
   }
 
-  get editor() {
+  private get editor() {
     return ChordProjectEditor.Main.getEditor();
   }
 
@@ -219,6 +219,7 @@ export class ChordproService {
   initialize(): void {
     ChordProjectEditor.Main.init();
     this.listenCursorChanges();
+    this.requestEditorFocus();
   }
 
   listenCursorChanges(): void {
@@ -300,7 +301,6 @@ export class ChordproService {
   insertChord(chordName: string): void {
     const newText = `[${chordName}]`;
     this.insertContentAtCurrentCaret(newText);
-    this.editor.focus();
   }
 
   removeChord(): void {
@@ -373,6 +373,7 @@ export class ChordproService {
 
     this.setChordproContent(newChordproContent);
     this.editor.moveCursorToPosition(newCursorPosition);
+    this.requestEditorFocus();
   }
 
   private insertDirective(directiveName: string, isPair = true) {
@@ -404,5 +405,9 @@ export class ChordproService {
     const newCursorPosition = structuredClone(this.editor.getCursorPosition());
     newCursorPosition.column -= 1;
     this.editor.moveCursorToPosition(newCursorPosition);
+  }
+
+  requestEditorFocus(): void {
+    this.editor.focus();
   }
 }

@@ -5,6 +5,7 @@ import { MatListModule } from "@angular/material/list";
 import { ChordproService } from "../../services/chordpro/chordpro.service";
 import { AsyncPipe } from "@angular/common";
 import { AppContextService } from "../../services/app-context/app-context.service";
+import { MatBottomSheetRef } from "@angular/material/bottom-sheet";
 
 @Component({
   selector: "app-bottom-sheet-settings",
@@ -14,8 +15,15 @@ import { AppContextService } from "../../services/app-context/app-context.servic
   styleUrl: "./bottom-sheet-settings.component.css",
 })
 export class BottomSheetSettingsComponent {
-  readonly appContextService = inject(AppContextService);
-  readonly chordproService = inject(ChordproService);
+  public readonly appContextService = inject(AppContextService);
+  public readonly chordproService = inject(ChordproService);
+  private readonly bottomSheetRef = inject(MatBottomSheetRef<BottomSheetSettingsComponent>);
+
+  ngOnInit(): void {
+    this.bottomSheetRef.afterDismissed().subscribe(() => {
+      this.chordproService.requestEditorFocus();
+    });
+  }
 
   onItemShowLyricsClicked(): void {
     const areLyricsDisplayed = this.chordproService.areLyricsDisplayed();

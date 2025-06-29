@@ -58,10 +58,12 @@ export class HeaderActionsBarComponent implements OnInit, OnDestroy {
 
   onButtonUndoClicked(): void {
     this.keyboardShortcutService.undo();
+    this.chordproService.requestEditorFocus();
   }
 
   onButtonRedoClicked(): void {
     this.keyboardShortcutService.redo();
+    this.chordproService.requestEditorFocus();
   }
 
   onButtonManageFileClicked(): void {
@@ -82,18 +84,22 @@ export class HeaderActionsBarComponent implements OnInit, OnDestroy {
 
   onButtonEditClicked(): void {
     this.appContextService.setEditing(true);
+    this.chordproService.requestEditorFocus();
   }
 
   onButtonResetZoomClicked(): void {
     this.zoomService.resetZoom();
+    this.chordproService.requestEditorFocus();
   }
 
   onButtonZoomInClicked(): void {
     this.zoomService.incrementZoom();
+    this.chordproService.requestEditorFocus();
   }
 
   onButtonZoomOutClicked(): void {
     this.zoomService.decrementZoom();
+    this.chordproService.requestEditorFocus();
   }
 
   openBottomSheetComponent(componentType: ComponentType<unknown>): void {

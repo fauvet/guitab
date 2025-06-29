@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, OnInit } from "@angular/core";
 import { MatBottomSheetRef } from "@angular/material/bottom-sheet";
 import { MatRipple } from "@angular/material/core";
 import { MatListModule } from "@angular/material/list";
@@ -12,9 +12,15 @@ import { ChordproService } from "../../services/chordpro/chordpro.service";
   styleUrl: "./bottom-sheet-insert-directive.component.css",
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class BottomSheetInsertDirectiveComponent {
-  private chordproService = inject(ChordproService);
-  private bottomSheetRef = inject(MatBottomSheetRef<BottomSheetInsertDirectiveComponent>);
+export class BottomSheetInsertDirectiveComponent implements OnInit {
+  private readonly chordproService = inject(ChordproService);
+  private readonly bottomSheetRef = inject(MatBottomSheetRef<BottomSheetInsertDirectiveComponent>);
+
+  ngOnInit(): void {
+    this.bottomSheetRef.afterDismissed().subscribe(() => {
+      this.chordproService.requestEditorFocus();
+    });
+  }
 
   onButtonInsertMetaYouTubeClicked(): void {
     this.chordproService.insertDirectiveMetaYouTube();

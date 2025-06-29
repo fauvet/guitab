@@ -62,9 +62,14 @@ export class FooterActionsBarComponent implements OnInit {
   }
 
   onButtonInsertChordClicked(): void {
-    this.dialog.open(DialogSelectChordComponent, {
-      data: {},
-    });
+    this.dialog
+      .open(DialogSelectChordComponent, {
+        data: {},
+      })
+      .afterClosed()
+      .subscribe(() => {
+        this.chordproService.requestEditorFocus();
+      });
   }
 
   onButtonDefineChordClicked(): void {

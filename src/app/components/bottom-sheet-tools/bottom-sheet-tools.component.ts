@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, OnInit } from "@angular/core";
 import { MatBottomSheetRef } from "@angular/material/bottom-sheet";
 import { MatListModule } from "@angular/material/list";
 import { MatDialog } from "@angular/material/dialog";
@@ -6,6 +6,7 @@ import { DialogExternalToolComponent } from "../dialog-external-tool/dialog-exte
 import { MatIcon } from "@angular/material/icon";
 import { MatRipple } from "@angular/material/core";
 import { DialogSoloTabEditorComponent } from "../dialog-solo-tab-editor/dialog-solo-tab-editor.component";
+import { ChordproService } from "../../services/chordpro/chordpro.service";
 
 @Component({
   selector: "app-bottom-sheet-tools",
@@ -15,9 +16,16 @@ import { DialogSoloTabEditorComponent } from "../dialog-solo-tab-editor/dialog-s
   styleUrl: "./bottom-sheet-tools.component.css",
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class BottomSheetToolsComponent {
-  private bottomSheetRef = inject(MatBottomSheetRef<BottomSheetToolsComponent>);
+export class BottomSheetToolsComponent implements OnInit {
+  private readonly chordproService = inject(ChordproService);
+  private readonly bottomSheetRef = inject(MatBottomSheetRef<BottomSheetToolsComponent>);
   private readonly dialog = inject(MatDialog);
+
+  ngOnInit(): void {
+    this.bottomSheetRef.afterDismissed().subscribe(() => {
+      this.chordproService.requestEditorFocus();
+    });
+  }
 
   private openDialogExternalTool(url: string): void {
     this.bottomSheetRef.dismiss();
