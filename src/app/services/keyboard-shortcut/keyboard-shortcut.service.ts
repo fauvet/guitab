@@ -21,11 +21,9 @@ export class KeyboardShortcutService {
   }
 
   initialize(): void {
-    window.addEventListener("beforeunload", (event) => {
-      if (this.chordproService.hasUnsavedChanges()) {
-        event.preventDefault();
-      }
-    });
+    // This method exists to allow the service to be explicitly called and injected,
+    // preventing errors when injecting the service into a component that does not use it directly.
+    // Since this is an Angular service, the constructor is called only once during the application's lifetime.
   }
 
   private async onKeyDown(event: KeyboardEvent): Promise<void> {
@@ -64,7 +62,7 @@ export class KeyboardShortcutService {
     if (!this.checkUnsavedChanges()) return false;
 
     const file = await FileUtil.loadEmptyFile();
-    this.appContextService.setFileHandle(file);
+    await this.appContextService.setFileHandle(file);
     this.appContextService.setEditing(true);
     return true;
   }
@@ -88,7 +86,7 @@ export class KeyboardShortcutService {
       file = filePicker[0];
     }
 
-    this.appContextService.setFileHandle(file);
+    await this.appContextService.setFileHandle(file);
     this.appContextService.setEditing(false);
 
     const chordproContent = (await FileUtil.getFileContent(file)) ?? "";
@@ -98,7 +96,7 @@ export class KeyboardShortcutService {
   }
 
   async saveFile(): Promise<boolean> {
-    const fileHandle = this.appContextService.getFileHandle();
+    const fileHandle = this.appContextService.getFileHandleWithContent()?.fileHandle ?? null;
 
     const isActionPerformed =
       !fileHandle || !(fileHandle instanceof FileSystemFileHandle)
@@ -140,7 +138,7 @@ export class KeyboardShortcutService {
           ],
         });
         await this.saveFileHandle(fileHandle);
-        this.appContextService.setFileHandle(fileHandle);
+        await this.appContextService.setFileHandle(fileHandle);
         resolve(true);
         return;
       }

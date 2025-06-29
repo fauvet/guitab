@@ -1,7 +1,7 @@
 import { inject, Injectable } from "@angular/core";
 import { BehaviorSubject, Observable } from "rxjs";
 import { FileUtil } from "../../utils/file.util";
-import { AppContextService } from "../app-context/app-context.service";
+import { AppContextService, FileHandleWithContent } from "../app-context/app-context.service";
 // @ts-ignore
 import * as ChordProjectEditor from "chordproject-editor";
 import { StringUtil } from "../../utils/string.util";
@@ -31,7 +31,9 @@ export class ChordproService {
   private readonly isRemovableChordEnabled$ = new BehaviorSubject<boolean>(false);
 
   constructor() {
-    this.appContextService.getFileHandle$().subscribe(async (fileHandle) => await this.onFileChanged(fileHandle));
+    this.appContextService
+      .getFileHandleWithContent$()
+      .subscribe(async (fileHandleWithContent) => await this.onFileHandleWithContentChanged(fileHandleWithContent));
     this.chordproContent$.subscribe((chordproContent) => this.onChordproContentChanged(chordproContent));
     this.areLyricsDisplayed$.subscribe((areLyricsDisplayed) => this.onAreLyricsDisplayed(areLyricsDisplayed));
   }
@@ -40,11 +42,11 @@ export class ChordproService {
     return ChordProjectEditor.Main.getEditor();
   }
 
-  private async onFileChanged(fileHandle: null | File | FileSystemFileHandle): Promise<void> {
-    const fileContent = await FileUtil.getFileContent(fileHandle);
-    this.setChordproContent(fileContent ?? "");
+  private async onFileHandleWithContentChanged(fileHandleWithContent: null | FileHandleWithContent): Promise<void> {
+    const chordproContent = fileHandleWithContent?.content ?? "";
     this.resetHistoryState();
-    this.updateChordproSaveState();
+    this.updateChordproSaveState(chordproContent);
+    this.setChordproContent(chordproContent);
   }
 
   private onChordproContentChanged(chordproContent: string): void {
@@ -95,10 +97,10 @@ export class ChordproService {
     return match ? match[2].trim() : null;
   }
 
-  private buildChordproSaveState(): ChordproSaveState {
+  private buildChordproSaveState(chordproContent = this.getChordproContent()): ChordproSaveState {
     return {
-      fileHandle: this.appContextService.getFileHandle(),
-      chordproContent: this.getChordproContent(),
+      fileHandle: this.appContextService.getFileHandleWithContent()?.fileHandle ?? null,
+      chordproContent: chordproContent,
     };
   }
 
@@ -196,7 +198,7 @@ export class ChordproService {
     this.isRemovableChordEnabled$.next(isRemovableChordEnabled);
   }
 
-  private setChordproContent(chordproContent: string): void {
+  setChordproContent(chordproContent: string): void {
     if (chordproContent == this.getChordproContent()) return;
     this.chordproContent$.next(chordproContent);
   }
@@ -251,8 +253,8 @@ export class ChordproService {
     this.setEditorRedo(hasRedo);
   }
 
-  updateChordproSaveState(): void {
-    const chordproSaveState = this.buildChordproSaveState();
+  updateChordproSaveState(chordproContent = this.getChordproContent()): void {
+    const chordproSaveState = this.buildChordproSaveState(chordproContent);
     this.setChordproSaveState(chordproSaveState);
   }
 
@@ -357,7 +359,7 @@ export class ChordproService {
   }
 
   private resetHistoryState(): void {
-    this.editor.getSession().getUndoManager().reset();
+    this.editor?.getSession()?.getUndoManager()?.reset();
     this.setEditorUndo(false);
     this.setEditorRedo(false);
   }

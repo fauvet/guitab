@@ -2,12 +2,15 @@ import { Injectable } from "@angular/core";
 import { BehaviorSubject, Observable } from "rxjs";
 import { BluetoothUtil } from "../../utils/bluetooth.util";
 import { WakeLockUtil } from "../../utils/wake-lock.util";
+import { FileUtil } from "../../utils/file.util";
+
+export type FileHandleWithContent = { fileHandle: File | FileSystemFileHandle; content: string };
 
 @Injectable({
   providedIn: "root",
 })
 export class AppContextService {
-  private readonly fileHandle$ = new BehaviorSubject<null | File | FileSystemFileHandle>(null);
+  private readonly fileHandleWithContent$ = new BehaviorSubject<null | FileHandleWithContent>(null);
   private readonly isEditing$ = new BehaviorSubject<boolean>(false);
   private readonly isWakeLock$ = new BehaviorSubject<boolean>(false);
   private readonly isBluetoothKeptAlive$ = new BehaviorSubject<boolean>(false);
@@ -19,12 +22,12 @@ export class AppContextService {
     );
   }
 
-  getFileHandle$(): Observable<null | File | FileSystemFileHandle> {
-    return this.fileHandle$.asObservable();
+  getFileHandleWithContent$(): Observable<null | FileHandleWithContent> {
+    return this.fileHandleWithContent$.asObservable();
   }
 
-  getFileHandle(): null | File | FileSystemFileHandle {
-    return this.fileHandle$.getValue();
+  getFileHandleWithContent(): null | FileHandleWithContent {
+    return this.fileHandleWithContent$.getValue();
   }
 
   getIsEditing$(): Observable<boolean> {
@@ -51,9 +54,10 @@ export class AppContextService {
     return this.isBluetoothKeptAlive$.getValue();
   }
 
-  setFileHandle(fileHandle: null | File | FileSystemFileHandle): void {
-    if (fileHandle == this.getFileHandle()) return;
-    this.fileHandle$.next(fileHandle);
+  async setFileHandle(fileHandle: null | File | FileSystemFileHandle): Promise<void> {
+    if (fileHandle == this.getFileHandleWithContent()?.fileHandle) return;
+    const content = await FileUtil.getFileContent(fileHandle);
+    this.fileHandleWithContent$.next({ fileHandle, content } as FileHandleWithContent);
   }
 
   setEditing(isEditing: boolean): void {

@@ -56,11 +56,12 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
     this.cachedFiles$.subscribe((cachedFiles) => this.onCachedFilesChanged(cachedFiles));
 
     this.appContextService
-      .getFileHandle$()
+      .getFileHandleWithContent$()
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((fileHandle) =>
-        this.isSaveExistingFileEnabled$.next(!!fileHandle && fileHandle instanceof FileSystemFileHandle),
-      );
+      .subscribe((fileHandleWithContent) => {
+        const fileHandle = fileHandleWithContent?.fileHandle ?? null;
+        this.isSaveExistingFileEnabled$.next(!!fileHandle && fileHandle instanceof FileSystemFileHandle);
+      });
 
     this.bottomSheetRef.afterDismissed().subscribe(() => {
       this.chordproService.requestEditorFocus();
@@ -123,7 +124,7 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
   }
 
   async onButtonCachedFileClicked(cachedFile: CachedFile): Promise<void> {
-    this.appContextService.setFileHandle(
+    await this.appContextService.setFileHandle(
       new File([cachedFile.chordproContent], "cached_file.cho", {
         type: "text/plain",
       }),

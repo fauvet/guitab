@@ -12,6 +12,9 @@ import { MatIconRegistry } from "@angular/material/icon";
 import { DomSanitizer } from "@angular/platform-browser";
 import { MaterialIconsUtil } from "./utils/material-icons.util";
 import { KeyboardShortcutService } from "./services/keyboard-shortcut/keyboard-shortcut.service";
+import { BeforeUnloadService } from "./services/before-unload/before-unload.service";
+import { empty } from "rxjs";
+import { ChordproService } from "./services/chordpro/chordpro.service";
 
 @Component({
   selector: "app-root",
@@ -32,6 +35,8 @@ import { KeyboardShortcutService } from "./services/keyboard-shortcut/keyboard-s
 export class AppComponent implements OnInit {
   private readonly appContextService = inject(AppContextService);
   private readonly keyboardShortcutService = inject(KeyboardShortcutService);
+  private readonly beforeUnloadService = inject(BeforeUnloadService);
+  private readonly chordproService = inject(ChordproService);
   private readonly matIconRegistry = inject(MatIconRegistry);
   private readonly domSanitizer = inject(DomSanitizer);
   private readonly acivatedRoute = inject(ActivatedRoute);
@@ -44,17 +49,30 @@ export class AppComponent implements OnInit {
   constructor() {
     MaterialIconsUtil.registerIcons(this.matIconRegistry, this.domSanitizer);
     this.keyboardShortcutService.initialize();
+    this.beforeUnloadService.initialize();
   }
 
   ngOnInit(): void {
     this.handleLaunchQueue();
     this.appContextService.getIsEditing$().subscribe((isEditing) => (this.isEditing = isEditing));
-    this.acivatedRoute.queryParamMap.subscribe((params) => {
+    this.acivatedRoute.queryParamMap.subscribe(async (params) => {
       const loadValue = params.get("load");
       const isDemo = loadValue === "demo";
-      const promiseLoadFile = isDemo ? FileUtil.loadSampleFile() : FileUtil.loadEmptyFile();
       this.appContextService.setEditing(!isDemo);
-      promiseLoadFile.then((file) => this.appContextService.setFileHandle(file));
+
+      if (isDemo) {
+        const demoFile = await FileUtil.loadSampleFile();
+        await this.appContextService.setFileHandle(demoFile);
+        return;
+      }
+
+      const draftUnsavedChordproContent = this.beforeUnloadService.findDraftUnsavedChordproContent();
+      const emptyFile = await FileUtil.loadEmptyFile();
+      await this.appContextService.setFileHandle(emptyFile);
+
+      if (draftUnsavedChordproContent) {
+        this.chordproService.setChordproContent(draftUnsavedChordproContent);
+      }
     });
   }
 
@@ -64,7 +82,7 @@ export class AppComponent implements OnInit {
     (window.launchQueue as unknown as any).setConsumer(async (launchParams: any) => {
       if (!launchParams?.files?.length) return;
       const fileHandle = launchParams.files[0];
-      this.appContextService.setFileHandle(fileHandle);
+      await this.appContextService.setFileHandle(fileHandle);
       this.appContextService.setEditing(false);
     });
   }
