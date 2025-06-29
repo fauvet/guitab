@@ -6,6 +6,11 @@
   </mat-list-item>
   <mat-list-item
     matRipple
+    (click)="onButtonInsertDefineClicked()">
+    <div matListItemTitle>{{ "Insert {define}" }}</div>
+  </mat-list-item>
+  <mat-list-item
+    matRipple
     (click)="onButtonInsertCommentClicked()">
     <div matListItemTitle>{{ "Insert {comment}" }}</div>
   </mat-list-item>

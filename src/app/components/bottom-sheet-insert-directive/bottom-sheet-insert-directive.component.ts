@@ -21,6 +21,11 @@ export class BottomSheetInsertDirectiveComponent {
     this.bottomSheetRef.dismiss();
   }
 
+  onButtonInsertDefineClicked(): void {
+    this.chordproService.insertDirectiveDefine();
+    this.bottomSheetRef.dismiss();
+  }
+
   onButtonInsertCommentClicked(): void {
     this.chordproService.insertDirectiveComment();
     this.bottomSheetRef.dismiss();

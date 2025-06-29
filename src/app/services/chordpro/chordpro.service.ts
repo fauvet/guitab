@@ -264,6 +264,10 @@ export class ChordproService {
     this.insertDirective("meta:youtube", false);
   }
 
+  insertDirectiveDefine(): void {
+    this.insertDirective("define: Name base-fret 3 frets x 1 3 3 3 1 fingers x 1 2 3 4 1", false);
+  }
+
   insertDirectiveComment(): void {
     this.insertDirective("comment:", false);
   }
