@@ -90,6 +90,11 @@ export class ChordproService {
     return youTubeUrl;
   }
 
+  parseTitle(chordproContent: string): string | null {
+    const match = chordproContent.match(/\{\s*(title|t)\s*:\s*([^}]+)\}/i);
+    return match ? match[2].trim() : null;
+  }
+
   private buildChordproSaveState(): ChordproSaveState {
     return {
       fileHandle: this.appContextService.getFileHandle(),

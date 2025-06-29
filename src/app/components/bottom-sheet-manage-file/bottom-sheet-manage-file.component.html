@@ -47,15 +47,20 @@
     </mat-icon>
     <div matListItemTitle>Save file as... (Ctrl+Shift+S)</div>
   </mat-list-item>
-  @if (((cachedFiles$ | async) ?? []).length > 0) {
+  @if (((coveredCachedFiles$ | async) ?? []).length > 0) {
     <mat-divider />
     <div class="container-cached-files">
-      @for (cachedFile of cachedFiles$ | async; track cachedFile.date) {
+      @for (coveredCachedFile of coveredCachedFiles$ | async; track coveredCachedFile.date) {
         <mat-list-item
           matRipple
-          (click)="onButtonCachedFileClicked(cachedFile)">
-          <span matListItemTitle>{{ cachedFile.name }}</span>
-          <span matListItemLine>{{ BUILD_TIME_AGO(cachedFile.date) }}</span>
+          (click)="onButtonCachedFileClicked(coveredCachedFile)">
+          <img
+            class="album-cover"
+            matListItemIcon
+            alt="cover"
+            [src]="coveredCachedFile.cover" />
+          <span matListItemTitle>{{ coveredCachedFile.name }}</span>
+          <span matListItemLine>{{ BUILD_TIME_AGO(coveredCachedFile.date) }}</span>
         </mat-list-item>
       }
     </div>

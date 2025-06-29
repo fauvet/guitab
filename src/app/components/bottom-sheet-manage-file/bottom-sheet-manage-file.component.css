@@ -11,6 +11,11 @@
       color: #000000;
       margin: auto !important;
       padding: 0 20px;
+
+      &.album-cover {
+        height: 48px;
+        width: 48px;
+      }
     }
   }
 }
