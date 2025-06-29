@@ -20,7 +20,13 @@ export class KeyboardShortcutService {
     document.addEventListener("keydown", async (event) => await this.onKeyDown(event));
   }
 
-  initialize(): void {} // does nothing explictly but creates the service and calls the constructor
+  initialize(): void {
+    window.addEventListener("beforeunload", (event) => {
+      if (this.chordproService.hasUnsavedChanges()) {
+        event.preventDefault();
+      }
+    });
+  }
 
   private async onKeyDown(event: KeyboardEvent): Promise<void> {
     if (document.querySelector(".cdk-overlay-backdrop-showing") !== null) return;
