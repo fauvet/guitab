@@ -6,15 +6,15 @@ import { DialogExternalToolComponent } from "../dialog-external-tool/dialog-exte
 import { MatIcon } from "@angular/material/icon";
 import { MatRipple } from "@angular/material/core";
 import { DialogSoloTabEditorComponent } from "../dialog-solo-tab-editor/dialog-solo-tab-editor.component";
+import { DialogImportChordsOverLyricsComponent } from "../dialog-import-chords-over-lyrics/dialog-import-chords-over-lyrics.component";
 import { ChordproService } from "../../services/chordpro/chordpro.service";
 
 @Component({
-  selector: "app-bottom-sheet-tools",
-  standalone: true,
-  imports: [MatListModule, MatIcon, MatRipple],
-  templateUrl: "./bottom-sheet-tools.component.html",
-  styleUrl: "./bottom-sheet-tools.component.css",
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: "app-bottom-sheet-tools",
+    imports: [MatListModule, MatIcon, MatRipple],
+    templateUrl: "./bottom-sheet-tools.component.html",
+    styleUrl: "./bottom-sheet-tools.component.css",
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BottomSheetToolsComponent implements OnInit {
   private readonly chordproService = inject(ChordproService);
@@ -70,6 +70,25 @@ export class BottomSheetToolsComponent implements OnInit {
         width: "95%",
       })
       .afterClosed()
-      .subscribe(() => {});
+      .subscribe((result: string | undefined) => {
+        if (result) {
+          this.chordproService.insertChordproContentAtCaret(result);
+        }
+      });
+  }
+
+  onItemImportChordsOverLyricsClicked(): void {
+    this.bottomSheetRef.dismiss();
+    this.dialog
+      .open(DialogImportChordsOverLyricsComponent, {
+        height: "95%",
+        width: "95%",
+      })
+      .afterClosed()
+      .subscribe((result: string | undefined) => {
+        if (result) {
+          this.chordproService.insertChordproContentAtCaret(result);
+        }
+      });
   }
 }

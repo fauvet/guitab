@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { MatIconTestingModule } from '@angular/material/icon/testing';
 import { FooterActionsBarComponent } from './footer-actions-bar.component';
 
 describe('FooterActionsBarComponent', () => {
@@ -8,10 +9,9 @@ describe('FooterActionsBarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FooterActionsBarComponent]
-    })
-    .compileComponents();
-    
+      imports: [FooterActionsBarComponent, NoopAnimationsModule, MatIconTestingModule],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(FooterActionsBarComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

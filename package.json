@@ -11,6 +11,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "start:devcontainer": "ng serve --host 0.0.0.0",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
@@ -19,46 +20,49 @@
     "deploy": "gh-pages -d docs"
   },
   "dependencies": {
-    "@angular/animations": "^17.3.6",
-    "@angular/common": "^17.3.0",
-    "@angular/compiler": "^17.3.0",
-    "@angular/core": "^17.3.0",
-    "@angular/forms": "^17.3.0",
-    "@angular/material": "^17.3.6",
-    "@angular/platform-browser": "^17.3.0",
-    "@angular/platform-browser-dynamic": "^17.3.0",
-    "@angular/router": "^17.3.0",
-    "@angular/service-worker": "^17.3.0",
+    "@angular/animations": "^22.0.2",
+    "@angular/common": "^22.0.2",
+    "@angular/compiler": "^22.0.2",
+    "@angular/core": "^22.0.2",
+    "@angular/forms": "^22.0.2",
+    "@angular/material": "^22.0.2",
+    "@angular/platform-browser": "^22.0.2",
+    "@angular/platform-browser-dynamic": "^22.0.2",
+    "@angular/router": "^22.0.2",
+    "@angular/service-worker": "^22.0.2",
     "chordproject-editor": "^0.1.11",
     "chordproject-parser": "^0.2.14",
     "file-saver": "^2.0.5",
     "javascript-time-ago": "^2.5.11",
     "lodash": "^4.17.21",
     "material-icons": "^1.13.12",
-    "ngx-toastr": "^18.0.0",
+    "ngx-toastr": "^20.0.5",
     "rxjs": "~7.8.0",
     "safe-pipe": "^3.0.4",
     "svguitar": "^2.4.1",
     "tslib": "^2.3.0",
-    "zone.js": "~0.14.3"
+    "zone.js": "~0.15.1"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^17.3.5",
-    "@angular/cli": "^17.3.5",
-    "@angular/compiler-cli": "^17.3.0",
+    "@angular/build": "^22.0.4",
+    "@angular/cli": "^22.0.4",
+    "@angular/compiler-cli": "^22.0.2",
     "@types/file-saver": "^2.0.7",
-    "@types/jasmine": "~5.1.0",
     "@types/lodash": "^4.17.15",
-    "@types/wicg-file-system-access": "^2023.10.5",
+    "@types/wicg-file-system-access": "^2023.10.7",
+    "@vitest/browser": "^4.1.9",
     "gh-pages": "^6.1.1",
-    "jasmine-core": "~5.1.0",
-    "karma": "~6.4.0",
-    "karma-chrome-launcher": "~3.2.0",
-    "karma-coverage": "~2.2.0",
-    "karma-jasmine": "~5.1.0",
-    "karma-jasmine-html-reporter": "~2.1.0",
+    "jsdom": "^29.1.1",
+    "playwright": "^1.61.1",
     "prettier": "^3.2.5",
     "prettier-plugin-organize-attributes": "^1.0.0",
-    "typescript": "~5.4.2"
+    "typescript": "~6.0.3",
+    "vitest": "^4.1.9"
+  },
+  "overrides": {
+    "ngx-toastr": {
+      "@angular/common": "^22.0.0",
+      "@angular/core": "^22.0.0"
+    }
   }
 }

@@ -3,12 +3,11 @@ import { Subject } from "rxjs";
 import { ChordproService } from "../../services/chordpro/chordpro.service";
 
 @Component({
-  selector: "app-chordpro-editor",
-  standalone: true,
-  imports: [],
-  templateUrl: "./chordpro-editor.component.html",
-  styleUrl: "./chordpro-editor.component.css",
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: "app-chordpro-editor",
+    imports: [],
+    templateUrl: "./chordpro-editor.component.html",
+    styleUrl: "./chordpro-editor.component.css",
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ChordproEditorComponent implements OnInit, OnDestroy {
   private readonly chordproService = inject(ChordproService);

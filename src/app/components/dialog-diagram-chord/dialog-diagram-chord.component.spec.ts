@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { DialogDiagramChordComponent } from './dialog-diagram-chord.component';
 
 describe('DialogDiagramChordComponent', () => {
@@ -8,10 +9,10 @@ describe('DialogDiagramChordComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DialogDiagramChordComponent]
-    })
-    .compileComponents();
-    
+      imports: [DialogDiagramChordComponent, NoopAnimationsModule],
+      providers: [{ provide: MAT_DIALOG_DATA, useValue: { chordName: '' } }],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(DialogDiagramChordComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

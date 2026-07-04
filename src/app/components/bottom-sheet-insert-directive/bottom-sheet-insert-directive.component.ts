@@ -5,12 +5,11 @@ import { MatListModule } from "@angular/material/list";
 import { ChordproService } from "../../services/chordpro/chordpro.service";
 
 @Component({
-  selector: "app-bottom-sheet-insert-directive",
-  standalone: true,
-  imports: [MatListModule, MatRipple],
-  templateUrl: "./bottom-sheet-insert-directive.component.html",
-  styleUrl: "./bottom-sheet-insert-directive.component.css",
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: "app-bottom-sheet-insert-directive",
+    imports: [MatListModule, MatRipple],
+    templateUrl: "./bottom-sheet-insert-directive.component.html",
+    styleUrl: "./bottom-sheet-insert-directive.component.css",
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BottomSheetInsertDirectiveComponent implements OnInit {
   private readonly chordproService = inject(ChordproService);

@@ -368,8 +368,15 @@ export class ChordproService {
     const chordproCaretPositionIndex = this.getChordproCaretPositionIndex();
     const chordproContent = this.getChordproContent();
     const trueCaretPositionIndex = Math.min(chordproContent.length, chordproCaretPositionIndex);
-    const newCursorPosition = structuredClone(this.editor.getCursorPosition());
-    newCursorPosition.column += content.length;
+    const currentPosition = this.editor.getCursorPosition();
+    const newCursorPosition = structuredClone(currentPosition);
+    const lines = content.split("\n");
+    if (lines.length > 1) {
+      newCursorPosition.row += lines.length - 1;
+      newCursorPosition.column = lines[lines.length - 1].length;
+    } else {
+      newCursorPosition.column += content.length;
+    }
     const newChordproContent =
       chordproContent.slice(0, trueCaretPositionIndex) + content + chordproContent.slice(trueCaretPositionIndex);
 
@@ -407,6 +414,10 @@ export class ChordproService {
     const newCursorPosition = structuredClone(this.editor.getCursorPosition());
     newCursorPosition.column -= 1;
     this.editor.moveCursorToPosition(newCursorPosition);
+  }
+
+  insertChordproContentAtCaret(content: string): void {
+    this.insertContentAtCurrentCaret(content);
   }
 
   requestEditorFocus(): void {

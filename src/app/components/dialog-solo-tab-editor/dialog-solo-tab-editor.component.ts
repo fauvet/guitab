@@ -1,22 +1,18 @@
 import { AsyncPipe } from "@angular/common";
-import { Component, ElementRef, OnInit, ViewChild } from "@angular/core";
+import { ChangeDetectionStrategy, Component, ElementRef, inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
-import { MatDialogActions, MatDialogClose, MatDialogContent, MatDialogTitle } from "@angular/material/dialog";
+import { MatDialogActions, MatDialogClose, MatDialogContent, MatDialogRef, MatDialogTitle } from "@angular/material/dialog";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import _ from "lodash";
-import { BehaviorSubject, debounceTime } from "rxjs";
+import { BehaviorSubject, Subject } from "rxjs";
+import { debounceTime, takeUntil } from "rxjs/operators";
 import { StringUtil } from "../../utils/string.util";
-
-type HandyRow = {
-  input: string;
-  output: string[];
-};
+import { HandyRow, SoloTabUtil } from "../../utils/solo-tab.util";
 
 @Component({
   selector: "app-dialog-solo-tab-editor",
-  standalone: true,
   imports: [
     AsyncPipe,
     MatDialogTitle,
@@ -29,9 +25,13 @@ type HandyRow = {
     MatInputModule,
   ],
   templateUrl: "./dialog-solo-tab-editor.component.html",
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: "./dialog-solo-tab-editor.component.css",
 })
-export class DialogSoloTabEditorComponent implements OnInit {
+export class DialogSoloTabEditorComponent implements OnInit, OnDestroy {
+  private readonly dialogRef = inject(MatDialogRef<DialogSoloTabEditorComponent>);
+  private readonly unsubscribe$ = new Subject<void>();
+
   @ViewChild("editor") editorRef!: ElementRef<HTMLTextAreaElement>;
 
   soloTab$ = new BehaviorSubject("e B G D A E\n|\n");
@@ -39,7 +39,11 @@ export class DialogSoloTabEditorComponent implements OnInit {
   handyRows$ = new BehaviorSubject(new Array<HandyRow>());
 
   ngOnInit(): void {
-    this.soloTab$.pipe(debounceTime(200)).subscribe((soloTab) => this.onSoloTabChanged(soloTab));
+    this.soloTab$.pipe(debounceTime(200), takeUntil(this.unsubscribe$)).subscribe((soloTab) => this.onSoloTabChanged(soloTab));
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribe$.next();
   }
 
   private getSoloTab(): string {
@@ -70,52 +74,8 @@ export class DialogSoloTabEditorComponent implements OnInit {
   }
 
   onSoloTabChanged(soloTab: string): void {
-    const lines = soloTab.split("\n").map((line) => line.trimEnd());
-    const nbStrings = Math.max(...lines.map((line) => line.split(" ").length));
-    const matrix = lines.map((line) => {
-      const row: string[] = new Array(nbStrings);
-
-      if (line === "|") {
-        row.fill("|");
-        return row;
-      }
-
-      row.fill("-");
-
-      if (line === "..") {
-        const index = Math.round(nbStrings / 2) - 1;
-        row[index] = "•";
-        row[index + 1] = "•";
-        return row;
-      }
-
-      const stringValues = line.split(" ").map((stringValue) => (stringValue === "" ? "-" : stringValue));
-      Object.assign(row, stringValues);
-
-      const maxStringValueLength = Math.max(...stringValues.map((stringValue) => stringValue.length));
-      return row.map((stringValue) => stringValue.padEnd(maxStringValueLength, "-"));
-    });
-
-    const uniqueHandyRows = _.range(lines.length)
-      .map(
-        (lineIndex) =>
-          ({
-            input: lines[lineIndex],
-            output: matrix[lineIndex],
-          }) as HandyRow,
-      )
-      .filter(
-        (handyRow, lineIndex, handyRows) =>
-          !handyRows
-            .slice(0, lineIndex)
-            .map((handyRow) => handyRow.input)
-            .includes(handyRow.input),
-      );
-    this.setHandyRows(uniqueHandyRows);
-
-    const generatedSoloTab = _.range(nbStrings)
-      .map((stringIndex) => matrix.reduce((acc, row) => (acc += row[stringIndex]), ""))
-      .join("\n");
+    const { generatedSoloTab, handyRows } = SoloTabUtil.convert(soloTab);
+    this.setHandyRows(handyRows);
     this.setGeneratedSoloTab(generatedSoloTab);
   }
 
@@ -130,5 +90,19 @@ export class DialogSoloTabEditorComponent implements OnInit {
     const newCursorPos = cursorIndex + handyRow.input.length + 2;
     editor.selectionStart = editor.selectionEnd = newCursorPos;
     editor.focus();
+  }
+
+  onCopyClicked(): void {
+    const text = this.generatedSoloTab$.getValue();
+    if (text) {
+      navigator.clipboard.writeText(text);
+    }
+  }
+
+  onInsertClicked(): void {
+    const text = this.generatedSoloTab$.getValue();
+    if (text) {
+      this.dialogRef.close(text);
+    }
   }
 }

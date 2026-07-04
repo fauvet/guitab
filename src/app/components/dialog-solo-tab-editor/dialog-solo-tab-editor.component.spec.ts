@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { MatDialogRef } from '@angular/material/dialog';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { DialogSoloTabEditorComponent } from './dialog-solo-tab-editor.component';
 
 describe('DialogSoloTabEditorComponent', () => {
@@ -8,7 +9,8 @@ describe('DialogSoloTabEditorComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DialogSoloTabEditorComponent]
+      imports: [DialogSoloTabEditorComponent, NoopAnimationsModule],
+      providers: [{ provide: MatDialogRef, useValue: { close: () => {} } }],
     })
     .compileComponents();
     

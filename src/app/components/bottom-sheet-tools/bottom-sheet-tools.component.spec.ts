@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { BottomSheetToolsComponent } from './bottom-sheet-tools.component';
 
 describe('BottomSheetToolsComponent', () => {
@@ -8,10 +9,10 @@ describe('BottomSheetToolsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [BottomSheetToolsComponent]
-    })
-    .compileComponents();
-    
+      imports: [BottomSheetToolsComponent, NoopAnimationsModule],
+      providers: [{ provide: MatBottomSheetRef, useValue: { dismiss: () => {}, afterDismissed: () => ({ subscribe: () => {} }) } }],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(BottomSheetToolsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

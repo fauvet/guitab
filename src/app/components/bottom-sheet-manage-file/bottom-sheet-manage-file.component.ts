@@ -13,18 +13,17 @@ import { MatDividerModule } from "@angular/material/divider";
 import CachedFile from "../../types/cached-file.type";
 import DateUtil from "../../utils/date.util";
 import { CachedFilesService } from "../../services/cached-files/cached-files.service";
-import { HttpClient, HttpClientModule } from "@angular/common/http";
 import { ChordproService } from "../../services/chordpro/chordpro.service";
+import { HttpClient } from "@angular/common/http";
 
 export type CoveredCachedFile = CachedFile & { cover: string };
 
 @Component({
-  selector: "app-bottom-sheet-manage-file",
-  standalone: true,
-  imports: [MatListModule, MatIcon, MatRipple, MatButtonModule, AsyncPipe, MatDividerModule, HttpClientModule],
-  templateUrl: "./bottom-sheet-manage-file.component.html",
-  styleUrl: "./bottom-sheet-manage-file.component.css",
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: "app-bottom-sheet-manage-file",
+    imports: [MatListModule, MatIcon, MatRipple, MatButtonModule, AsyncPipe, MatDividerModule],
+    templateUrl: "./bottom-sheet-manage-file.component.html",
+    styleUrl: "./bottom-sheet-manage-file.component.css",
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
   private static readonly DEFAULT_ALBUM_COVER =

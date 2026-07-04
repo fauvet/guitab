@@ -35,6 +35,13 @@
   </mat-list-item>
   <mat-list-item
     matRipple
+    (click)="onItemImportChordsOverLyricsClicked()">
+    <mat-icon matListItemIcon>import_export</mat-icon>
+    <div matListItemTitle>{{ "Import chords over lyrics" }}</div>
+    <div matListItemLine>{{ "Convert chord chart to ChordPro" }}</div>
+  </mat-list-item>
+  <mat-list-item
+    matRipple
     (click)="onItemSoloTabEditorClicked()">
     <mat-icon matListItemIcon>format_list_numbered_rtl</mat-icon>
     <div matListItemTitle>{{ "Solo tab editor" }}</div>

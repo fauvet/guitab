@@ -72,7 +72,7 @@ export class KeyboardShortcutService {
 
     let file: null | File | FileSystemFileHandle = (event.target as HTMLInputElement)?.files?.[0] ?? null;
     if (this.canOpenFilePicker()) {
-      const filePicker = await window.showOpenFilePicker({
+      const filePicker = await (window as any).showOpenFilePicker({
         types: [
           {
             description: "ChordPro",
@@ -126,7 +126,7 @@ export class KeyboardShortcutService {
       const fileName = ChordproUtil.buildFileName(chordproContent);
 
       if (this.canSaveFilePicker()) {
-        const fileHandle = await window.showSaveFilePicker({
+        const fileHandle = await (window as any).showSaveFilePicker({
           suggestedName: fileName,
           types: [
             {

@@ -1,23 +1,29 @@
 export class BluetoothUtil {
-  private static readonly AUDIO_CONTEXT = new window.AudioContext();
-  private static readonly GAIN_NODE = BluetoothUtil.AUDIO_CONTEXT.createGain();
+  private static audioContext: AudioContext | null = null;
+  private static gainNode: GainNode | null = null;
   private static isConnected = false;
 
-  static {
-    const oscillator = BluetoothUtil.AUDIO_CONTEXT.createOscillator();
+  private static init(): void {
+    if (BluetoothUtil.audioContext) return;
+
+    BluetoothUtil.audioContext = new window.AudioContext();
+    BluetoothUtil.gainNode = BluetoothUtil.audioContext.createGain();
+
+    const oscillator = BluetoothUtil.audioContext.createOscillator();
     oscillator.frequency.value = 1;
     oscillator.type = "sine";
 
-    BluetoothUtil.GAIN_NODE.gain.value = 0.001;
+    BluetoothUtil.gainNode.gain.value = 0.001;
 
-    oscillator.connect(BluetoothUtil.GAIN_NODE);
+    oscillator.connect(BluetoothUtil.gainNode);
     oscillator.start();
   }
 
   static setBluetoothKeptAlive(isBluetoothKeptAlive: boolean): void {
     if (isBluetoothKeptAlive) {
+      BluetoothUtil.init();
       if (!BluetoothUtil.isConnected) {
-        BluetoothUtil.GAIN_NODE.connect(BluetoothUtil.AUDIO_CONTEXT.destination);
+        BluetoothUtil.gainNode!.connect(BluetoothUtil.audioContext!.destination);
       }
       BluetoothUtil.isConnected = true;
       return;
@@ -26,6 +32,6 @@ export class BluetoothUtil {
     if (!BluetoothUtil.isConnected) return;
 
     BluetoothUtil.isConnected = false;
-    BluetoothUtil.GAIN_NODE.disconnect(BluetoothUtil.AUDIO_CONTEXT.destination);
+    BluetoothUtil.gainNode!.disconnect(BluetoothUtil.audioContext!.destination);
   }
 }

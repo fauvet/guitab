@@ -14,12 +14,11 @@ import { BottomSheetSettingsComponent } from "../bottom-sheet-settings/bottom-sh
 import { ComponentType } from "@angular/cdk/portal";
 
 @Component({
-  selector: "app-header-actions-bar",
-  standalone: true,
-  imports: [MatButtonModule, MatIconModule, MatBottomSheetModule, AsyncPipe],
-  templateUrl: "./header-actions-bar.component.html",
-  styleUrl: "./header-actions-bar.component.css",
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: "app-header-actions-bar",
+    imports: [MatButtonModule, MatIconModule, MatBottomSheetModule, AsyncPipe],
+    templateUrl: "./header-actions-bar.component.html",
+    styleUrl: "./header-actions-bar.component.css",
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HeaderActionsBarComponent implements OnInit, OnDestroy {
   private readonly appContextService = inject(AppContextService);

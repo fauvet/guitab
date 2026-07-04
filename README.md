@@ -1,35 +1,87 @@
-# Guitab
+<div align="center">
+  <img src="src/assets/icons/logo.svg" alt="GuiTab logo" width="96" />
+  <h1>GuiTab</h1>
+  <p>A ChordPro guitar chord chart editor and viewer, built as a Progressive Web App.</p>
 
-## Run
+  [![Angular](https://img.shields.io/badge/Angular-22-DD0031?logo=angular&logoColor=white)](https://angular.dev)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+  [![RxJS](https://img.shields.io/badge/RxJS-7.8-B7178C?logo=reactivex&logoColor=white)](https://rxjs.dev)
+  [![Vitest](https://img.shields.io/badge/Vitest-4.1-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev)
+  [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
+  [![PWA](https://img.shields.io/badge/PWA-enabled-5A0FC8?logo=pwa&logoColor=white)](https://web.dev/progressive-web-apps/)
+</div>
+
+---
+
+## Links
 
 - [Application](https://fauvet.github.io/guitab/)
-
 - [Demo](https://fauvet.github.io/guitab/?load=demo)
 
-## Anguar CLI
+## Features
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.5.
+- Edit ChordPro files with syntax highlighting and one-click directive insertion
+- Side-by-side rendered chord sheet viewer
+- SVG guitar chord diagram grid, with support for custom chord definitions
+- Solo tab editor
+- Import chords over lyrics
+- Open and save files via the [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API) (with a file input fallback)
+- Recent files history stored locally
+- YouTube video embed via `{meta: youtube <url>}`
+- Undo/redo history
+- Keyboard shortcuts (Ctrl+O, Ctrl+S, Ctrl+Z...)
+- Zoom control
+- Wake Lock and Bluetooth keep-alive for hands-free reading
+- Draft auto-recovery on page reload
+- Installable as a PWA, with native file handler for `.cho`, `.crd`, `.chopro`, `.chord`, `.pro`
 
-### Development server
+## Tech stack
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+| | |
+|---|---|
+| Framework | [Angular 22](https://angular.dev) (standalone components, OnPush) |
+| UI | [Angular Material 22](https://material.angular.io) |
+| Reactive state | [RxJS 7](https://rxjs.dev) |
+| ChordPro parsing | [chordproject-parser](https://www.npmjs.com/package/chordproject-parser) |
+| ChordPro editor | [chordproject-editor](https://www.npmjs.com/package/chordproject-editor) |
+| Chord diagrams | [svguitar](https://github.com/omnibrain/svguitar) |
+| Testing | [Vitest 4](https://vitest.dev) + [Playwright](https://playwright.dev) |
+| PWA | [Angular Service Worker](https://angular.dev/ecosystem/service-workers) |
 
-### Code scaffolding
+## Getting started
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+```bash
+npm start        # Dev server at http://localhost:4200
+npm run build    # Production build into docs/
+npm test         # Unit tests
+npm run deploy   # Deploy to GitHub Pages
+```
 
-### Build
+## ChordPro format
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+GuiTab works with [ChordPro](https://www.chordpro.org) files. Here is a quick overview of the supported syntax:
 
-### Running unit tests
+```
+{title: Wonderful Tonight}
+{artist: Eric Clapton}
+{meta: youtube https://youtu.be/xxxxx}
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+[Em7]It's late in the [D]evening
+[A7sus4]She's wondering what [G]clothes to wear
 
-### Running end-to-end tests
+{define: Em7 base-fret 0 frets 0 2 2 0 3 0 fingers 0 2 3 0 4 0}
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+{comment: Chorus}
+{verse:
+  [G]This song is [D]easy to play
+}
 
-### Further help
+{tab:
+  e|---0---0---|
+  B|---0---0---|
+}
+```
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+Supported directives: `{title}`, `{artist}`, `{meta}`, `{define}`, `{comment}`, `{verse}`, `{chorus}`, `{tab}`.
+
+For the full spec, see [chordpro.org](https://www.chordpro.org/chordpro/chordpro-introduction/).

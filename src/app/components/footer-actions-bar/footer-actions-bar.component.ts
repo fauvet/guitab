@@ -10,14 +10,14 @@ import { AppContextService } from "../../services/app-context/app-context.servic
 import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
 import { BehaviorSubject } from "rxjs";
 import { AsyncPipe } from "@angular/common";
+import { YouTubeUtil } from "../../utils/youtube.util";
 
 @Component({
-  selector: "app-footer-actions-bar",
-  standalone: true,
-  imports: [MatIconModule, MatButtonModule, MatBottomSheetModule, AsyncPipe],
-  templateUrl: "./footer-actions-bar.component.html",
-  styleUrl: "./footer-actions-bar.component.css",
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: "app-footer-actions-bar",
+    imports: [MatIconModule, MatButtonModule, MatBottomSheetModule, AsyncPipe],
+    templateUrl: "./footer-actions-bar.component.html",
+    styleUrl: "./footer-actions-bar.component.css",
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FooterActionsBarComponent implements OnInit {
   private readonly appContextService = inject(AppContextService);
@@ -44,9 +44,9 @@ export class FooterActionsBarComponent implements OnInit {
   }
 
   private sanitizeYouTubeUrl(youTubeUrl: string): SafeResourceUrl | null {
-    if (!youTubeUrl) return null;
-    const embedYouTubeUrl = youTubeUrl.replace("youtu.be/", "youtube.com/embed/").replace("/watch?v=", "/embed/");
-    return this.domSanitizer.bypassSecurityTrustResourceUrl(embedYouTubeUrl);
+    const embedUrl = YouTubeUtil.buildEmbedUrl(youTubeUrl);
+    if (!embedUrl) return null;
+    return this.domSanitizer.bypassSecurityTrustResourceUrl(embedUrl);
   }
 
   onButtonInsertDirectiveClicked(): void {

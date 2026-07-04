@@ -3,7 +3,7 @@ import { ActivatedRoute, RouterOutlet } from "@angular/router";
 import { ChordproEditorComponent } from "./components/chordpro-editor/chordpro-editor.component";
 import { ChordproViewerComponent } from "./components/chordpro-viewer/chordpro-viewer.component";
 import { AppContextService } from "./services/app-context/app-context.service";
-import { DiagramChordComponent } from "./components/diagram-chord/diagram-chord.component";
+// import { DiagramChordComponent } from "./components/diagram-chord/diagram-chord.component";
 import { FileUtil } from "./utils/file.util";
 import { ChordproChordsViewerComponent } from "./components/chordpro-chords-viewer/chordpro-chords-viewer.component";
 import { HeaderActionsBarComponent } from "./components/header-actions-bar/header-actions-bar.component";
@@ -17,20 +17,19 @@ import { empty } from "rxjs";
 import { ChordproService } from "./services/chordpro/chordpro.service";
 
 @Component({
-  selector: "app-root",
-  standalone: true,
-  templateUrl: "./app.component.html",
-  styleUrl: "./app.component.css",
-  imports: [
-    RouterOutlet,
-    ChordproEditorComponent,
-    ChordproViewerComponent,
-    DiagramChordComponent,
-    ChordproChordsViewerComponent,
-    HeaderActionsBarComponent,
-    FooterActionsBarComponent,
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: "app-root",
+    templateUrl: "./app.component.html",
+    styleUrl: "./app.component.css",
+    imports: [
+        RouterOutlet,
+        ChordproEditorComponent,
+        ChordproViewerComponent,
+        // DiagramChordComponent,
+        ChordproChordsViewerComponent,
+        HeaderActionsBarComponent,
+        FooterActionsBarComponent,
+    ],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent implements OnInit {
   private readonly appContextService = inject(AppContextService);

@@ -23,25 +23,24 @@ import { AsyncPipe } from "@angular/common";
 import { MatRipple } from "@angular/material/core";
 
 @Component({
-  selector: "app-dialog-select-chord",
-  standalone: true,
-  imports: [
-    AsyncPipe,
-    MatRipple,
-    MatDialogTitle,
-    MatDialogContent,
-    MatDialogActions,
-    MatDialogClose,
-    MatFormFieldModule,
-    MatInputModule,
-    FormsModule,
-    MatButtonModule,
-    MatButtonToggleModule,
-    DiagramChordComponent,
-  ],
-  templateUrl: "./dialog-select-chord.component.html",
-  styleUrl: "./dialog-select-chord.component.css",
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: "app-dialog-select-chord",
+    imports: [
+        AsyncPipe,
+        MatRipple,
+        MatDialogTitle,
+        MatDialogContent,
+        MatDialogActions,
+        MatDialogClose,
+        MatFormFieldModule,
+        MatInputModule,
+        FormsModule,
+        MatButtonModule,
+        MatButtonToggleModule,
+        DiagramChordComponent,
+    ],
+    templateUrl: "./dialog-select-chord.component.html",
+    styleUrl: "./dialog-select-chord.component.css",
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DialogSelectChordComponent implements OnInit, OnDestroy {
   readonly buildChordName = ChordproUtil.buildChordName;
