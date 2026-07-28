@@ -12,10 +12,11 @@ import { KeyboardShortcutService } from "../../services/keyboard-shortcut/keyboa
 import { AsyncPipe } from "@angular/common";
 import { BottomSheetSettingsComponent } from "../bottom-sheet-settings/bottom-sheet-settings.component";
 import { ComponentType } from "@angular/cdk/portal";
+import { LoginComponent } from "../login/login.component";
 
 @Component({
     selector: "app-header-actions-bar",
-    imports: [MatButtonModule, MatIconModule, MatBottomSheetModule, AsyncPipe],
+    imports: [MatButtonModule, MatIconModule, MatBottomSheetModule, AsyncPipe, LoginComponent],
     templateUrl: "./header-actions-bar.component.html",
     styleUrl: "./header-actions-bar.component.css",
     changeDetection: ChangeDetectionStrategy.OnPush

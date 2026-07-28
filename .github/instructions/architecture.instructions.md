@@ -11,6 +11,7 @@ description: "Use when working on component interactions, data flows, state tran
 ```
 AppComponent
 ├── HeaderActionsBarComponent          (top toolbar)
+│   └── LoginComponent                   (Google sign-in / sign-out button)
 ├── <div.content>
 │   ├── <div.container-chordpro>
 │   │   ├── ChordproEditorComponent    (Ace editor widget)
@@ -78,7 +79,8 @@ On startup, `AppComponent.ngOnInit()` reads `ActivatedRoute.queryParamMap`:
 
 - `?load=demo` → `FileUtil.loadSampleFile()` → `setFileHandle()` → `setEditing(true)`
 - Otherwise → `beforeUnloadService.findDraftUnsavedChordproContent()`:
-  - If a draft with `hasUnsavedChanges: true` exists in localStorage → restore it via `chordproService.setChordproContent(draftContent)`
+  - Reads from the active `IDraftRepository` (Firestore if authenticated, localStorage fallback)
+  - If a draft with `hasUnsavedChanges: true` exists → restore it via `chordproService.setChordproContent(draftContent)`
   - Otherwise → `FileUtil.loadEmptyFile()` → blank slate
 
 ## Service Dependency Graph
@@ -89,13 +91,29 @@ AppContextService        ← holds file handle, editing mode, wake lock, Bluetoo
 ChordproService          ← subscribes to fileHandleWithContent$ in constructor
      ↓ injected by
 KeyboardShortcutService  ← file operations (open/save/undo/redo)
-BeforeUnloadService      ← hasUnsavedChanges() + draft in localStorage
+BeforeUnloadService      ← hasUnsavedChanges() + draft via IDraftRepository
 HeaderActionsBarComponent
 FooterActionsBarComponent
 BottomSheetManageFileComponent
 BottomSheetSettingsComponent
 
-LocalStorageService ← used by ZoomService, CachedFilesService, BeforeUnloadService
+FirebaseService ← initializes Firebase app + Firestore (IndexedDB offline)
+     ↓ injected by
+AuthService     ← anonymous sign-in on startup, Google link/sign-in, isAnonymous()
+     ↓ injected by
+├── CachedFilesService   ← delegates to ICachedFilesRepository
+├── BeforeUnloadService  ← delegates to IDraftRepository
+└── LoginComponent
+
+LocalStorageService ← used by ZoomService, LocalCachedFilesRepository, LocalDraftRepository
+
+ICachedFilesRepository (interface)
+  ├── LocalCachedFilesRepository   ← localStorage key CACHED_FILES
+  └── FirebaseCachedFilesRepository ← Firestore /users/{uid}/cachedFiles/
+
+IDraftRepository (interface)
+  ├── LocalDraftRepository         ← localStorage key DRAFT
+  └── FirebaseDraftRepository      ← Firestore /users/{uid}/draft
 ```
 
 `AppContextService` and `ChordproService` are the two most central services. Any feature touching file content or rendering will flow through both.
@@ -114,7 +132,8 @@ LocalStorageService ← used by ZoomService, CachedFilesService, BeforeUnloadSer
 | `areLyricsDisplayed$` | `ChordproService` | BottomSheetSettings toggle | CSS class `js-are-lyrics-hided` on `document.body` |
 | `isWakeLock$` | `AppContextService` | BottomSheetSettings toggle | `WakeLockUtil.setWakeLock()` (constructor subscription) |
 | `isBluetoothKeptAlive$` | `AppContextService` | BottomSheetSettings toggle | `BluetoothUtil.setBluetoothKeptAlive()` (constructor subscription) |
-| `cachedFiles$` | `CachedFilesService` | after every open/save | BottomSheetManageFileComponent |
+| `user$` | `AuthService` | Firebase `onAuthStateChanged` | `CachedFilesService`, `BeforeUnloadService`, `LoginComponent` |
+| `cachedFiles$` | active `ICachedFilesRepository` | after every open/save | `CachedFilesService` → `BottomSheetManageFileComponent` |
 | `zoomStep$` | `ZoomService` | +/- buttons in Header | CSS `--zoom` variable on `<html>` element |
 
 ## Dialog & Bottom Sheet Wiring

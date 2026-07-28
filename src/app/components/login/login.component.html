@@ -1,0 +1,20 @@
+@if (user && !authService.isAnonymous()) {
+  <button
+    mat-icon-button
+    [matTooltip]="'Signed in as ' + user.displayName + ' — click to sign out'"
+    (click)="onSignOut()">
+    @if (user.photoURL) {
+      <img [src]="user.photoURL" [alt]="user.displayName ?? 'User avatar'" class="avatar" referrerpolicy="no-referrer" />
+    } @else {
+      <mat-icon>account_circle</mat-icon>
+    }
+  </button>
+} @else {
+  <button
+    mat-icon-button
+    matTooltip="Sign in with Google to sync your files"
+    aria-label="Sign in"
+    (click)="onSignIn()">
+    <mat-icon>login</mat-icon>
+  </button>
+}

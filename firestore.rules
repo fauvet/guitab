@@ -1,0 +1,37 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Default deny ────────────────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ── Per-user private space ───────────────────────────────────────────────
+    // /users/{uid}/cachedFiles/{fileId}
+    // /users/{uid}/draft
+    //
+    // Rules:
+    //  - Only the authenticated owner (uid == request.auth.uid) may read or write.
+    //  - On writes, ownerId must match the authenticated user's uid (no impersonation).
+    //  - Mandatory traceability fields: ownerId, updatedAt. createdAt required on creation.
+
+    match /users/{uid}/{document=**} {
+      // Tenant isolation: only the owner can access their data
+      allow read: if request.auth != null && request.auth.uid == uid;
+
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.ownerId == uid
+        && request.resource.data.keys().hasAll(['ownerId', 'updatedAt', 'createdAt']);
+
+      allow update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.ownerId == uid
+        && request.resource.data.keys().hasAll(['ownerId', 'updatedAt']);
+
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}
