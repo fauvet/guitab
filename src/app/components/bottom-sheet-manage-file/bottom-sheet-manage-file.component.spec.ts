@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { provideToastr } from 'ngx-toastr';
 import { BottomSheetManageFileComponent } from './bottom-sheet-manage-file.component';
 
 describe('BottomSheetManageFileComponent', () => {
@@ -13,7 +12,6 @@ describe('BottomSheetManageFileComponent', () => {
       imports: [BottomSheetManageFileComponent, NoopAnimationsModule],
       providers: [
         { provide: MatBottomSheetRef, useValue: { dismiss: () => {}, afterDismissed: () => ({ subscribe: () => {} }) } },
-        provideToastr(),
       ],
     }).compileComponents();
 

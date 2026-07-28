@@ -64,7 +64,7 @@ KeyboardShortcutService.saveFile()
   ├─> If FileSystemFileHandle exists:
   │     fileHandle.createWritable() → write → close
   │     chordproService.updateChordproSaveState()  (clears unsaved flag)
-  │     toastr.success(...)
+  │     snackBar.open(...)  (success feedback)
   └─> Else: saveFileAs() → showSaveFilePicker() or FileSaver.saveAs(blob)
 
 Both paths: cachedFilesService.saveFile(content) to update localStorage history.

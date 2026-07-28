@@ -5,13 +5,11 @@ import { provideHttpClient } from '@angular/common/http';
 
 import { routes } from "./app.routes";
 import { provideServiceWorker } from "@angular/service-worker";
-import { provideToastr } from "ngx-toastr";
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideAnimations(),
-    provideToastr(),
     provideHttpClient(),
     provideServiceWorker("ngsw-worker.js", {
       enabled: !isDevMode(),

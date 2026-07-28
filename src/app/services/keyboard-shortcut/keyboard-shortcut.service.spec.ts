@@ -4,7 +4,7 @@ import { KeyboardShortcutService } from "./keyboard-shortcut.service";
 import { ChordproService } from "../chordpro/chordpro.service";
 import { AppContextService } from "../app-context/app-context.service";
 import { CachedFilesService } from "../cached-files/cached-files.service";
-import { ToastrService } from "ngx-toastr";
+import { MatSnackBar } from "@angular/material/snack-bar";
 
 describe("KeyboardShortcutService", () => {
   let service: KeyboardShortcutService;
@@ -38,9 +38,8 @@ describe("KeyboardShortcutService", () => {
       saveFile: vi.fn(),
     };
 
-    const mockToastrService = {
-      success: vi.fn(),
-      error: vi.fn(),
+    const mockSnackBar = {
+      open: vi.fn(),
     };
 
     TestBed.configureTestingModule({
@@ -48,7 +47,7 @@ describe("KeyboardShortcutService", () => {
         { provide: ChordproService, useValue: mockChordproService },
         { provide: AppContextService, useValue: mockAppContextService },
         { provide: CachedFilesService, useValue: mockCachedFilesService },
-        { provide: ToastrService, useValue: mockToastrService },
+        { provide: MatSnackBar, useValue: mockSnackBar },
       ],
     });
     service = TestBed.inject(KeyboardShortcutService);

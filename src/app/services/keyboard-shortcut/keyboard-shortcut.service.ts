@@ -1,7 +1,7 @@
 import { inject, Injectable } from "@angular/core";
+import { MatSnackBar } from "@angular/material/snack-bar";
 import { AppContextService } from "../app-context/app-context.service";
 import { ChordproService } from "../chordpro/chordpro.service";
-import { ToastrService } from "ngx-toastr";
 import { FileUtil } from "../../utils/file.util";
 import { ChordproUtil } from "../../utils/chordpro.util";
 import FileSaver from "file-saver";
@@ -14,7 +14,7 @@ export class KeyboardShortcutService {
   private readonly appContextService = inject(AppContextService);
   private readonly chordproService = inject(ChordproService);
   private readonly cachedFilesService = inject(CachedFilesService);
-  private readonly toastr = inject(ToastrService);
+  private readonly snackBar = inject(MatSnackBar);
 
   constructor() {
     document.addEventListener("keydown", async (event) => await this.onKeyDown(event));
@@ -115,7 +115,7 @@ export class KeyboardShortcutService {
     await writable.write(chordproContent);
     await writable.close();
     const fileName = fileHandle.name;
-    this.toastr.success(`${fileName} saved`);
+    this.snackBar.open(`${fileName} saved`, undefined, { duration: 3000 });
     this.chordproService.updateChordproSaveState();
     return true;
   }
@@ -152,7 +152,7 @@ export class KeyboardShortcutService {
           return;
         }
 
-        this.toastr.success(`${fileName} saved`);
+        this.snackBar.open(`${fileName} saved`, undefined, { duration: 3000 });
         this.chordproService.updateChordproSaveState();
         resolve(true);
       });

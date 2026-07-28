@@ -13,7 +13,6 @@ Guitab is a **ChordPro guitar chord/tab editor and viewer** — a Progressive We
 - **chordproject-parser** — parses ChordPro text into HTML for rendering
 - **chordproject-editor** — external editor widget for ChordPro text input
 - **svguitar** — renders SVG guitar chord diagrams
-- **ngx-toastr** — toast notifications
 - **Karma + Jasmine** — unit testing
 
 ## Project Structure
