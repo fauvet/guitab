@@ -8,7 +8,7 @@
   [![RxJS](https://img.shields.io/badge/RxJS-7.8-B7178C?logo=reactivex&logoColor=white)](https://rxjs.dev)
   [![Vitest](https://img.shields.io/badge/Vitest-4.1-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev)
   [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
-  [![PWA](https://img.shields.io/badge/PWA-enabled-5A0FC8?logo=pwa&logoColor=white)](https://web.dev/progressive-web-apps/)
+  [![PWA](https://img.shields.io/badge/PWA-enabled-5A0FC8?logoColor=white)](https://web.dev/progressive-web-apps/)
 </div>
 
 ---

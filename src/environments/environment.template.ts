@@ -1,9 +1,11 @@
 /**
  * Environment configuration template.
  *
- * Copy this file to environment.ts (dev) or environment.prod.ts (prod)
- * and fill in the Firebase project values.
- * Both environment.ts and environment.prod.ts are git-ignored.
+ * There is a single Firebase environment: the production project guitab-8b990.
+ * Both local dev and the deployed app use the same Firebase project.
+ *
+ * Copy this file to environment.ts and fill in the Firebase project values.
+ * environment.ts is git-ignored. In CI, it is generated from GitHub secrets.
  *
  * Firebase web API keys are semi-public by design; the real security layer is
  * Firestore Security Rules + Firebase Authentication.
@@ -19,12 +21,10 @@ export interface FirebaseConfig {
 }
 
 export interface Environment {
-  production: boolean;
   firebase: FirebaseConfig;
 }
 
 export const environment: Environment = {
-  production: false, // true in environment.prod.ts
   firebase: {
     apiKey: "",
     authDomain: "",

@@ -1,17 +1,34 @@
 import { TestBed } from "@angular/core/testing";
-import { firstValueFrom } from "rxjs";
+import { firstValueFrom, of } from "rxjs";
 import { CachedFilesService } from "./cached-files.service";
+import { AuthService } from "../auth/auth.service";
+import { FirebaseCachedFilesRepository } from "../../storage/firebase/firebase-cached-files.repository";
 
 const LS_KEY = "CACHED_FILES";
 const CONTENT_A = "{title: Hotel California}\n{artist: Eagles}";
 const CONTENT_B = "{title: Wonderwall}\n{artist: Oasis}";
+
+const mockAuthService = {
+  getUser: vi.fn().mockReturnValue(null),
+  getUser$: vi.fn().mockReturnValue(of(null)),
+};
+
+const mockFirebaseRepo = {
+  getCachedFiles$: vi.fn().mockReturnValue(of([])),
+  saveFile: vi.fn().mockResolvedValue(undefined),
+};
 
 describe("CachedFilesService", () => {
   let service: CachedFilesService;
 
   beforeEach(() => {
     localStorage.clear();
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: FirebaseCachedFilesRepository, useValue: mockFirebaseRepo },
+      ],
+    });
     service = TestBed.inject(CachedFilesService);
   });
 

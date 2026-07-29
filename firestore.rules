@@ -24,12 +24,15 @@ service cloud.firestore {
       allow create: if request.auth != null
         && request.auth.uid == uid
         && request.resource.data.ownerId == uid
-        && request.resource.data.keys().hasAll(['ownerId', 'updatedAt', 'createdAt']);
+        && request.resource.data.keys().hasAll(['ownerId', 'updatedAt', 'createdAt'])
+        && request.resource.data.chordproContent.size() < 500000;
 
       allow update: if request.auth != null
         && request.auth.uid == uid
         && request.resource.data.ownerId == uid
-        && request.resource.data.keys().hasAll(['ownerId', 'updatedAt']);
+        && request.resource.data.keys().hasAll(['ownerId', 'updatedAt'])
+        && !('createdAt' in request.resource.data.diff(resource.data).affectedKeys())
+        && request.resource.data.chordproContent.size() < 500000;
 
       allow delete: if request.auth != null && request.auth.uid == uid;
     }

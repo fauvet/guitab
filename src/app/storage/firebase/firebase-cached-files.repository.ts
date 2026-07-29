@@ -2,7 +2,7 @@ import { inject, Injectable } from "@angular/core";
 import {
   collection,
   doc,
-  getDocs,
+  getDoc,
   onSnapshot,
   query,
   serverTimestamp,
@@ -72,11 +72,12 @@ export class FirebaseCachedFilesRepository implements ICachedFilesRepository {
     const docId = encodeURIComponent(fileBaseName);
     const ref = doc(db, `users/${user.uid}/cachedFiles/${docId}`);
 
+    const existingDoc = await getDoc(ref);
     await setDoc(ref, {
       name: fileBaseName,
       chordproContent,
       ownerId: user.uid,
-      createdAt: serverTimestamp(),
+      ...(existingDoc.exists() ? {} : { createdAt: serverTimestamp() }),
       updatedAt: serverTimestamp(),
     });
   }

@@ -14,7 +14,12 @@
     mat-icon-button
     matTooltip="Sign in with Google to sync your files"
     aria-label="Sign in"
+    [disabled]="isSigningIn"
     (click)="onSignIn()">
-    <mat-icon>login</mat-icon>
+    @if (isSigningIn) {
+      <mat-spinner diameter="20" />
+    } @else {
+      <mat-icon>login</mat-icon>
+    }
   </button>
 }

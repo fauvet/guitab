@@ -1,4 +1,3 @@
-import { InjectionToken } from "@angular/core";
 import { Observable } from "rxjs";
 
 export interface Draft {
@@ -16,5 +15,3 @@ export interface IDraftRepository {
   getDraft(): Draft;
   saveDraft(draft: Draft): Promise<void>;
 }
-
-export const DRAFT_REPOSITORY = new InjectionToken<IDraftRepository>("IDraftRepository");

@@ -59,10 +59,11 @@ export class FirebaseDraftRepository implements IDraftRepository {
 
     const db = this.firebaseService.getFirestore();
     const ref = doc(db, `users/${user.uid}/draft`);
+    const existingDoc = await getDoc(ref);
     await setDoc(ref, {
       ...draft,
       ownerId: user.uid,
-      createdAt: serverTimestamp(),
+      ...(existingDoc.exists() ? {} : { createdAt: serverTimestamp() }),
       updatedAt: serverTimestamp(),
     });
   }

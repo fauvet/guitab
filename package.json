@@ -17,7 +17,8 @@
     "test": "ng test",
     "prettier": "prettier --write .",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d docs"
+    "deploy": "gh-pages -d docs",
+    "gen-firebase-token": "npx firebase-tools login:ci"
   },
   "dependencies": {
     "@angular/animations": "^22.0.2",

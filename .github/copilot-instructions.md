@@ -22,8 +22,7 @@ Guitab is a **ChordPro guitar chord/tab editor and viewer** — a Progressive We
 src/
 ├── environments/
 │   ├── environment.template.ts   # shape committed to git
-│   ├── environment.ts            # dev config — git-ignored
-│   └── environment.prod.ts       # prod config — git-ignored
+│   └── environment.ts            # Firebase credentials — git-ignored (created locally or via CI secrets)
 src/app/
 ├── components/   # Standalone UI components (15 total, incl. LoginComponent)
 ├── services/     # Root-provided singleton services
@@ -87,11 +86,11 @@ npm start          # Dev server at localhost:4200
 
 ## Firebase Setup
 
+- **Single Firebase environment**: there is no dev/prod split — local dev and the deployed app both use the same project (`guitab-8b990`)
 - Config shape in `src/environments/environment.template.ts` (committed)
-- Actual values go in `environment.ts` (dev) and `environment.prod.ts` (prod) — **both git-ignored**
+- Actual values go in `environment.ts` — **git-ignored**; created locally by copying the template, and generated in CI from GitHub secrets
 - `firestore.rules` at project root — deploy with `firebase deploy --only firestore:rules`
 - Requires Firebase project **guitab-8b990** with **Anonymous Auth** and **Google Sign-in** enabled
-- Production values should be injected via CI/CD secrets, never committed
 
 ## Persistence Architecture
 
