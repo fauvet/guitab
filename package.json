@@ -39,6 +39,7 @@
     "@angular/platform-browser-dynamic": "^22.0.2",
     "@angular/router": "^22.0.2",
     "@angular/service-worker": "^22.0.2",
+    "aubiojs": "^0.2.1",
     "chordproject-editor": "^0.1.11",
     "chordproject-parser": "^0.2.14",
     "file-saver": "^2.0.5",
