@@ -2,7 +2,7 @@
   "name": "guitab",
   "version": "1.0.0",
   "author": "Guillaume FAUVET",
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "homepage": "https://github.com/fauvet/guitab#readme",
   "repository": {
     "type": "git",
