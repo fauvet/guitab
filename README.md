@@ -52,11 +52,18 @@
 ## Getting started
 
 ```bash
-npm start        # Dev server at http://localhost:4200
-npm run build    # Production build into docs/
-npm test         # Unit tests
-npm run deploy   # Deploy to GitHub Pages
+npm run setup:env  # Placeholder Firebase config — required once on a fresh clone
+npm start          # Dev server at http://localhost:4200
+npm run build      # Production build into docs/
+npm test           # Unit tests
+npm run verify     # Everything CI runs: lint, format, docs, types, coverage
+npm run deploy     # Deploy to GitHub Pages
 ```
+
+`src/environments/environment.ts` holds the Firebase configuration and is
+git-ignored, so nothing compiles until it exists. `npm run setup:env` writes a
+placeholder that is enough to build and test; replace it with the real values to
+use sign-in and cloud storage locally.
 
 ## ChordPro format
 

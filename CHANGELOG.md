@@ -26,6 +26,18 @@ first entry moves to `## [1.0.0]` when the first release is cut.
   showing the running version.
 - `npm run setup:env`, which writes a placeholder Firebase configuration so a
   fresh clone can build and test before any Firebase access is set up.
+- ESLint, coverage thresholds, an instruction-tree integrity check, and a CI
+  workflow that runs all of them on every push and pull request.
+
+### Fixed
+
+- **Ctrl+Shift+S (Save As) and Ctrl+Shift+Z (redo) never worked.** Holding Shift
+  makes the browser report an uppercase letter, which no shortcut matched, so
+  both keystrokes did nothing at all.
+- The three toolbar images in the tools sheet had no text alternative and were
+  announced as nothing by a screen reader.
+- Several controls became briefly enabled before the app knew whether they
+  should be, because a not-yet-emitted value read as "no".
 
 ## Before this changelog
 

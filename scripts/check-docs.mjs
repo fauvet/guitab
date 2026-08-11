@@ -25,13 +25,13 @@
  * Run with `npm run check:docs`.
  */
 import { readFileSync, existsSync, lstatSync, globSync } from "node:fs";
-import { dirname, resolve, join, relative } from "node:path";
+import { resolve, join } from "node:path";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const errors = [];
 
 // ── 1. One tree only ────────────────────────────────────────────────────────
-// These four are the Copilot entry points. Each must be a symlink into
+// These are the Copilot entry points. Each must be a symlink into
 // CLAUDE.md or .claude/ — one content, two toolchains, no duplication.
 const MUST_BE_SYMLINKS = [".github/copilot-instructions.md", ".github/instructions", ".github/skills"];
 
