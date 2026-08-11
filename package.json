@@ -15,6 +15,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "setup:env": "node scripts/setup-env.mjs",
     "prettier": "prettier --write .",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d docs",
