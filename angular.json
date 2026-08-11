@@ -77,7 +77,8 @@
           "options": {
             "tsConfig": "tsconfig.spec.json",
             "buildTarget": "guitab:build:development",
-            "runner": "vitest"
+            "runner": "vitest",
+            "isolate": true
           }
         }
       }
