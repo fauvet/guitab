@@ -52,15 +52,29 @@ be done in one pass.
 
 ## aubio, and why it is here
 
-`aubiojs` is aubio compiled to WebAssembly. It initialises asynchronously and is
-loaded with a dynamic `import()` so its weight never reaches the app shell:
+`aubiojs` is aubio compiled to WebAssembly, and it is **not** loaded through the
+bundler. Both builds it ships still carry emscripten's Node branches — they call
+`require("fs")` and `require("path")` — and although those lines never execute in
+a browser, esbuild resolves imports before it can know that, so
+`import("aubiojs")` fails the build outright.
+
+Instead the module is copied to `assets/aubio/` by the build (see the `assets`
+entry in `angular.json`) and imported at runtime from a URL the bundler cannot
+analyse. `AubioLoaderService` owns that, which also keeps the detection service
+testable: a spec provides a fake loader rather than trying to intercept an
+import by URL.
 
 ```typescript
-const { default: aubio } = await import("aubiojs");
-const { Pitch, Onset } = await aubio();
+const moduleUrl = new URL("assets/aubio/aubio.esm.js", document.baseURI).href;
+const module = await import(/* @vite-ignore */ moduleUrl);
+const { Pitch, Onset } = await module.default();
 const pitchDetector = new Pitch("yinfft", bufferSize, hopSize, sampleRate);
 const onsetDetector = new Onset(bufferSize, hopSize, sampleRate);
 ```
+
+Its WebAssembly is inlined as a base64 data URI, so that one file is the whole
+dependency: nothing else to fetch, and the service worker's existing
+`/assets/**` group already caches it for offline use.
 
 `Pitch.do(buffer)` returns a frequency in Hz, or `0` when it hears nothing usable.
 `Onset.do(buffer)` returns non-zero on the frame where a note starts.

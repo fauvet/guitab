@@ -1,22 +1,16 @@
 import { TestBed } from "@angular/core/testing";
 import { PitchDetectionService } from "./pitch-detection.service";
 import { PitchUtil } from "../../utils/pitch.util";
+import { AubioLoaderService } from "./aubio-loader.service";
 
 // aubio is a WebAssembly module: it cannot run under jsdom, and its accuracy is
 // not ours to re-test. What these tests check is the wiring around it — that
 // frames reach the subjects, that onsets are carried through, and above all
 // that stopping releases the microphone.
-const { aubioState } = vi.hoisted(() => ({
-  aubioState: {
-    frequency: 0,
-    onset: 0,
-    initialised: 0,
-  },
-}));
+const aubioState = { frequency: 0, onset: 0 };
 
-vi.mock("aubiojs", () => ({
-  default: vi.fn(async () => {
-    aubioState.initialised += 1;
+const aubioLoaderService = {
+  load: vi.fn(async () => {
     return {
       Pitch: class {
         do(): number {
@@ -28,10 +22,9 @@ vi.mock("aubiojs", () => ({
           return aubioState.onset;
         }
       },
-      Tempo: class {},
     };
   }),
-}));
+};
 
 interface FakeProcessor {
   onaudioprocess: ((event: { inputBuffer: { getChannelData(channel: number): Float32Array } }) => void) | null;
@@ -55,7 +48,6 @@ describe("PitchDetectionService", () => {
     vi.clearAllMocks();
     aubioState.frequency = 0;
     aubioState.onset = 0;
-    aubioState.initialised = 0;
 
     track = { stop: vi.fn() };
     getUserMedia = vi.fn().mockResolvedValue({ getTracks: () => [track] });
@@ -81,7 +73,9 @@ describe("PitchDetectionService", () => {
       },
     );
 
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [{ provide: AubioLoaderService, useValue: aubioLoaderService }],
+    });
     service = TestBed.inject(PitchDetectionService);
   });
 
@@ -258,13 +252,111 @@ describe("PitchDetectionService", () => {
     });
   });
 
+  describe("analysing a file", () => {
+    const fakeFile = (): File => ({ arrayBuffer: async () => new ArrayBuffer(8) }) as unknown as File;
+
+    /** An AudioBuffer of `blocks` x 2048 samples on one channel. */
+    const fakeAudioBuffer = (blocks: number) =>
+      ({
+        length: blocks * 2048,
+        sampleRate: 44100,
+        numberOfChannels: 1,
+        getChannelData: () => new Float32Array(blocks * 2048),
+      }) as unknown as AudioBuffer;
+
+    const stubDecode = (buffer: AudioBuffer): void => {
+      vi.stubGlobal(
+        "AudioContext",
+        class {
+          sampleRate = 44100;
+          destination = {};
+          close = audioContextClose;
+          createMediaStreamSource = vi.fn();
+          createScriptProcessor = vi.fn(() => processor);
+          decodeAudioData = vi.fn().mockResolvedValue(buffer);
+        },
+      );
+    };
+
+    it("should end idle once the whole file has been read", async () => {
+      stubDecode(fakeAudioBuffer(4));
+
+      await service.analyseFile(fakeFile());
+
+      expect(service.getStatus()).toBe("idle");
+    });
+
+    it("should produce one frame per block of the file", async () => {
+      stubDecode(fakeAudioBuffer(4));
+      aubioState.frequency = 440;
+
+      await service.analyseFile(fakeFile());
+
+      expect(service.getFrames()).toHaveLength(4);
+    });
+
+    // Offline the blocks are exactly contiguous, so the timeline is the file's
+    // own rather than the wall clock of a machine that may have stalled.
+    it("should time the frames from the file, not from the clock", async () => {
+      stubDecode(fakeAudioBuffer(3));
+      aubioState.frequency = 440;
+
+      await service.analyseFile(fakeFile());
+
+      const [first, second] = service.getFrames();
+      expect(first.timeMs).toBe(0);
+      expect(second.timeMs).toBeCloseTo((2048 / 44100) * 1000, 3);
+    });
+
+    it("should replace whatever a previous take had recorded", async () => {
+      stubDecode(fakeAudioBuffer(2));
+      aubioState.frequency = 440;
+      await service.analyseFile(fakeFile());
+
+      await service.analyseFile(fakeFile());
+
+      expect(service.getFrames()).toHaveLength(2);
+    });
+
+    it("should report an error rather than throwing on a file it cannot decode", async () => {
+      vi.stubGlobal(
+        "AudioContext",
+        class {
+          sampleRate = 44100;
+          close = audioContextClose;
+          decodeAudioData = vi.fn().mockRejectedValue(new Error("Unsupported"));
+        },
+      );
+
+      await service.analyseFile(fakeFile());
+
+      expect(service.getStatus()).toBe("error");
+      expect(service.getErrorMessage()).toBeTruthy();
+    });
+
+    it("should close the audio context it opened for the decode", async () => {
+      stubDecode(fakeAudioBuffer(2));
+
+      await service.analyseFile(fakeFile());
+
+      expect(audioContextClose).toHaveBeenCalled();
+    });
+  });
+
   describe("loading aubio", () => {
-    it("should load the WebAssembly module only once across restarts", async () => {
-      await service.startMicrophone();
-      service.stop();
+    it("should ask the loader for the module before listening", async () => {
       await service.startMicrophone();
 
-      expect(aubioState.initialised).toBe(1);
+      expect(aubioLoaderService.load).toHaveBeenCalled();
+    });
+
+    it("should report an error rather than throwing when the module cannot be fetched", async () => {
+      aubioLoaderService.load.mockRejectedValueOnce(new Error("Failed to fetch"));
+
+      await service.startMicrophone();
+
+      expect(service.getStatus()).toBe("error");
+      expect(service.getErrorMessage()).toBeTruthy();
     });
   });
 });

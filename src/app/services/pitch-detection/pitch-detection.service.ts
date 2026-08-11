@@ -1,7 +1,8 @@
-import { Injectable } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
 import { BehaviorSubject, Observable } from "rxjs";
 import { NoteEvent, NoteSegmentationUtil, PitchFrame, SegmentationOptions } from "../../utils/note-segmentation.util";
 import { DetectedNote, PitchUtil } from "../../utils/pitch.util";
+import { AubioLoaderService, AubioModule } from "./aubio-loader.service";
 
 export type PitchDetectionStatus = "idle" | "loading" | "listening" | "analysing" | "error";
 
@@ -12,25 +13,13 @@ export type PitchDetectionStatus = "idle" | "loading" | "listening" | "analysing
  */
 const BLOCK_SIZE = 2048;
 
-/** The minimal slice of aubio's API this service uses. See the aubiojs types. */
-interface AubioDetector {
-  do(buffer: Float32Array): number;
-}
-
-interface AubioModule {
-  Pitch: new (method: string, bufferSize: number, hopSize: number, sampleRate: number) => AubioDetector;
-  Onset: new (bufferSize: number, hopSize: number, sampleRate: number) => AubioDetector;
-}
-
 /**
  * The Web Audio boundary. Nothing else in the app touches a microphone, an
  * AudioContext or aubio — which is what lets every piece of musical reasoning
  * live in `src/app/utils/` and be tested with plain arrays.
  *
- * aubio is loaded with a dynamic `import()`, so its 400 kB of WebAssembly only
- * reaches a user who actually opens the pitch monitor. The binary is inlined in
- * the module as a data URI, so there is no separate file to fetch and nothing to
- * add to the service worker's asset list.
+ * aubio itself is fetched on demand by AubioLoaderService, so its 400 kB only
+ * reaches a user who actually opens the pitch monitor.
  */
 @Injectable({
   providedIn: "root",
@@ -41,7 +30,8 @@ export class PitchDetectionService {
   private readonly frames$ = new BehaviorSubject<PitchFrame[]>([]);
   private readonly errorMessage$ = new BehaviorSubject<string | null>(null);
 
-  private aubio: AubioModule | null = null;
+  private readonly aubioLoaderService = inject(AubioLoaderService);
+
   private audioContext: AudioContext | null = null;
   private mediaStream: MediaStream | null = null;
   private processor: ScriptProcessorNode | null = null;
@@ -91,7 +81,7 @@ export class PitchDetectionService {
     this.status$.next("loading");
 
     try {
-      const aubio = await this.loadAubio();
+      const aubio = await this.aubioLoaderService.load();
       // Raw audio: every one of these flags is on by default and every one
       // damages pitch detection. Noise suppression attacks a sustained tone as
       // if it were background hum, and automatic gain control changes amplitude
@@ -131,6 +121,41 @@ export class PitchDetectionService {
 
     this.currentNote$.next(null);
     if (this.getStatus() !== "error") this.status$.next("idle");
+  }
+
+  /**
+   * Reads a whole audio file through the same detectors.
+   *
+   * Offline the blocks are exactly contiguous and none are dropped, so this is
+   * strictly better material for onset detection than the live path — the
+   * transcription of a recording is more reliable than the live readout of the
+   * same performance.
+   *
+   * What it cannot do is separate one instrument from a mix. Given a full
+   * recording it will follow whatever is loudest from moment to moment, which
+   * is not a melody. The interface says so; this is where the honesty has to
+   * live, not in the algorithm.
+   */
+  async analyseFile(file: File): Promise<void> {
+    this.errorMessage$.next(null);
+    this.status$.next("loading");
+
+    const audioContext = new AudioContext();
+
+    try {
+      const aubio = await this.aubioLoaderService.load();
+      const audioBuffer = await audioContext.decodeAudioData(await file.arrayBuffer());
+
+      this.status$.next("analysing");
+      this.frames$.next(PitchDetectionService.analyseBuffer(aubio, audioBuffer));
+      this.currentNote$.next(null);
+      this.status$.next("idle");
+    } catch (error: unknown) {
+      this.errorMessage$.next(PitchDetectionService.describeFile(error));
+      this.status$.next("error");
+    } finally {
+      audioContext.close();
+    }
   }
 
   /** Clears what was heard. The frames survive `stop()` so a take can be kept. */
@@ -188,17 +213,34 @@ export class PitchDetectionService {
     this.currentNote$.next(PitchUtil.frequencyToNote(frame.frequency));
   }
 
-  /**
-   * Loaded once per session and kept: initialising the WebAssembly module takes
-   * long enough to be visible, and a user toggling recording on and off should
-   * not pay it every time.
-   */
-  private async loadAubio(): Promise<AubioModule> {
-    if (this.aubio !== null) return this.aubio;
+  private static analyseBuffer(aubio: AubioModule, audioBuffer: AudioBuffer): PitchFrame[] {
+    const pitchDetector = new aubio.Pitch("yinfft", BLOCK_SIZE, BLOCK_SIZE, audioBuffer.sampleRate);
+    const onsetDetector = new aubio.Onset(BLOCK_SIZE, BLOCK_SIZE, audioBuffer.sampleRate);
 
-    const { default: initialiseAubio } = await import("aubiojs");
-    this.aubio = (await initialiseAubio()) as unknown as AubioModule;
-    return this.aubio;
+    const samples = audioBuffer.getChannelData(0);
+    const millisecondsPerBlock = (BLOCK_SIZE / audioBuffer.sampleRate) * 1000;
+    const frames: PitchFrame[] = [];
+
+    // A partial final block is dropped rather than zero-padded: padding invents
+    // a silence the detector would read as the end of a note.
+    for (let blockIndex = 0; (blockIndex + 1) * BLOCK_SIZE <= samples.length; blockIndex += 1) {
+      const block = samples.subarray(blockIndex * BLOCK_SIZE, (blockIndex + 1) * BLOCK_SIZE);
+
+      frames.push({
+        timeMs: blockIndex * millisecondsPerBlock,
+        frequency: pitchDetector.do(block),
+        isOnset: onsetDetector.do(block) !== 0,
+      });
+    }
+
+    return frames;
+  }
+
+  private static describeFile(error: unknown): string {
+    if (error instanceof Error && error.name === "EncodingError") {
+      return "That audio file could not be decoded. Try a WAV, MP3 or M4A file.";
+    }
+    return error instanceof Error ? error.message : "That audio file could not be read.";
   }
 
   private static describe(error: unknown): string {

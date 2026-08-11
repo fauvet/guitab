@@ -22,6 +22,15 @@ first entry moves to `## [1.0.0]` when the first release is cut.
 
 ### Added
 
+- **Hum a solo and get a tablature.** The solo tab editor can open the
+  microphone, show the note being sung as it is sung — with its octave, so two
+  A's an octave apart never read the same — and turn the phrase into tablature
+  lines. A voice sits one to two octaves below a lead guitar, so the octave is
+  transposed on the way to the tab and not on the display: what is shown is what
+  was heard. The position on the neck is a setting, defaulting to around the
+  twelfth fret.
+- An audio file can be analysed instead of the microphone, with the plain
+  warning that it only works on a track that already holds a single melody line.
 - An in-app footer linking the source, the licence and the issue tracker, and
   showing the running version.
 - `npm run setup:env`, which writes a placeholder Firebase configuration so a

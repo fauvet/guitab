@@ -118,6 +118,54 @@ describe("DialogSoloTabEditorComponent", () => {
     });
   });
 
+  describe("humming a solo", () => {
+    it("should keep the microphone closed until it is asked for", () => {
+      expect(component.isHumming$.getValue()).toBe(false);
+      expect(fixture.nativeElement.querySelector("app-pitch-monitor")).toBeNull();
+    });
+
+    it("should show the monitor once asked", () => {
+      component.onToggleHummingClicked();
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector("app-pitch-monitor")).not.toBeNull();
+    });
+
+    it("should take the monitor away again, closing the microphone with it", () => {
+      component.onToggleHummingClicked();
+      component.onToggleHummingClicked();
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector("app-pitch-monitor")).toBeNull();
+    });
+
+    // A player builds a solo in passes. Replacing the editor would make the
+    // second pass cost the first one.
+    it("should append a transcription rather than replacing what is there", () => {
+      component.setSoloTab("0 2 2\n");
+
+      component.onTranscribed("12 - - - - -");
+
+      expect(component.soloTab$.getValue()).toBe("0 2 2\n12 - - - - -\n");
+    });
+
+    it("should start a new line when the editor does not end on one", () => {
+      component.setSoloTab("0 2 2");
+
+      component.onTranscribed("12 - - - - -");
+
+      expect(component.soloTab$.getValue()).toBe("0 2 2\n12 - - - - -\n");
+    });
+
+    it("should leave the editor alone when nothing was transcribed", () => {
+      component.setSoloTab("0 2 2\n");
+
+      component.onTranscribed("");
+
+      expect(component.soloTab$.getValue()).toBe("0 2 2\n");
+    });
+  });
+
   describe("handing the tablature back", () => {
     it("should close the dialog with the generated tablature", () => {
       component.onSoloTabChanged("0 2 2");
