@@ -1,9 +1,9 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { BottomSheetManageFileComponent } from './bottom-sheet-manage-file.component';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { MatBottomSheetRef } from "@angular/material/bottom-sheet";
+import { NoopAnimationsModule } from "@angular/platform-browser/animations";
+import { BottomSheetManageFileComponent } from "./bottom-sheet-manage-file.component";
 
-describe('BottomSheetManageFileComponent', () => {
+describe("BottomSheetManageFileComponent", () => {
   let component: BottomSheetManageFileComponent;
   let fixture: ComponentFixture<BottomSheetManageFileComponent>;
 
@@ -11,7 +11,10 @@ describe('BottomSheetManageFileComponent', () => {
     await TestBed.configureTestingModule({
       imports: [BottomSheetManageFileComponent, NoopAnimationsModule],
       providers: [
-        { provide: MatBottomSheetRef, useValue: { dismiss: () => {}, afterDismissed: () => ({ subscribe: () => {} }) } },
+        {
+          provide: MatBottomSheetRef,
+          useValue: { dismiss: () => {}, afterDismissed: () => ({ subscribe: () => {} }) },
+        },
       ],
     }).compileComponents();
 
@@ -20,7 +23,7 @@ describe('BottomSheetManageFileComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

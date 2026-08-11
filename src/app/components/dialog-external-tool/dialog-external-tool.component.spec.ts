@@ -1,16 +1,16 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { DialogExternalToolComponent } from './dialog-external-tool.component';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { MAT_DIALOG_DATA } from "@angular/material/dialog";
+import { NoopAnimationsModule } from "@angular/platform-browser/animations";
+import { DialogExternalToolComponent } from "./dialog-external-tool.component";
 
-describe('DialogExternalToolComponent', () => {
+describe("DialogExternalToolComponent", () => {
   let component: DialogExternalToolComponent;
   let fixture: ComponentFixture<DialogExternalToolComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DialogExternalToolComponent, NoopAnimationsModule],
-      providers: [{ provide: MAT_DIALOG_DATA, useValue: { src: '' } }],
+      providers: [{ provide: MAT_DIALOG_DATA, useValue: { src: "" } }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(DialogExternalToolComponent);
@@ -18,7 +18,7 @@ describe('DialogExternalToolComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

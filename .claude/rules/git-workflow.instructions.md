@@ -31,7 +31,7 @@ Scopes are the area touched: `chordpro`, `pitch`, `editor`, `storage`, `auth`,
   files can be neither reviewed nor reverted.
 - **No drive-by reformatting.** Prettier already runs on everything; if formatting
   noise appears in a diff you did not touch, something is misconfigured.
-- The message explains *why*. "Fix bug" tells a future reader nothing. "Onset
+- The message explains _why_. "Fix bug" tells a future reader nothing. "Onset
   detection must open a new note even at identical pitch, otherwise two hummed
   notes merge into one held note" tells them everything.
 

@@ -85,7 +85,7 @@ framework bug for about an hour.
 
 ## Comments
 
-Explain *why*, never *what*. The guard in `ChordproService.setChordproContent()`
+Explain _why_, never _what_. The guard in `ChordproService.setChordproContent()`
 that returns early on unchanged content deserves a comment about the infinite loop
 it prevents; a comment saying "sets the content" does not. Delete commented-out
 code — git remembers it.

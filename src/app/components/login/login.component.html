@@ -4,16 +4,20 @@
     [matTooltip]="'Signed in as ' + user.displayName + ' — click to sign out'"
     (click)="onSignOut()">
     @if (user.photoURL) {
-      <img [src]="user.photoURL" [alt]="user.displayName ?? 'User avatar'" class="avatar" referrerpolicy="no-referrer" />
+      <img
+        class="avatar"
+        referrerpolicy="no-referrer"
+        [src]="user.photoURL"
+        [alt]="user.displayName ?? 'User avatar'" />
     } @else {
       <mat-icon>account_circle</mat-icon>
     }
   </button>
 } @else {
   <button
+    aria-label="Sign in"
     mat-icon-button
     matTooltip="Sign in with Google to sync your files"
-    aria-label="Sign in"
     [disabled]="isSigningIn"
     (click)="onSignIn()">
     @if (isSigningIn) {

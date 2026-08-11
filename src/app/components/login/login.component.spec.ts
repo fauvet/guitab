@@ -56,9 +56,7 @@ describe("LoginComponent", () => {
 
     it("does not show the sign-out button", () => {
       const buttons = fixture.nativeElement.querySelectorAll("button");
-      const hasSignOutBtn = Array.from(buttons).some((b: any) =>
-        b.getAttribute("mattooltip")?.includes("sign out"),
-      );
+      const hasSignOutBtn = Array.from(buttons).some((b: any) => b.getAttribute("mattooltip")?.includes("sign out"));
       expect(hasSignOutBtn).toBe(false);
     });
   });
@@ -90,7 +88,9 @@ describe("LoginComponent", () => {
     it("sets isSigningIn to true while the popup is open", () => {
       let resolveSignIn!: () => void;
       mockAuthService.signInWithGoogle.mockReturnValue(
-        new Promise<void>((resolve) => { resolveSignIn = resolve; }),
+        new Promise<void>((resolve) => {
+          resolveSignIn = resolve;
+        }),
       );
 
       component.onSignIn();

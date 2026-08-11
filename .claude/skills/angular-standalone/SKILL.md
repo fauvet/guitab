@@ -76,15 +76,13 @@ precisely, and `@for` requires a `track` expression, which is the whole point:
 
 ```html
 @if (note(); as note) {
-  <p>{{ note.name }}{{ note.octave }}</p>
+<p>{{ note.name }}{{ note.octave }}</p>
 } @else {
-  <p>Waiting for a sound…</p>
-}
-
-@for (position of positions; track position.stringIndex) {
-  <li>{{ position.fret }}</li>
+<p>Waiting for a sound…</p>
+} @for (position of positions; track position.stringIndex) {
+<li>{{ position.fret }}</li>
 } @empty {
-  <li>No notes yet</li>
+<li>No notes yet</li>
 }
 ```
 

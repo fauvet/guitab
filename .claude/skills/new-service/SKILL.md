@@ -7,11 +7,11 @@ description: Scaffolds a new root-provided Angular service for GuiTab under src/
 
 Three homes, and picking the wrong one is the expensive mistake:
 
-| It… | Belongs in |
-| --- | ---------- |
-| takes data and returns data, with no dependency and no side effect | `src/app/utils/` — a class of static methods |
-| holds state shared between components, or touches the outside world (Firebase, Web Audio, the file system, `localStorage`) | `src/app/services/` |
-| only persists and reloads one kind of record | `src/app/storage/` — a repository behind its interface |
+| It…                                                                                                                        | Belongs in                                             |
+| -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| takes data and returns data, with no dependency and no side effect                                                         | `src/app/utils/` — a class of static methods           |
+| holds state shared between components, or touches the outside world (Firebase, Web Audio, the file system, `localStorage`) | `src/app/services/`                                    |
+| only persists and reloads one kind of record                                                                               | `src/app/storage/` — a repository behind its interface |
 
 Prefer a util. It is testable with no mocks at all, and most "services" people reach
 for are a pure function wearing a decorator. See

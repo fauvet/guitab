@@ -29,9 +29,7 @@ export class AuthService {
         this.user$.next(user);
       } else {
         // No session — sign in anonymously to always have a stable uid
-        signInAnonymously(this.auth).catch((err) =>
-          console.error("[AuthService] Anonymous sign-in failed:", err),
-        );
+        signInAnonymously(this.auth).catch((err) => console.error("[AuthService] Anonymous sign-in failed:", err));
       }
     });
   }
@@ -65,7 +63,9 @@ export class AuthService {
         // code, not the prototype, and a rejection is not obliged to be an
         // Error at all.
         const code =
-          typeof error === "object" && error !== null && "code" in error ? (error as { code: unknown }).code : undefined;
+          typeof error === "object" && error !== null && "code" in error
+            ? (error as { code: unknown }).code
+            : undefined;
         if (code === "auth/credential-already-in-use" || code === "auth/email-already-in-use") {
           // Google account already exists with a different uid — sign in directly
           await signInWithPopup(this.auth, provider);

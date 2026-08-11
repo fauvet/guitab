@@ -12,11 +12,11 @@ import { AsyncPipe } from "@angular/common";
 import _ from "lodash";
 
 @Component({
-    selector: "app-chordpro-chords-viewer",
-    imports: [DiagramChordComponent, MatButtonModule, AsyncPipe],
-    templateUrl: "./chordpro-chords-viewer.component.html",
-    styleUrl: "./chordpro-chords-viewer.component.css",
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: "app-chordpro-chords-viewer",
+  imports: [DiagramChordComponent, MatButtonModule, AsyncPipe],
+  templateUrl: "./chordpro-chords-viewer.component.html",
+  styleUrl: "./chordpro-chords-viewer.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChordproChordsViewerComponent implements OnInit, OnDestroy {
   private readonly appContextService = inject(AppContextService);

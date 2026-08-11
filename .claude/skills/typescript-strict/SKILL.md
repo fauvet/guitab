@@ -8,14 +8,14 @@ description: The TypeScript configuration GuiTab compiles under and what it forb
 `tsconfig.json` turns on `strict` and then adds more. Read it rather than trusting
 memory, but these are the flags that change how code has to be written:
 
-| Flag | What it costs you |
-| ---- | ----------------- |
-| `strict` | No implicit `any`, strict null checks, strict function types |
-| `noImplicitOverride` | Overriding a method requires the `override` keyword |
+| Flag                                 | What it costs you                                              |
+| ------------------------------------ | -------------------------------------------------------------- |
+| `strict`                             | No implicit `any`, strict null checks, strict function types   |
+| `noImplicitOverride`                 | Overriding a method requires the `override` keyword            |
 | `noPropertyAccessFromIndexSignature` | Index-signature members must use `data["key"]`, not `data.key` |
-| `noImplicitReturns` | Every branch of a function returns, or none does |
-| `noFallthroughCasesInSwitch` | A `case` without `break` is an error |
-| `strictTemplates` (Angular) | Template expressions are type-checked against the component |
+| `noImplicitReturns`                  | Every branch of a function returns, or none does               |
+| `noFallthroughCasesInSwitch`         | A `case` without `break` is an error                           |
+| `strictTemplates` (Angular)          | Template expressions are type-checked against the component    |
 
 `noPropertyAccessFromIndexSignature` is the one that surprises people, and it is why
 Firestore reads look like `data["chordproContent"]`. That is not a style choice — it

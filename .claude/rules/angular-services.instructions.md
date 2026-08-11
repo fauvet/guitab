@@ -63,6 +63,7 @@ export class MyService {
 ```
 
 Rules:
+
 - BehaviorSubjects are always `private readonly`
 - Never expose a `BehaviorSubject` directly — use `asObservable()`
 - Always provide both `getFoo$()` and `getFoo()` accessors

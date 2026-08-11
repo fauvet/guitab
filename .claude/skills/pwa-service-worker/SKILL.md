@@ -20,7 +20,7 @@ service-worker behaviour cannot be tested with the dev server. Build and serve
 Two asset groups:
 
 - **`app`** — `index.html`, the JS and CSS bundles, the manifest. `installMode:
-  "prefetch"`: fetched during installation, so the shell is available offline
+"prefetch"`: fetched during installation, so the shell is available offline
   immediately.
 - **`assets`** — everything under `/assets/**` plus fonts and images.
   `installMode: "lazy"` with `updateMode: "prefetch"`: not downloaded until first

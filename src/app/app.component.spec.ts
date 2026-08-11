@@ -1,7 +1,7 @@
 import { TestBed } from "@angular/core/testing";
 import { provideRouter } from "@angular/router";
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { MatIconTestingModule } from '@angular/material/icon/testing';
+import { NoopAnimationsModule } from "@angular/platform-browser/animations";
+import { MatIconTestingModule } from "@angular/material/icon/testing";
 import { AppComponent } from "./app.component";
 
 describe("AppComponent", () => {

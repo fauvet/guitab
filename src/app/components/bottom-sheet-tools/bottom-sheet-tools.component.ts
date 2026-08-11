@@ -10,11 +10,11 @@ import { DialogImportChordsOverLyricsComponent } from "../dialog-import-chords-o
 import { ChordproService } from "../../services/chordpro/chordpro.service";
 
 @Component({
-    selector: "app-bottom-sheet-tools",
-    imports: [MatListModule, MatIcon, MatRipple],
-    templateUrl: "./bottom-sheet-tools.component.html",
-    styleUrl: "./bottom-sheet-tools.component.css",
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: "app-bottom-sheet-tools",
+  imports: [MatListModule, MatIcon, MatRipple],
+  templateUrl: "./bottom-sheet-tools.component.html",
+  styleUrl: "./bottom-sheet-tools.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BottomSheetToolsComponent implements OnInit {
   private readonly chordproService = inject(ChordproService);

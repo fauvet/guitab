@@ -3,12 +3,13 @@
   <h1>GuiTab</h1>
   <p>A ChordPro guitar chord chart editor and viewer, built as a Progressive Web App.</p>
 
-  [![Angular](https://img.shields.io/badge/Angular-22-DD0031?logo=angular&logoColor=white)](https://angular.dev)
-  [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-  [![RxJS](https://img.shields.io/badge/RxJS-7.8-B7178C?logo=reactivex&logoColor=white)](https://rxjs.dev)
-  [![Vitest](https://img.shields.io/badge/Vitest-4.1-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev)
-  [![License](https://img.shields.io/badge/License-GPL--3.0--or--later-blue)](LICENSE)
-  [![PWA](https://img.shields.io/badge/PWA-enabled-5A0FC8?logoColor=white)](https://web.dev/progressive-web-apps/)
+[![Angular](https://img.shields.io/badge/Angular-22-DD0031?logo=angular&logoColor=white)](https://angular.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![RxJS](https://img.shields.io/badge/RxJS-7.8-B7178C?logo=reactivex&logoColor=white)](https://rxjs.dev)
+[![Vitest](https://img.shields.io/badge/Vitest-4.1-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev)
+[![License](https://img.shields.io/badge/License-GPL--3.0--or--later-blue)](LICENSE)
+[![PWA](https://img.shields.io/badge/PWA-enabled-5A0FC8?logoColor=white)](https://web.dev/progressive-web-apps/)
+
 </div>
 
 ---
@@ -37,16 +38,16 @@
 
 ## Tech stack
 
-| | |
-|---|---|
-| Framework | [Angular 22](https://angular.dev) (standalone components, OnPush) |
-| UI | [Angular Material 22](https://material.angular.io) |
-| Reactive state | [RxJS 7](https://rxjs.dev) |
+|                  |                                                                          |
+| ---------------- | ------------------------------------------------------------------------ |
+| Framework        | [Angular 22](https://angular.dev) (standalone components, OnPush)        |
+| UI               | [Angular Material 22](https://material.angular.io)                       |
+| Reactive state   | [RxJS 7](https://rxjs.dev)                                               |
 | ChordPro parsing | [chordproject-parser](https://www.npmjs.com/package/chordproject-parser) |
-| ChordPro editor | [chordproject-editor](https://www.npmjs.com/package/chordproject-editor) |
-| Chord diagrams | [svguitar](https://github.com/omnibrain/svguitar) |
-| Testing | [Vitest 4](https://vitest.dev) + [Playwright](https://playwright.dev) |
-| PWA | [Angular Service Worker](https://angular.dev/ecosystem/service-workers) |
+| ChordPro editor  | [chordproject-editor](https://www.npmjs.com/package/chordproject-editor) |
+| Chord diagrams   | [svguitar](https://github.com/omnibrain/svguitar)                        |
+| Testing          | [Vitest 4](https://vitest.dev) + [Playwright](https://playwright.dev)    |
+| PWA              | [Angular Service Worker](https://angular.dev/ecosystem/service-workers)  |
 
 ## Getting started
 

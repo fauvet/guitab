@@ -100,14 +100,14 @@ Subscribe manually only when the value drives logic rather than display.
 
 ## Operators worth knowing here
 
-| Operator | Where it earns its place |
-| -------- | ------------------------ |
-| `debounceTime` | Editor input and the solo-tab textarea — recomputing a whole tab on every keystroke is wasted work |
-| `distinctUntilChanged` | The declarative version of the equality guard, for a stream you consume rather than own |
-| `combineLatest` | A view needing two pieces of state at once; it emits only after **all** sources have emitted at least once |
-| `switchMap` | An async call that a newer one should cancel — the audio-file decode when a second file is chosen |
-| `filter` + `map` | Narrowing before doing work, rather than branching inside the subscriber |
-| `takeUntil` | Teardown, always last |
+| Operator               | Where it earns its place                                                                                   |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `debounceTime`         | Editor input and the solo-tab textarea — recomputing a whole tab on every keystroke is wasted work         |
+| `distinctUntilChanged` | The declarative version of the equality guard, for a stream you consume rather than own                    |
+| `combineLatest`        | A view needing two pieces of state at once; it emits only after **all** sources have emitted at least once |
+| `switchMap`            | An async call that a newer one should cancel — the audio-file decode when a second file is chosen          |
+| `filter` + `map`       | Narrowing before doing work, rather than branching inside the subscriber                                   |
+| `takeUntil`            | Teardown, always last                                                                                      |
 
 Avoid nesting `subscribe` inside `subscribe`. That is `switchMap` (cancel the
 previous), `mergeMap` (let them race) or `concatMap` (queue them) — pick the one
@@ -118,7 +118,7 @@ decision is real and nesting hides it.
 
 Not everything belongs in a subject. A `requestAnimationFrame` loop reading audio
 frames emits far too fast to drive a template directly — several times per frame
-budget. Push the *settled* result into a subject (the current note, the segmented
+budget. Push the _settled_ result into a subject (the current note, the segmented
 list) and keep the raw stream inside the service. The rule is the same one the
 accessibility rules state for live regions: publish what settles, keep what streams
 internal.

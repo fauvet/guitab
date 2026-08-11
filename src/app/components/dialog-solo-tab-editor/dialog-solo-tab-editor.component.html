@@ -27,10 +27,16 @@
     mat-dialog-close>
     Cancel
   </button>
-  <button mat-button (click)="onCopyClicked()">
+  <button
+    mat-button
+    (click)="onCopyClicked()">
     Copy
   </button>
-  <button mat-flat-button color="primary" [disabled]="!(generatedSoloTab$ | async)?.length" (click)="onInsertClicked()">
+  <button
+    mat-flat-button
+    color="primary"
+    [disabled]="!(generatedSoloTab$ | async)?.length"
+    (click)="onInsertClicked()">
     Insert
   </button>
 </mat-dialog-actions>

@@ -50,7 +50,8 @@ export class MyComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
 
   ngOnInit(): void {
-    this.someService.getData$()
+    this.someService
+      .getData$()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((data) => this.handleData(data));
   }

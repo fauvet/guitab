@@ -100,9 +100,9 @@ second tree is how the last one ended up contradicting itself.
 If two documents describe the same thing, one of them is wrong. Update the owner and
 link from anywhere else.
 
-| Topic                                              | Owner                                 |
-| -------------------------------------------------- | ------------------------------------- |
-| Versions, file lists, coverage thresholds, routes  | the code and config themselves        |
-| Runtime architecture, data flows, state ownership  | the architecture rule document        |
-| How to write code today                            | the matching `.claude/rules/*.md`     |
-| How a library or a format works                    | the matching `.claude/skills/*/SKILL.md` |
+| Topic                                             | Owner                                    |
+| ------------------------------------------------- | ---------------------------------------- |
+| Versions, file lists, coverage thresholds, routes | the code and config themselves           |
+| Runtime architecture, data flows, state ownership | the architecture rule document           |
+| How to write code today                           | the matching `.claude/rules/*.md`        |
+| How a library or a format works                   | the matching `.claude/skills/*/SKILL.md` |

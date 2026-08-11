@@ -6,11 +6,11 @@ import { DialogDiagramChordComponent } from "../dialog-diagram-chord/dialog-diag
 import { ChordproService } from "../../services/chordpro/chordpro.service";
 
 @Component({
-    selector: "app-chordpro-viewer",
-    imports: [],
-    templateUrl: "./chordpro-viewer.component.html",
-    styleUrl: "./chordpro-viewer.component.css",
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: "app-chordpro-viewer",
+  imports: [],
+  templateUrl: "./chordpro-viewer.component.html",
+  styleUrl: "./chordpro-viewer.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChordproViewerComponent implements OnInit, OnDestroy {
   private readonly elementRef = inject(ElementRef);

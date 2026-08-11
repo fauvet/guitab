@@ -2,7 +2,13 @@ import { AsyncPipe } from "@angular/common";
 import { ChangeDetectionStrategy, Component, ElementRef, inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
-import { MatDialogActions, MatDialogClose, MatDialogContent, MatDialogRef, MatDialogTitle } from "@angular/material/dialog";
+import {
+  MatDialogActions,
+  MatDialogClose,
+  MatDialogContent,
+  MatDialogRef,
+  MatDialogTitle,
+} from "@angular/material/dialog";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import _ from "lodash";
@@ -39,7 +45,9 @@ export class DialogSoloTabEditorComponent implements OnInit, OnDestroy {
   handyRows$ = new BehaviorSubject(new Array<HandyRow>());
 
   ngOnInit(): void {
-    this.soloTab$.pipe(debounceTime(200), takeUntil(this.unsubscribe$)).subscribe((soloTab) => this.onSoloTabChanged(soloTab));
+    this.soloTab$
+      .pipe(debounceTime(200), takeUntil(this.unsubscribe$))
+      .subscribe((soloTab) => this.onSoloTabChanged(soloTab));
   }
 
   ngOnDestroy(): void {

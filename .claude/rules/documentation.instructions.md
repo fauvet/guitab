@@ -12,13 +12,13 @@ touch, and how do I keep it true?" — the ownership table itself lives in the r
 
 ## What each kind of document may say
 
-| Kind | Says | Never says |
-| ---- | ---- | ---------- |
-| `CLAUDE.md` | What is true about this repo, today | How to install anything |
-| `.claude/rules/*.md` | How to write code here, and why the rule exists | What the code currently contains, in detail |
-| `.claude/skills/*/SKILL.md` | How a library, format or domain works | Project conventions — those belong to a rule |
-| `README.md` | How to run, configure and deploy | Any convention — link to the rule instead |
-| `CHANGELOG.md` | What changed, for a user | Why the implementation is shaped that way |
+| Kind                        | Says                                            | Never says                                   |
+| --------------------------- | ----------------------------------------------- | -------------------------------------------- |
+| `CLAUDE.md`                 | What is true about this repo, today             | How to install anything                      |
+| `.claude/rules/*.md`        | How to write code here, and why the rule exists | What the code currently contains, in detail  |
+| `.claude/skills/*/SKILL.md` | How a library, format or domain works           | Project conventions — those belong to a rule |
+| `README.md`                 | How to run, configure and deploy                | Any convention — link to the rule instead    |
+| `CHANGELOG.md`              | What changed, for a user                        | Why the implementation is shaped that way    |
 
 ## Do not write down what the code already says
 
@@ -54,7 +54,7 @@ setup:
    documents that quietly rot after a rename.
 3. **A file over its size budget** — bloat is drift's precondition.
 
-Know what it cannot see: it cannot tell whether a sentence is *true*, only whether
+Know what it cannot see: it cannot tell whether a sentence is _true_, only whether
 the paths in it resolve. That part is on you.
 
 Hitting a size budget is a signal, not an obstacle. Move the detail into the

@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "outputPath": "docs", 
+            "outputPath": "docs",
             "baseHref": "/guitab/",
             "index": "src/index.html",
             "browser": "src/main.ts",
@@ -22,12 +22,7 @@
             "assets": ["src/logo.svg", "src/assets", "src/manifest.webmanifest"],
             "styles": ["src/styles.scss"],
             "scripts": [],
-            "allowedCommonJsDependencies": [
-              "chordproject-parser",
-              "lodash",
-              "file-saver",
-              "chordproject-editor"
-            ]
+            "allowedCommonJsDependencies": ["chordproject-parser", "lodash", "file-saver", "chordproject-editor"]
           },
           "configurations": {
             "production": {
@@ -79,12 +74,7 @@
             "buildTarget": "guitab:build:development",
             "runner": "vitest",
             "isolate": true,
-            "coverageExclude": [
-              "src/main.ts",
-              "src/environments/**",
-              "src/**/*.spec.ts",
-              "scripts/**"
-            ],
+            "coverageExclude": ["src/main.ts", "src/environments/**", "src/**/*.spec.ts", "scripts/**"],
             "coverageThresholds": {
               "statements": 70,
               "branches": 65,

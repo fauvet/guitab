@@ -15,14 +15,14 @@ GPL.
 
 ### The compatibility table
 
-| Licence of the dependency | Verdict |
-| ------------------------- | ------- |
-| MIT, ISC, BSD-2/3, Apache-2.0, Unlicense, CC0 | ✅ Compatible, and **preferred at equal quality** |
-| GPL-2.0-or-later, GPL-3.0, LGPL | ✅ Compatible |
-| GPL-2.0-**only** | ❌ Incompatible with GPL-3.0 — no upgrade clause |
-| AGPL-3.0 | ❌ Stronger copyleft; taking it on would relicense the app again |
-| SSPL, BUSL, "source available", Commons Clause | ❌ Not free software |
-| No licence field, no LICENSE file | ❌ Treat as all rights reserved |
+| Licence of the dependency                      | Verdict                                                          |
+| ---------------------------------------------- | ---------------------------------------------------------------- |
+| MIT, ISC, BSD-2/3, Apache-2.0, Unlicense, CC0  | ✅ Compatible, and **preferred at equal quality**                |
+| GPL-2.0-or-later, GPL-3.0, LGPL                | ✅ Compatible                                                    |
+| GPL-2.0-**only**                               | ❌ Incompatible with GPL-3.0 — no upgrade clause                 |
+| AGPL-3.0                                       | ❌ Stronger copyleft; taking it on would relicense the app again |
+| SSPL, BUSL, "source available", Commons Clause | ❌ Not free software                                             |
+| No licence field, no LICENSE file              | ❌ Treat as all rights reserved                                  |
 
 Being compatible is not being welcome. A permissive dependency keeps the door open
 for the parts of this codebase that could one day be extracted; a copyleft one
@@ -65,7 +65,7 @@ a click.
 The production budgets are in `angular.json` and CI fails on them — do not restate
 the numbers here, they move.
 
-What matters is *where* the weight lands. A heavy dependency behind a dynamic
+What matters is _where_ the weight lands. A heavy dependency behind a dynamic
 `import()` costs nothing until the user opens the feature that needs it, and that is
 how both audio engines are loaded: the app shell must never pay for a microphone the
 user has not switched on. If a package cannot be loaded lazily and does not fit the

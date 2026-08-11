@@ -24,11 +24,11 @@ interface LyricsSuggestResponse {
 }
 
 @Component({
-    selector: "app-bottom-sheet-manage-file",
-    imports: [MatListModule, MatIcon, MatRipple, MatButtonModule, AsyncPipe, MatDividerModule],
-    templateUrl: "./bottom-sheet-manage-file.component.html",
-    styleUrl: "./bottom-sheet-manage-file.component.css",
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: "app-bottom-sheet-manage-file",
+  imports: [MatListModule, MatIcon, MatRipple, MatButtonModule, AsyncPipe, MatDividerModule],
+  templateUrl: "./bottom-sheet-manage-file.component.html",
+  styleUrl: "./bottom-sheet-manage-file.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
   private static readonly DEFAULT_ALBUM_COVER =

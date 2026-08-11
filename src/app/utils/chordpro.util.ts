@@ -48,7 +48,6 @@ export class ChordproUtil {
       return finger < 0 ? "x" : finger;
     });
 
-
     return {
       frets,
       fingers,

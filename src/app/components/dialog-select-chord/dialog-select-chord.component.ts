@@ -1,11 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from "@angular/core";
 import ChordObject from "../../types/chord-object.type";
-import {
-  MatDialogTitle,
-  MatDialogContent,
-  MatDialogActions,
-  MatDialogClose,
-} from "@angular/material/dialog";
+import { MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose } from "@angular/material/dialog";
 import { MatButtonModule } from "@angular/material/button";
 import { FormsModule } from "@angular/forms";
 import { MatInputModule } from "@angular/material/input";
@@ -21,24 +16,24 @@ import { AsyncPipe } from "@angular/common";
 import { MatRipple } from "@angular/material/core";
 
 @Component({
-    selector: "app-dialog-select-chord",
-    imports: [
-        AsyncPipe,
-        MatRipple,
-        MatDialogTitle,
-        MatDialogContent,
-        MatDialogActions,
-        MatDialogClose,
-        MatFormFieldModule,
-        MatInputModule,
-        FormsModule,
-        MatButtonModule,
-        MatButtonToggleModule,
-        DiagramChordComponent,
-    ],
-    templateUrl: "./dialog-select-chord.component.html",
-    styleUrl: "./dialog-select-chord.component.css",
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: "app-dialog-select-chord",
+  imports: [
+    AsyncPipe,
+    MatRipple,
+    MatDialogTitle,
+    MatDialogContent,
+    MatDialogActions,
+    MatDialogClose,
+    MatFormFieldModule,
+    MatInputModule,
+    FormsModule,
+    MatButtonModule,
+    MatButtonToggleModule,
+    DiagramChordComponent,
+  ],
+  templateUrl: "./dialog-select-chord.component.html",
+  styleUrl: "./dialog-select-chord.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DialogSelectChordComponent implements OnInit, OnDestroy {
   readonly buildChordName = ChordproUtil.buildChordName;

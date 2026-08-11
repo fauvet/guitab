@@ -30,20 +30,20 @@ interface LaunchQueue {
 }
 
 @Component({
-    selector: "app-root",
-    templateUrl: "./app.component.html",
-    styleUrl: "./app.component.css",
-    imports: [
-        RouterOutlet,
-        ChordproEditorComponent,
-        ChordproViewerComponent,
-        // DiagramChordComponent,
-        ChordproChordsViewerComponent,
-        HeaderActionsBarComponent,
-        FooterActionsBarComponent,
-        AppFooterComponent,
-    ],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: "app-root",
+  templateUrl: "./app.component.html",
+  styleUrl: "./app.component.css",
+  imports: [
+    RouterOutlet,
+    ChordproEditorComponent,
+    ChordproViewerComponent,
+    // DiagramChordComponent,
+    ChordproChordsViewerComponent,
+    HeaderActionsBarComponent,
+    FooterActionsBarComponent,
+    AppFooterComponent,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent implements OnInit {
   private readonly appContextService = inject(AppContextService);

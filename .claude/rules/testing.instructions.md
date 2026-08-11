@@ -28,7 +28,7 @@ describe("MyComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MyComponent],  // standalone component goes in imports, not declarations
+      imports: [MyComponent], // standalone component goes in imports, not declarations
     }).compileComponents();
 
     fixture = TestBed.createComponent(MyComponent);
@@ -74,9 +74,7 @@ const mockChordproService = {
 
 await TestBed.configureTestingModule({
   imports: [MyComponent],
-  providers: [
-    { provide: ChordproService, useValue: mockChordproService },
-  ],
+  providers: [{ provide: ChordproService, useValue: mockChordproService }],
 }).compileComponents();
 ```
 
@@ -140,7 +138,7 @@ With `ChangeDetectionStrategy.OnPush`, always call `fixture.detectChanges()` aft
 ```typescript
 it("should render updated content", () => {
   component.text = "hello";
-  fixture.detectChanges();  // required for OnPush
+  fixture.detectChanges(); // required for OnPush
   const el = fixture.nativeElement.querySelector("p");
   expect(el.textContent).toContain("hello");
 });

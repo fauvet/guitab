@@ -106,7 +106,10 @@ with an error that names something unrelated.
 Stub them on `globalThis` in `beforeEach`, and restore in `afterEach`:
 
 ```typescript
-vi.stubGlobal("AudioContext", vi.fn(() => ({ close: vi.fn(), createAnalyser: vi.fn() })));
+vi.stubGlobal(
+  "AudioContext",
+  vi.fn(() => ({ close: vi.fn(), createAnalyser: vi.fn() })),
+);
 ```
 
 Canvas is the other trap: jsdom does not implement `getContext`, so anything drawing
