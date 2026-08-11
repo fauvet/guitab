@@ -39,8 +39,8 @@ describing implementation rather than flow.
 
 ## One tree, and the check that keeps it one
 
-`.github/copilot-instructions.md`, `.github/instructions/`, `.github/skills/` and
-`.github/prompts/` are symlinks into `CLAUDE.md` and `.claude/`. That is what lets a
+`.github/copilot-instructions.md`, `.github/instructions/` and `.github/skills/`
+are symlinks into `CLAUDE.md` and `.claude/`. That is what lets a
 single file serve both Claude Code and Copilot — and it is why every rule file keeps
 the `.instructions.md` suffix and its `applyTo:` frontmatter, which Copilot needs to
 apply a rule to the right paths.
@@ -48,7 +48,7 @@ apply a rule to the right paths.
 `npm run check:docs` fails the build on the three failures that killed the previous
 setup:
 
-1. **A second tree resurrected** — any of those four paths becoming a real file
+1. **A second tree resurrected** — any of those three paths becoming a real file
    instead of a symlink, or a `.cursorrules` / `.windsurfrules` appearing.
 2. **A referenced path that does not exist** — the cheapest possible check against
    documents that quietly rot after a rename.

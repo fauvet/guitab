@@ -30,7 +30,7 @@
   <button mat-button (click)="onCopyClicked()">
     Copy
   </button>
-  <button mat-flat-button color="primary" [disabled]="!(generatedSoloTab$ | async)" (click)="onInsertClicked()">
+  <button mat-flat-button color="primary" [disabled]="!(generatedSoloTab$ | async)?.length" (click)="onInsertClicked()">
     Insert
   </button>
 </mat-dialog-actions>

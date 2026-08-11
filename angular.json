@@ -78,7 +78,19 @@
             "tsConfig": "tsconfig.spec.json",
             "buildTarget": "guitab:build:development",
             "runner": "vitest",
-            "isolate": true
+            "isolate": true,
+            "coverageExclude": [
+              "src/main.ts",
+              "src/environments/**",
+              "src/**/*.spec.ts",
+              "scripts/**"
+            ],
+            "coverageThresholds": {
+              "statements": 70,
+              "branches": 65,
+              "functions": 58,
+              "lines": 70
+            }
           }
         }
       }

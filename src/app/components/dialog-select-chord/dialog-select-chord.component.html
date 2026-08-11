@@ -6,7 +6,7 @@
       @for (chordEntry of chordEntries; track chordEntry) {
         <button
           mat-flat-button
-          [color]="(selectedKeyChordObjects$ | async)?.[0]?.key == chordEntry[0] ? 'primary' : ''"
+          [color]="(selectedKeyChordObjects$ | async)?.[0]?.key === chordEntry[0] ? 'primary' : ''"
           (click)="onButtonChordKeyClicked(chordEntry[1])">
           {{ chordEntry[0] }}
         </button>
@@ -19,7 +19,7 @@
       @for (keyChordObject of selectedKeyChordObjects$ | async; track keyChordObject) {
         <button
           mat-flat-button
-          [color]="buildChordName(selectedChordObject$ | async) == buildChordName(keyChordObject) ? 'primary' : ''"
+          [color]="buildChordName(selectedChordObject$ | async) === buildChordName(keyChordObject) ? 'primary' : ''"
           (click)="onButtonChordNameClicked(keyChordObject)">
           {{ buildChordName(keyChordObject) }}
         </button>
@@ -33,7 +33,7 @@
         <app-diagram-chord
           matRipple
           color="primary"
-          [class.selected]="(selectedChordVariant$ | async) == chordVariant"
+          [class.selected]="(selectedChordVariant$ | async) === chordVariant"
           [chord]="toChord(buildChordName(selectedChordObject$ | async), chordVariant)"
           [size]="'m'"
           (click)="onDiagramChordClicked(chordVariant)"></app-diagram-chord>

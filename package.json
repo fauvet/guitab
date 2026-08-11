@@ -16,10 +16,17 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "setup:env": "node scripts/setup-env.mjs",
-    "prettier": "prettier --write .",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d docs",
-    "gen-firebase-token": "npx firebase-tools login:ci"
+    "gen-firebase-token": "npx firebase-tools login:ci",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check:docs": "node scripts/check-docs.mjs",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit",
+    "test:coverage": "ng test --no-watch --coverage",
+    "verify": "npm run lint && npm run format:check && npm run check:docs && npm run typecheck && npm run test:coverage"
   },
   "dependencies": {
     "@angular/animations": "^22.0.2",
@@ -49,17 +56,21 @@
     "@angular/build": "^22.0.4",
     "@angular/cli": "^22.0.4",
     "@angular/compiler-cli": "^22.0.2",
+    "@eslint/js": "^10.0.1",
     "@types/file-saver": "^2.0.7",
     "@types/lodash": "^4.17.15",
     "@types/wicg-file-system-access": "^2023.10.7",
     "@vitest/browser": "^4.1.9",
     "@vitest/coverage-v8": "^4.1.10",
+    "angular-eslint": "^22.1.0",
+    "eslint": "^10.8.1",
     "gh-pages": "^6.1.1",
     "jsdom": "^29.1.1",
     "playwright": "^1.61.1",
     "prettier": "^3.2.5",
     "prettier-plugin-organize-attributes": "^1.0.0",
     "typescript": "~6.0.3",
+    "typescript-eslint": "^8.67.0",
     "vitest": "^4.1.9"
   }
 }

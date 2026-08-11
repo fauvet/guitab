@@ -12,7 +12,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { Subject, takeUntil } from "rxjs";
-import { User } from "firebase/auth";
+import type { User } from "firebase/auth";
 import { AuthService } from "../../services/auth/auth.service";
 
 @Component({

@@ -2,7 +2,7 @@
   aria-label="Undo"
   title="Undo (Ctrl+Z)"
   mat-icon-button
-  [disabled]="!(hasEditorUndo$ | async)"
+  [disabled]="(hasEditorUndo$ | async) !== true"
   (click)="onButtonUndoClicked()">
   <mat-icon svgIcon="undo"></mat-icon>
 </button>
@@ -10,7 +10,7 @@
   aria-label="Redo"
   title="Redo (Ctrl+Y)"
   mat-icon-button
-  [disabled]="!(hasEditorRedo$ | async)"
+  [disabled]="(hasEditorRedo$ | async) !== true"
   (click)="onButtonRedoClicked()">
   <mat-icon svgIcon="redo"></mat-icon>
 </button>
@@ -40,7 +40,7 @@
   aria-label="Preview"
   title="Preview"
   mat-icon-button
-  [disabled]="!(isEditing$ | async)"
+  [disabled]="(isEditing$ | async) !== true"
   (click)="onButtonPreviewClicked()">
   <mat-icon>preview</mat-icon>
 </button>

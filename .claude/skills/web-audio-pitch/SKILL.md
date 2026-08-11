@@ -12,10 +12,10 @@ microphone or file  →  frames of samples  →  frequency + onset  →  note ev
        Web Audio           Web Audio              aubio             utils/           utils/          SoloTabUtil
 ```
 
-Everything from "note events" rightwards is **pure**, lives in `src/app/utils/`, and
-is tested with plain arrays. Everything left of it lives in
-`src/app/services/pitch-detection/`. That line is the reason the musical logic can be
-tested without a microphone, and it is worth defending.
+Everything from "note events" rightwards is **pure**, lives in `src/app/utils/`,
+and is tested with plain arrays. Everything left of it lives in the
+pitch-detection service under `src/app/services/`. That line is the reason the
+musical logic can be tested without a microphone, and it is worth defending.
 
 ## Capturing audio
 

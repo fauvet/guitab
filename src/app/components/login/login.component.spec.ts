@@ -4,7 +4,7 @@ import { BehaviorSubject } from "rxjs";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { LoginComponent } from "./login.component";
 import { AuthService } from "../../services/auth/auth.service";
-import { User } from "firebase/auth";
+import type { User } from "firebase/auth";
 
 const anonymousUser = { uid: "anon-uid", isAnonymous: true, displayName: null, photoURL: null } as User;
 const googleUser = { uid: "google-uid", isAnonymous: false, displayName: "Alice", photoURL: null } as User;

@@ -13,8 +13,8 @@ ASCII tab.
 2. **Never touch Firebase outside `src/app/services/` and `src/app/storage/`.**
    Components call a service; persistence goes through a repository interface.
    ESLint enforces this.
-3. **Never touch Web Audio outside `src/app/services/pitch-detection/`.** Same
-   boundary, same reason: it is what keeps the musical logic testable without a
+3. **Never touch Web Audio outside the pitch-detection service.** Same boundary,
+   same reason: it is what keeps the musical logic testable without a
    microphone.
 4. **State lives in a private `BehaviorSubject`**, exposed as `getFoo$()` and
    `getFoo()`. Components subscribe with `takeUntil(this.unsubscribe$)` and fire
@@ -92,10 +92,10 @@ stack, loaded on demand rather than read every session.
 
 ## One tree, one owner per topic
 
-`.github/copilot-instructions.md`, `.github/instructions/`, `.github/skills/` and
-`.github/prompts/` are **symlinks** into this tree. One content, two toolchains, no
-duplication. `npm run check:docs` fails the build if any of them becomes a real file
-again — a second tree is how the last one ended up contradicting itself.
+`.github/copilot-instructions.md`, `.github/instructions/` and `.github/skills/`
+are **symlinks** into this tree. One content, two toolchains, no duplication.
+`npm run check:docs` fails the build if any of them becomes a real file again — a
+second tree is how the last one ended up contradicting itself.
 
 If two documents describe the same thing, one of them is wrong. Update the owner and
 link from anywhere else.
@@ -103,6 +103,6 @@ link from anywhere else.
 | Topic                                              | Owner                                 |
 | -------------------------------------------------- | ------------------------------------- |
 | Versions, file lists, coverage thresholds, routes  | the code and config themselves        |
-| Runtime architecture, data flows, state ownership  | `.claude/rules/architecture.…md`      |
+| Runtime architecture, data flows, state ownership  | the architecture rule document        |
 | How to write code today                            | the matching `.claude/rules/*.md`     |
 | How a library or a format works                    | the matching `.claude/skills/*/SKILL.md` |

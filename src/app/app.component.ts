@@ -14,8 +14,20 @@ import { DomSanitizer } from "@angular/platform-browser";
 import { MaterialIconsUtil } from "./utils/material-icons.util";
 import { KeyboardShortcutService } from "./services/keyboard-shortcut/keyboard-shortcut.service";
 import { BeforeUnloadService } from "./services/before-unload/before-unload.service";
-import { empty } from "rxjs";
 import { ChordproService } from "./services/chordpro/chordpro.service";
+
+/**
+ * The Launch Handler API, which delivers the files a PWA was opened with.
+ * TypeScript's DOM library does not declare it yet, so the two members this
+ * app reads are declared here rather than reached through `any`.
+ */
+interface LaunchParams {
+  files?: FileSystemFileHandle[];
+}
+
+interface LaunchQueue {
+  setConsumer(consumer: (launchParams: LaunchParams) => void): void;
+}
 
 @Component({
     selector: "app-root",
@@ -80,7 +92,8 @@ export class AppComponent implements OnInit {
   private handleLaunchQueue(): void {
     if (!("launchQueue" in window)) return;
 
-    (window.launchQueue as unknown as any).setConsumer(async (launchParams: any) => {
+    const launchQueue = window.launchQueue as unknown as LaunchQueue;
+    launchQueue.setConsumer(async (launchParams) => {
       if (!launchParams?.files?.length) return;
       const fileHandle = launchParams.files[0];
       await this.appContextService.setFileHandle(fileHandle);

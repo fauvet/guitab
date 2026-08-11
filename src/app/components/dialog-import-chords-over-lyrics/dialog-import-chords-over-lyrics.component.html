@@ -17,7 +17,7 @@
     <button mat-button (click)="onCopyClicked()">
         Copy
     </button>
-    <button mat-flat-button color="primary" [disabled]="!(preview$ | async)" (click)="onInsertClicked()">
+    <button mat-flat-button color="primary" [disabled]="!(preview$ | async)?.length" (click)="onInsertClicked()">
         Insert
     </button>
 </mat-dialog-actions>

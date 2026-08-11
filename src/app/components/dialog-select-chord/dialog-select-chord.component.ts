@@ -1,8 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from "@angular/core";
+import ChordObject from "../../types/chord-object.type";
 import {
-  MatDialog,
-  MAT_DIALOG_DATA,
-  MatDialogRef,
   MatDialogTitle,
   MatDialogContent,
   MatDialogActions,
@@ -46,8 +44,13 @@ export class DialogSelectChordComponent implements OnInit, OnDestroy {
   readonly buildChordName = ChordproUtil.buildChordName;
   readonly toChord = SvgGuitarUtil.toChord;
 
-  chordEntries = Object.entries(guitar.chords);
-  selectedKeyChordObjects$ = new BehaviorSubject(this.chordEntries[0][1]);
+  // guitar.json is data this app does not own, and TypeScript infers a shape
+  // from it far more precise than the shape the code relies on — `fingers` is
+  // an array of strings in most entries and of numbers in a few. Asserting the
+  // contract once, here at the boundary, is the sanctioned place for a cast;
+  // everything downstream then works with ChordObject.
+  chordEntries = Object.entries(guitar.chords) as [string, ChordObject[]][];
+  selectedKeyChordObjects$ = new BehaviorSubject<ChordObject[]>(this.chordEntries[0][1]);
   selectedChordObject$ = new BehaviorSubject(this.getDefaultChordObject());
   selectedChordVariant$ = new BehaviorSubject(this.getDefaultChordVariant());
 
@@ -64,7 +67,7 @@ export class DialogSelectChordComponent implements OnInit, OnDestroy {
     this.unsubscribe$.next();
   }
 
-  getDefaultChordObject(): any | null {
+  getDefaultChordObject(): ChordObject | null {
     return this.selectedKeyChordObjects$.getValue()?.[0] ?? null;
   }
 
@@ -72,12 +75,12 @@ export class DialogSelectChordComponent implements OnInit, OnDestroy {
     return this.selectedChordObject$.getValue()?.variants?.[0] ?? null;
   }
 
-  setSelectedKeyChordObjects(selectedKeyChordObjects: any[]): void {
+  setSelectedKeyChordObjects(selectedKeyChordObjects: ChordObject[]): void {
     if (selectedKeyChordObjects === this.selectedKeyChordObjects$.getValue()) return;
     this.selectedKeyChordObjects$.next(selectedKeyChordObjects);
   }
 
-  setSelectedChordObject(selectedChordObject: any | null): void {
+  setSelectedChordObject(selectedChordObject: ChordObject | null): void {
     if (selectedChordObject === this.selectedChordObject$.getValue()) return;
     this.selectedChordObject$.next(selectedChordObject);
   }
@@ -88,7 +91,7 @@ export class DialogSelectChordComponent implements OnInit, OnDestroy {
   }
 
   onSelectedKeyChordObjectsChanged(): void {
-    const suffix = this.selectedChordObject$.getValue().suffix;
+    const suffix = this.selectedChordObject$.getValue()?.suffix;
     const newSelectedChordObject =
       this.selectedKeyChordObjects$.getValue().find((chordObject) => chordObject.suffix === suffix) ??
       this.getDefaultChordObject();
@@ -99,11 +102,11 @@ export class DialogSelectChordComponent implements OnInit, OnDestroy {
     this.setSelectedChordVariant(this.getDefaultChordVariant());
   }
 
-  onButtonChordKeyClicked(keyChordObjects: any[]): void {
+  onButtonChordKeyClicked(keyChordObjects: ChordObject[]): void {
     this.setSelectedKeyChordObjects(keyChordObjects);
   }
 
-  onButtonChordNameClicked(keyChordObject: any): void {
+  onButtonChordNameClicked(keyChordObject: ChordObject): void {
     this.setSelectedChordObject(keyChordObject);
   }
 
