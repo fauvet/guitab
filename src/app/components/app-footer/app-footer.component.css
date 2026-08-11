@@ -1,0 +1,34 @@
+:host {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 12px;
+  font-size: 0.75rem;
+  opacity: 0.7;
+  user-select: none;
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    a {
+      color: inherit;
+      /* The footer sits under the toolbar, where 44px targets would dominate
+         a screen this app deliberately keeps for the chord sheet. Padding
+         buys a usable target without stealing that height. */
+      padding: 4px 0;
+      text-decoration: underline;
+
+      &:focus-visible {
+        outline: 2px solid currentColor;
+        outline-offset: 2px;
+      }
+    }
+  }
+
+  .version {
+    white-space: nowrap;
+  }
+}

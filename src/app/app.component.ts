@@ -8,6 +8,7 @@ import { FileUtil } from "./utils/file.util";
 import { ChordproChordsViewerComponent } from "./components/chordpro-chords-viewer/chordpro-chords-viewer.component";
 import { HeaderActionsBarComponent } from "./components/header-actions-bar/header-actions-bar.component";
 import { FooterActionsBarComponent } from "./components/footer-actions-bar/footer-actions-bar.component";
+import { AppFooterComponent } from "./components/app-footer/app-footer.component";
 import { MatIconRegistry } from "@angular/material/icon";
 import { DomSanitizer } from "@angular/platform-browser";
 import { MaterialIconsUtil } from "./utils/material-icons.util";
@@ -28,6 +29,7 @@ import { ChordproService } from "./services/chordpro/chordpro.service";
         ChordproChordsViewerComponent,
         HeaderActionsBarComponent,
         FooterActionsBarComponent,
+        AppFooterComponent,
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })

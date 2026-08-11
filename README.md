@@ -104,3 +104,9 @@ proprietary project.
 Any dependency added from now on must be GPL-3.0 compatible. Permissive licences
 (MIT, Apache-2.0, BSD) are compatible and remain preferable at equal quality;
 copyleft-stronger licences such as the AGPL are not.
+
+## Changelog
+
+Notable changes are recorded in [CHANGELOG.md](CHANGELOG.md), following
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
