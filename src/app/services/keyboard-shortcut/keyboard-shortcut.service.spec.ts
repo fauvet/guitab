@@ -77,6 +77,81 @@ describe("KeyboardShortcutService", () => {
     });
   });
 
+  // The service listens on document from its constructor, so dispatching a real
+  // event is both the simplest way in and the one that matches what a user does.
+  describe("keyboard shortcuts", () => {
+    const press = (key: string, modifiers: KeyboardEventInit = {}): void => {
+      document.dispatchEvent(new KeyboardEvent("keydown", { key, ctrlKey: true, ...modifiers }));
+    };
+
+    it("should undo on Ctrl+Z", async () => {
+      const undo = vi.spyOn(service, "undo").mockResolvedValue(undefined);
+
+      press("z");
+
+      await vi.waitFor(() => expect(undo).toHaveBeenCalled());
+    });
+
+    it("should redo on Ctrl+Y", async () => {
+      const redo = vi.spyOn(service, "redo").mockResolvedValue(undefined);
+
+      press("y");
+
+      await vi.waitFor(() => expect(redo).toHaveBeenCalled());
+    });
+
+    // Holding Shift makes the browser report an uppercase key. Matching only
+    // the lowercase letter left both Shift shortcuts unreachable, silently:
+    // nothing happened, and nothing said why.
+    it("should redo on Ctrl+Shift+Z, which the browser reports as an uppercase Z", async () => {
+      const redo = vi.spyOn(service, "redo").mockResolvedValue(undefined);
+
+      press("Z", { shiftKey: true });
+
+      await vi.waitFor(() => expect(redo).toHaveBeenCalled());
+    });
+
+    it("should save on Ctrl+S", async () => {
+      const saveFile = vi.spyOn(service, "saveFile").mockResolvedValue(true);
+
+      press("s");
+
+      await vi.waitFor(() => expect(saveFile).toHaveBeenCalled());
+    });
+
+    it("should save as on Ctrl+Shift+S rather than falling through to a plain save", async () => {
+      const saveFileAs = vi.spyOn(service, "saveFileAs").mockResolvedValue(true);
+      const saveFile = vi.spyOn(service, "saveFile").mockResolvedValue(true);
+
+      press("S", { shiftKey: true });
+
+      await vi.waitFor(() => expect(saveFileAs).toHaveBeenCalled());
+      expect(saveFile).not.toHaveBeenCalled();
+    });
+
+    it("should ignore shortcuts while a dialog is open", async () => {
+      const backdrop = document.createElement("div");
+      backdrop.className = "cdk-overlay-backdrop-showing";
+      document.body.appendChild(backdrop);
+      const undo = vi.spyOn(service, "undo").mockResolvedValue(undefined);
+
+      press("z");
+      await Promise.resolve();
+
+      expect(undo).not.toHaveBeenCalled();
+      backdrop.remove();
+    });
+
+    it("should leave an unmodified keystroke to the editor", async () => {
+      const undo = vi.spyOn(service, "undo").mockResolvedValue(undefined);
+
+      press("z", { ctrlKey: false });
+      await Promise.resolve();
+
+      expect(undo).not.toHaveBeenCalled();
+    });
+  });
+
   describe("canOpenFilePicker", () => {
     it("should return false when showOpenFilePicker is not available in window", () => {
       const original = (window as any).showOpenFilePicker;
