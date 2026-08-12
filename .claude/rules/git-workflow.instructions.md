@@ -59,11 +59,16 @@ Before calling a change finished, all of it:
 ## Pull requests
 
 The body covers what changed, why, what you verified — commands and their results,
-not "tested locally" — and anything deliberately left out. CI must be green;
-`.github/workflows/ci.yml` is the list of jobs and this document does not restate
-it.
+not "tested locally" — and anything deliberately left out. CI must be green.
 
-One thing worth knowing before editing CI: `src/environments/environment.ts` is
+There are **two** workflows, and knowing which one you are looking at matters:
+`.github/workflows/ci.yml` verifies every branch and every pull request, and
+`.github/workflows/cicd.yml` deploys `main` to GitHub Pages and pushes the
+Firestore rules. Neither one's job list is restated here. Keep their runner and
+action versions in step: the deploy workflow only runs after a merge, so a broken
+one is discovered by a user, not by a red check.
+
+One thing worth knowing before editing either: `src/environments/environment.ts` is
 git-ignored, and a pull request from a fork has no access to repository secrets.
 Every job that builds or tests therefore runs `npm run setup:env` first, which
 writes dummy Firebase values. Nothing contacts Firebase at build or unit-test time,

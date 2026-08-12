@@ -1,5 +1,11 @@
 name: CICD
 
+# The deploy half. ci.yml verifies every branch and every pull request; this one
+# runs only on `main`, after a merge, and publishes to GitHub Pages plus the
+# Firestore rules. Keep the runner and action versions in step with ci.yml —
+# they drifted apart once, to actions and a Node version that did not exist, and
+# nothing noticed because this workflow only ever runs after the fact.
+
 on:
   push:
     branches:
@@ -14,15 +20,19 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6.4.0
+        uses: actions/setup-node@v5
         with:
-          node-version: "26.3.0"
+          node-version: "24"
+          cache: "npm"
 
       - name: Install dependencies
-        run: npm install
+        # `npm ci` rather than `npm install`: this job publishes what users get,
+        # so it must build the dependency tree the lockfile pins and not resolve
+        # a fresher one that nothing tested.
+        run: npm ci
 
       - name: Create environment.ts from secrets
         run: |
