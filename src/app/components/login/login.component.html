@@ -1,4 +1,13 @@
-@if (user && !authService.isAnonymous()) {
+@let user = getUser$() | async;
+
+<!--
+  Anonymous sign-in happens on startup, so there is almost always a user; what
+  decides which button to show is whether that user is a real Google account.
+  Read it off the same value the template already has rather than calling back
+  into the service, which under OnPush could answer about a different user than
+  the one being rendered.
+-->
+@if (user && !user.isAnonymous) {
   <button
     mat-icon-button
     [matTooltip]="'Signed in as ' + user.displayName + ' — click to sign out'"
@@ -18,9 +27,9 @@
     aria-label="Sign in"
     mat-icon-button
     matTooltip="Sign in with Google to sync your files"
-    [disabled]="isSigningIn"
+    [disabled]="(isSigningIn$ | async) ?? false"
     (click)="onSignIn()">
-    @if (isSigningIn) {
+    @if (isSigningIn$ | async) {
       <mat-spinner diameter="20" />
     } @else {
       <mat-icon>login</mat-icon>

@@ -1,63 +1,51 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from "@angular/core";
+import { AsyncPipe } from "@angular/common";
+import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatTooltipModule } from "@angular/material/tooltip";
-import { Subject, takeUntil } from "rxjs";
+import { BehaviorSubject, Observable } from "rxjs";
 import type { User } from "firebase/auth";
 import { AuthService } from "../../services/auth/auth.service";
 
 @Component({
   selector: "app-login",
-  standalone: true,
-  imports: [MatButtonModule, MatIconModule, MatProgressSpinnerModule, MatTooltipModule],
+  imports: [AsyncPipe, MatButtonModule, MatIconModule, MatProgressSpinnerModule, MatTooltipModule],
   templateUrl: "./login.component.html",
   styleUrl: "./login.component.css",
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LoginComponent implements OnInit, OnDestroy {
-  protected readonly authService = inject(AuthService);
+export class LoginComponent {
+  private readonly authService = inject(AuthService);
   private readonly snackBar = inject(MatSnackBar);
-  private readonly cdr = inject(ChangeDetectorRef);
-  private readonly unsubscribe$ = new Subject<void>();
 
-  user: User | null = null;
-  isSigningIn = false;
+  // Both values reach the template through `| async`, which subscribes,
+  // unsubscribes on destroy and marks the view for check on every emission.
+  // Doing it by hand meant a subscription to tear down and three
+  // `ChangeDetectorRef.markForCheck()` calls to remember.
+  readonly isSigningIn$ = new BehaviorSubject<boolean>(false);
 
-  ngOnInit(): void {
-    this.authService
-      .getUser$()
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((user) => {
-        this.user = user;
-        this.cdr.markForCheck();
-      });
-  }
-
-  ngOnDestroy(): void {
-    this.unsubscribe$.next();
+  getUser$(): Observable<User | null> {
+    return this.authService.getUser$();
   }
 
   onSignIn(): void {
-    if (this.isSigningIn) return;
-    this.isSigningIn = true;
-    this.cdr.markForCheck();
+    if (this.isSigningIn$.getValue()) return;
+
+    this.isSigningIn$.next(true);
     this.authService
       .signInWithGoogle()
-      .catch((err) => {
-        console.error("[Login] Sign-in error:", err);
+      .catch((error: unknown) => {
+        console.error("[Login] Sign-in error:", error);
         this.snackBar.open("Sign-in failed. Please try again.", "Dismiss", { duration: 5000 });
       })
-      .finally(() => {
-        this.isSigningIn = false;
-        this.cdr.markForCheck();
-      });
+      .finally(() => this.isSigningIn$.next(false));
   }
 
   onSignOut(): void {
-    this.authService.signOut().catch((err) => {
-      console.error("[Login] Sign-out error:", err);
+    this.authService.signOut().catch((error: unknown) => {
+      console.error("[Login] Sign-out error:", error);
       this.snackBar.open("Sign-out failed. Please try again.", "Dismiss", { duration: 5000 });
     });
   }

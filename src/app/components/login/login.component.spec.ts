@@ -65,7 +65,7 @@ describe("LoginComponent", () => {
     beforeEach(() => {
       mockAuthService._user$.next(googleUser);
       mockAuthService.isAnonymous.mockReturnValue(false);
-      fixture.detectChanges(); // cdr.markForCheck() in subscription triggers view update
+      fixture.detectChanges(); // AsyncPipe marks the view for check; this renders it
     });
 
     it("shows the sign-out button with user display name in tooltip", () => {
@@ -95,18 +95,18 @@ describe("LoginComponent", () => {
 
       component.onSignIn();
 
-      expect(component.isSigningIn).toBe(true);
+      expect(component.isSigningIn$.getValue()).toBe(true);
       resolveSignIn();
     });
 
     it("resets isSigningIn to false after sign-in resolves", async () => {
       component.onSignIn();
       await fixture.whenStable();
-      expect(component.isSigningIn).toBe(false);
+      expect(component.isSigningIn$.getValue()).toBe(false);
     });
 
     it("does nothing if already signing in (prevents double-click)", () => {
-      component.isSigningIn = true;
+      component.isSigningIn$.next(true);
       component.onSignIn();
       expect(mockAuthService.signInWithGoogle).not.toHaveBeenCalled();
     });
@@ -117,7 +117,7 @@ describe("LoginComponent", () => {
       // Each await flushes one microtask cycle (.catch → .finally)
       await Promise.resolve();
       await Promise.resolve();
-      expect(component.isSigningIn).toBe(false);
+      expect(component.isSigningIn$.getValue()).toBe(false);
     });
   });
 
