@@ -10,6 +10,14 @@ const angular = require("angular-eslint");
  * lose one pull request at a time, each of which has a documented reason in
  * .claude/rules/ or CLAUDE.md.
  */
+const AUDIO_BOUNDARY_MESSAGE =
+  "Web Audio belongs to src/app/services/pitch-detection/ and " +
+  "src/app/services/bluetooth-keep-alive/. Call a service instead — see CLAUDE.md hard rule 3.";
+
+const MICROPHONE_BOUNDARY_MESSAGE =
+  "The microphone belongs to src/app/services/pitch-detection/. Call the service instead — " +
+  "see CLAUDE.md hard rule 3.";
+
 module.exports = tseslint.config(
   {
     ignores: ["docs/**", "out-tsc/**", ".angular/**", "coverage/**", "node_modules/**"],
@@ -36,10 +44,10 @@ module.exports = tseslint.config(
     },
   },
   {
-    // The layer boundaries, enforced rather than described. Both exist so the
-    // app can be tested without a network and without a microphone; a single
-    // import in a component is enough to end that, and nothing else would
-    // notice until a test needed the real thing.
+    // The Firebase boundary, enforced rather than described. It exists so the
+    // app can be tested without a network; a single import in a component is
+    // enough to end that, and nothing else would notice until a test needed the
+    // real thing.
     files: ["src/app/components/**/*.ts", "src/app/utils/**/*.ts"],
     rules: {
       // typescript-eslint's variant rather than the core rule, for
@@ -59,6 +67,57 @@ module.exports = tseslint.config(
           ],
         },
       ],
+    },
+  },
+  {
+    // The Web Audio boundary, which the same comment used to claim was enforced
+    // while nothing enforced it. Web Audio arrives through globals rather than
+    // imports, so no-restricted-imports cannot see it — and it went unchecked
+    // long enough for a silent-oscillator keep-alive to grow inside
+    // src/app/utils/, where a "pure in, pure out" util was holding a live
+    // handle on the sound card.
+    //
+    // Denied everywhere, then granted back to the two services that own it, so
+    // a new folder is closed by default rather than by remembering to add it.
+    files: ["src/**/*.ts"],
+    rules: {
+      "no-restricted-globals": [
+        "error",
+        {
+          name: "AudioContext",
+          message: AUDIO_BOUNDARY_MESSAGE,
+        },
+        {
+          name: "webkitAudioContext",
+          message: AUDIO_BOUNDARY_MESSAGE,
+        },
+        {
+          name: "OfflineAudioContext",
+          message: AUDIO_BOUNDARY_MESSAGE,
+        },
+      ],
+
+      // `window.AudioContext` and `navigator.mediaDevices` slip past
+      // no-restricted-globals, which only ever sees a bare identifier.
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector:
+            "MemberExpression[object.name='window'][property.name=/^(AudioContext|webkitAudioContext|OfflineAudioContext)$/]",
+          message: AUDIO_BOUNDARY_MESSAGE,
+        },
+        {
+          selector: "MemberExpression[object.name='navigator'][property.name='mediaDevices']",
+          message: MICROPHONE_BOUNDARY_MESSAGE,
+        },
+      ],
+    },
+  },
+  {
+    files: ["src/app/services/pitch-detection/**/*.ts", "src/app/services/bluetooth-keep-alive/**/*.ts"],
+    rules: {
+      "no-restricted-globals": "off",
+      "no-restricted-syntax": "off",
     },
   },
   {

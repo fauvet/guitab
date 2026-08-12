@@ -44,7 +44,7 @@ describe("PitchDetectionService", () => {
 });
 ```
 
-Mock with `vi.fn()` and `vi.spyOn`. Jasmine is not installed.
+Mock with `vi.fn()` and `vi.spyOn`.
 
 ## The state pattern
 
@@ -82,8 +82,10 @@ loop forever. Any state a view can both read and write wants the same guard.
 ## Boundaries
 
 A service that wraps an external API is the **only** place that API may appear:
-Firebase lives in `services/` and `storage/`, Web Audio lives in
-`services/pitch-detection/`. ESLint enforces both. That boundary is what lets the
+Firebase lives in `services/` and `storage/`, Web Audio in
+`services/pitch-detection/` and `services/bluetooth-keep-alive/`. ESLint enforces
+both — Firebase on its imports, Web Audio on the globals, since an `AudioContext`
+is never imported. That boundary is what lets the
 rest of the app be tested without a network or a microphone, so keep the surface
 narrow — expose what callers need, not what the library offers.
 
