@@ -17,7 +17,7 @@ export class LocalCachedFilesRepository implements ICachedFilesRepository {
     LocalCachedFilesRepository.LOCAL_STORAGE_KEY,
     LocalCachedFilesRepository.DEFAULT_VALUE,
     (key, value) => {
-      if (key === "date") return new Date(value);
+      if (key === "date") return new Date(value as string);
       return value;
     },
   );

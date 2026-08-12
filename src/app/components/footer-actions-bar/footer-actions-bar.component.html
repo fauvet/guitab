@@ -17,7 +17,7 @@
     aria-label="Remove chord"
     title="Remove chord"
     mat-icon-button
-    [disabled]="!(isRemovableChordEnabled$ | async)"
+    [disabled]="(isRemovableChordEnabled$ | async) !== true"
     (click)="onButtonRemoveChordClicked()">
     <mat-icon svgIcon="variable_remove"></mat-icon>
   </button>

@@ -9,7 +9,10 @@ import { DEFAULT_DRAFT } from "../../storage/repositories/draft.repository";
 describe("BeforeUnloadService", () => {
   let service: BeforeUnloadService;
   let contentSubject: Subject<string>;
-  let mockChordproService: { getChordproContent$: ReturnType<typeof vi.fn>; hasUnsavedChanges: ReturnType<typeof vi.fn> };
+  let mockChordproService: {
+    getChordproContent$: ReturnType<typeof vi.fn>;
+    hasUnsavedChanges: ReturnType<typeof vi.fn>;
+  };
 
   const mockAuthService = {
     getUser: vi.fn().mockReturnValue(null),

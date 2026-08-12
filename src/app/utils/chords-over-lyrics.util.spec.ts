@@ -109,12 +109,7 @@ describe("ChordsOverLyricsUtil", () => {
     it("should handle multiple chord-lyric pairs in sequence", () => {
       // G at col 0, D at col 6 (where 'line' starts in 'First line')
       // Em at col 0, C at col 7 (where 'line' starts in 'Second line')
-      const input = [
-        "G     D",
-        "First line",
-        "Em     C",
-        "Second line",
-      ].join("\n");
+      const input = ["G     D", "First line", "Em     C", "Second line"].join("\n");
       const result = ChordsOverLyricsUtil.convert(input);
       const lines = result.split("\n");
       expect(lines[0]).toBe("[G]First [D]line");

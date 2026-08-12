@@ -1,6 +1,6 @@
 import { inject, Injectable } from "@angular/core";
 import { ChordproService } from "../chordpro/chordpro.service";
-import { skip, switchMap } from "rxjs";
+import { skip } from "rxjs";
 import { Draft } from "../../storage/repositories/draft.repository";
 import { LocalDraftRepository } from "../../storage/local/local-draft.repository";
 import { FirebaseDraftRepository } from "../../storage/firebase/firebase-draft.repository";

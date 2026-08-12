@@ -8,28 +8,42 @@ import { FileUtil } from "./utils/file.util";
 import { ChordproChordsViewerComponent } from "./components/chordpro-chords-viewer/chordpro-chords-viewer.component";
 import { HeaderActionsBarComponent } from "./components/header-actions-bar/header-actions-bar.component";
 import { FooterActionsBarComponent } from "./components/footer-actions-bar/footer-actions-bar.component";
+import { AppFooterComponent } from "./components/app-footer/app-footer.component";
 import { MatIconRegistry } from "@angular/material/icon";
 import { DomSanitizer } from "@angular/platform-browser";
 import { MaterialIconsUtil } from "./utils/material-icons.util";
 import { KeyboardShortcutService } from "./services/keyboard-shortcut/keyboard-shortcut.service";
 import { BeforeUnloadService } from "./services/before-unload/before-unload.service";
-import { empty } from "rxjs";
 import { ChordproService } from "./services/chordpro/chordpro.service";
 
+/**
+ * The Launch Handler API, which delivers the files a PWA was opened with.
+ * TypeScript's DOM library does not declare it yet, so the two members this
+ * app reads are declared here rather than reached through `any`.
+ */
+interface LaunchParams {
+  files?: FileSystemFileHandle[];
+}
+
+interface LaunchQueue {
+  setConsumer(consumer: (launchParams: LaunchParams) => void): void;
+}
+
 @Component({
-    selector: "app-root",
-    templateUrl: "./app.component.html",
-    styleUrl: "./app.component.css",
-    imports: [
-        RouterOutlet,
-        ChordproEditorComponent,
-        ChordproViewerComponent,
-        // DiagramChordComponent,
-        ChordproChordsViewerComponent,
-        HeaderActionsBarComponent,
-        FooterActionsBarComponent,
-    ],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: "app-root",
+  templateUrl: "./app.component.html",
+  styleUrl: "./app.component.css",
+  imports: [
+    RouterOutlet,
+    ChordproEditorComponent,
+    ChordproViewerComponent,
+    // DiagramChordComponent,
+    ChordproChordsViewerComponent,
+    HeaderActionsBarComponent,
+    FooterActionsBarComponent,
+    AppFooterComponent,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent implements OnInit {
   private readonly appContextService = inject(AppContextService);
@@ -78,7 +92,8 @@ export class AppComponent implements OnInit {
   private handleLaunchQueue(): void {
     if (!("launchQueue" in window)) return;
 
-    (window.launchQueue as unknown as any).setConsumer(async (launchParams: any) => {
+    const launchQueue = window.launchQueue as unknown as LaunchQueue;
+    launchQueue.setConsumer(async (launchParams) => {
       if (!launchParams?.files?.length) return;
       const fileHandle = launchParams.files[0];
       await this.appContextService.setFileHandle(fileHandle);

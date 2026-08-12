@@ -1,0 +1,134 @@
+name: CI
+
+# Runs on every push and every pull request, which is the point: until this
+# existed, the only workflow was the deploy on `main`, so nothing verified a
+# branch before it landed and "CI must be green" was unenforceable.
+#
+# Four jobs, ordered by how fast they fail:
+#   • Lint, formatting, and the instruction-tree integrity check
+#   • TypeScript, with zero errors
+#   • Unit tests with the coverage thresholds from angular.json
+#   • The production build, including its bundle budgets
+#
+# Every job runs `npm run setup:env` first. src/environments/environment.ts is
+# git-ignored and nothing compiles without it, and a pull request from a fork
+# has no access to repository secrets — so the jobs write a placeholder config
+# instead. Nothing here contacts Firebase: sign-in only happens in a browser.
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint, format, docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - run: npm ci
+      - run: npm run setup:env
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: Prettier
+        run: npm run format:check
+
+      - name: Instruction-tree integrity
+        # Fails on a resurrected second instruction tree, a dead path reference,
+        # or a document past its size budget. See scripts/check-docs.mjs.
+        run: npm run check:docs
+
+  typecheck:
+    name: TypeScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - run: npm ci
+      - run: npm run setup:env
+      - run: npm run typecheck
+
+  test:
+    name: Unit tests and coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - run: npm ci
+      - run: npm run setup:env
+
+      - name: Vitest with coverage thresholds
+        # Thresholds live in angular.json and the builder exits non-zero below
+        # them. They are a floor against whole files nobody tested, not a target.
+        run: npm run test:coverage
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+
+  build:
+    name: Production build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - run: npm ci
+
+      - name: Create environment.ts from secrets, or a placeholder
+        # A pull request from a fork sees empty secrets. Building against a
+        # placeholder still exercises everything that can fail at build time —
+        # templates, types, bundle budgets — so the job stays useful either way.
+        env:
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+        run: |
+          if [ -n "$FIREBASE_API_KEY" ]; then
+            cat > src/environments/environment.ts << 'EOF'
+          import { Environment } from "./environment.template";
+
+          export const environment: Environment = {
+            firebase: {
+              apiKey: "${{ secrets.FIREBASE_API_KEY }}",
+              authDomain: "${{ secrets.FIREBASE_AUTH_DOMAIN }}",
+              projectId: "${{ secrets.FIREBASE_PROJECT_ID }}",
+              storageBucket: "${{ secrets.FIREBASE_STORAGE_BUCKET }}",
+              messagingSenderId: "${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}",
+              appId: "${{ secrets.FIREBASE_APP_ID }}",
+            },
+          };
+          EOF
+          else
+            npm run setup:env
+          fi
+
+      - run: npm run build

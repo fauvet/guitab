@@ -34,10 +34,7 @@ describe("AuthService", () => {
     vi.clearAllMocks();
 
     TestBed.configureTestingModule({
-      providers: [
-        AuthService,
-        { provide: FirebaseService, useValue: mockFirebaseService },
-      ],
+      providers: [AuthService, { provide: FirebaseService, useValue: mockFirebaseService }],
     });
     service = TestBed.inject(AuthService);
   });

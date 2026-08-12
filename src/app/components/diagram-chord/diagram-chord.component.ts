@@ -10,11 +10,11 @@ import {
 import { Chord, ChordStyle, FretLabelPosition, Orientation, Shape, SVGuitarChord } from "svguitar";
 
 @Component({
-    selector: "app-diagram-chord",
-    imports: [],
-    templateUrl: "./diagram-chord.component.html",
-    styleUrl: "./diagram-chord.component.css",
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: "app-diagram-chord",
+  imports: [],
+  templateUrl: "./diagram-chord.component.html",
+  styleUrl: "./diagram-chord.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DiagramChordComponent implements AfterViewInit, OnChanges {
   @HostBinding("attr.id")

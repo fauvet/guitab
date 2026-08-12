@@ -1,3 +1,4 @@
+import ChordObject from "../types/chord-object.type";
 import Variant from "../types/variant.type";
 import { NumberUtil } from "./number.util";
 import { StringUtil } from "./string.util";
@@ -6,7 +7,7 @@ export class ChordproUtil {
   static readonly EXTENSIONS: `.${string}`[] = [".cho", ".crd", ".chopro", ".chord", ".pro"];
   static readonly PREFERRED_EXTENSION = ChordproUtil.EXTENSIONS[0];
 
-  static buildChordName(chordObject: any): string {
+  static buildChordName(chordObject: Pick<ChordObject, "key" | "suffix"> | null | undefined): string {
     if (!chordObject) return "";
     return chordObject.key + chordObject.suffix;
   }
@@ -47,8 +48,6 @@ export class ChordproUtil {
       return finger < 0 ? "x" : finger;
     });
 
-    match[4]?.split(" ") ?? [];
-
     return {
       frets,
       fingers,
@@ -63,7 +62,7 @@ export class ChordproUtil {
     const match = chordproContent.match(/\[ *[^\]\n]+? *\]/g);
     if (!match) return [];
 
-    return match.map((singleMatch) => singleMatch.replaceAll(/[\[\]]/g, "").trim());
+    return match.map((singleMatch) => singleMatch.replaceAll(/[[\]]/g, "").trim());
   }
 
   static findIndexFromCoordinates(string: string, rowIndex: number, columnIndex: number): number {

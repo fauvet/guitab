@@ -1,4 +1,4 @@
-import { Component, inject, ChangeDetectionStrategy } from "@angular/core";
+import { Component, inject, ChangeDetectionStrategy, OnInit } from "@angular/core";
 import { MatRipple } from "@angular/material/core";
 import { MatIcon } from "@angular/material/icon";
 import { MatListModule } from "@angular/material/list";
@@ -11,10 +11,10 @@ import { MatBottomSheetRef } from "@angular/material/bottom-sheet";
   selector: "app-bottom-sheet-settings",
   imports: [AsyncPipe, MatListModule, MatIcon, MatRipple],
   templateUrl: "./bottom-sheet-settings.component.html",
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: "./bottom-sheet-settings.component.css",
 })
-export class BottomSheetSettingsComponent {
+export class BottomSheetSettingsComponent implements OnInit {
   public readonly appContextService = inject(AppContextService);
   public readonly chordproService = inject(ChordproService);
   private readonly bottomSheetRef = inject(MatBottomSheetRef<BottomSheetSettingsComponent>);

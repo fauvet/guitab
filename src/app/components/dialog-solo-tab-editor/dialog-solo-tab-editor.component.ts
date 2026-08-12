@@ -2,14 +2,22 @@ import { AsyncPipe } from "@angular/common";
 import { ChangeDetectionStrategy, Component, ElementRef, inject, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
-import { MatDialogActions, MatDialogClose, MatDialogContent, MatDialogRef, MatDialogTitle } from "@angular/material/dialog";
+import {
+  MatDialogActions,
+  MatDialogClose,
+  MatDialogContent,
+  MatDialogRef,
+  MatDialogTitle,
+} from "@angular/material/dialog";
 import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatIconModule } from "@angular/material/icon";
 import { MatInputModule } from "@angular/material/input";
 import _ from "lodash";
 import { BehaviorSubject, Subject } from "rxjs";
 import { debounceTime, takeUntil } from "rxjs/operators";
 import { StringUtil } from "../../utils/string.util";
 import { HandyRow, SoloTabUtil } from "../../utils/solo-tab.util";
+import { PitchMonitorComponent } from "../pitch-monitor/pitch-monitor.component";
 
 @Component({
   selector: "app-dialog-solo-tab-editor",
@@ -22,7 +30,9 @@ import { HandyRow, SoloTabUtil } from "../../utils/solo-tab.util";
     MatButtonModule,
     FormsModule,
     MatFormFieldModule,
+    MatIconModule,
     MatInputModule,
+    PitchMonitorComponent,
   ],
   templateUrl: "./dialog-solo-tab-editor.component.html",
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,11 +45,14 @@ export class DialogSoloTabEditorComponent implements OnInit, OnDestroy {
   @ViewChild("editor") editorRef!: ElementRef<HTMLTextAreaElement>;
 
   soloTab$ = new BehaviorSubject("e B G D A E\n|\n");
+  isHumming$ = new BehaviorSubject(false);
   generatedSoloTab$ = new BehaviorSubject("");
   handyRows$ = new BehaviorSubject(new Array<HandyRow>());
 
   ngOnInit(): void {
-    this.soloTab$.pipe(debounceTime(200), takeUntil(this.unsubscribe$)).subscribe((soloTab) => this.onSoloTabChanged(soloTab));
+    this.soloTab$
+      .pipe(debounceTime(200), takeUntil(this.unsubscribe$))
+      .subscribe((soloTab) => this.onSoloTabChanged(soloTab));
   }
 
   ngOnDestroy(): void {
@@ -90,6 +103,23 @@ export class DialogSoloTabEditorComponent implements OnInit, OnDestroy {
     const newCursorPos = cursorIndex + handyRow.input.length + 2;
     editor.selectionStart = editor.selectionEnd = newCursorPos;
     editor.focus();
+  }
+
+  onToggleHummingClicked(): void {
+    this.isHumming$.next(!this.isHumming$.getValue());
+  }
+
+  /**
+   * Appends what was hummed rather than replacing the editor's contents: a
+   * player builds a solo in passes, and a transcription that wiped the previous
+   * take would make the second pass cost the first one.
+   */
+  onTranscribed(lines: string): void {
+    if (!lines) return;
+
+    const soloTab = this.getSoloTab();
+    const separator = soloTab.endsWith("\n") || soloTab === "" ? "" : "\n";
+    this.setSoloTab(soloTab + separator + lines + "\n");
   }
 
   onCopyClicked(): void {

@@ -32,15 +32,15 @@ ChordPro is a plain-text markup format for chord charts. Key syntax:
 
 ### Supported Directives
 
-| Directive | Purpose |
-|-----------|---------|
-| `{title: ...}` | Song title |
-| `{artist: ...}` | Artist name |
-| `{meta: youtube <url>}` | Associate a YouTube video |
-| `{define: Name base-fret N frets X X X X X X fingers N N N N N N}` | Custom chord fingering |
-| `{comment: ...}` | Inline comment / section label |
-| `{verse:}` / `{chorus:}` | Section markers |
-| `{tab: ... }` | Guitar tablature block |
+| Directive                                                          | Purpose                        |
+| ------------------------------------------------------------------ | ------------------------------ |
+| `{title: ...}`                                                     | Song title                     |
+| `{artist: ...}`                                                    | Artist name                    |
+| `{meta: youtube <url>}`                                            | Associate a YouTube video      |
+| `{define: Name base-fret N frets X X X X X X fingers N N N N N N}` | Custom chord fingering         |
+| `{comment: ...}`                                                   | Inline comment / section label |
+| `{verse:}` / `{chorus:}`                                           | Section markers                |
+| `{tab: ... }`                                                      | Guitar tablature block         |
 
 ### Supported File Extensions
 
@@ -86,7 +86,11 @@ Renders SVG guitar chord diagrams. The primary type is `Chord`:
 import { Chord, SVGuitarChord } from "svguitar";
 
 const chord: Chord = {
-  fingers: [[1, 2], [2, 3], [3, 2]],   // [string (1=high e), fret]
+  fingers: [
+    [1, 2],
+    [2, 3],
+    [3, 2],
+  ], // [string (1=high e), fret]
   barres: [{ fret: 2, fromString: 5, toString: 1 }],
   title: "Am",
 };
@@ -100,11 +104,11 @@ A chord variant is one specific fingering stored in `src/assets/guitar.json`:
 
 ```typescript
 interface Variant {
-  frets: string[];      // Fret per string (e.g. ["0","2","2","1","0","0"])
-  fingers: string[];    // Finger number per string ("0" = open/muted)
-  barres: number[];     // Fret numbers where barres exist
+  frets: string[]; // Fret per string (e.g. ["0","2","2","1","0","0"])
+  fingers: string[]; // Finger number per string ("0" = open/muted)
+  barres: number[]; // Fret numbers where barres exist
   capo: boolean | undefined;
-  baseFret: number;     // 1-indexed starting fret
+  baseFret: number; // 1-indexed starting fret
   midi: number[];
 }
 ```
@@ -114,12 +118,12 @@ interface Variant {
 When looking up chords, apply enharmonic equivalents:
 
 | Input | Normalized |
-|-------|-----------|
-| `Db` | `C#` |
-| `Eb` | `D#` |
-| `Gb` | `F#` |
-| `Ab` | `G#` |
-| `Bb` | `A#` |
+| ----- | ---------- |
+| `Db`  | `C#`       |
+| `Eb`  | `D#`       |
+| `Gb`  | `F#`       |
+| `Ab`  | `G#`       |
+| `Bb`  | `A#`       |
 
 See `SvgGuitarUtil.normalizeChordName()` for the canonical implementation.
 
@@ -135,8 +139,8 @@ Use `ChordproUtil.findCustomVariant(chordName, content)` to extract a custom var
 
 ## Utility Classes
 
-| Class | Key Methods |
-|-------|------------|
-| `ChordproUtil` | `getTitle()`, `getArtist()`, `getChordsNames()`, `findCustomVariant()`, `isChordproExtension()` |
-| `SvgGuitarUtil` | `getChord()`, `normalizeChordName()`, `variantToSvgGuitarChord()` |
-| `FileUtil` | `readFile()`, `loadSampleFile()`, `loadEmptyFile()` |
+| Class           | Key Methods                                                                                     |
+| --------------- | ----------------------------------------------------------------------------------------------- |
+| `ChordproUtil`  | `getTitle()`, `getArtist()`, `getChordsNames()`, `findCustomVariant()`, `isChordproExtension()` |
+| `SvgGuitarUtil` | `getChord()`, `normalizeChordName()`, `variantToSvgGuitarChord()`                               |
+| `FileUtil`      | `readFile()`, `loadSampleFile()`, `loadEmptyFile()`                                             |

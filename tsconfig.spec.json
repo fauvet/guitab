@@ -3,7 +3,11 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
-    "types": ["vitest/globals"]
+    // `types` replaces the list rather than extending it, so the File System
+    // Access declarations that tsconfig.app.json pulls in have to be repeated
+    // here — otherwise the app compiles and the tests do not, over the same
+    // source.
+    "types": ["vitest/globals", "@types/wicg-file-system-access"]
   },
   "include": ["src/**/*.spec.ts", "src/**/*.d.ts"],
   "angularCompilerOptions": {

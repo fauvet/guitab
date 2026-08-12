@@ -38,12 +38,12 @@ export class ZoomService {
   }
 
   incrementZoom(): void {
-    let zoomStep = this.getZoomStep();
+    const zoomStep = this.getZoomStep();
     this.setZoomStep(zoomStep + 1);
   }
 
   decrementZoom(): void {
-    let zoomStep = this.getZoomStep();
+    const zoomStep = this.getZoomStep();
     this.setZoomStep(zoomStep - 1);
   }
 

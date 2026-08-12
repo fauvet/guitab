@@ -18,12 +18,17 @@ import { HttpClient } from "@angular/common/http";
 
 export type CoveredCachedFile = CachedFile & { cover: string };
 
+/** Only the members read below; the API returns a great deal more. */
+interface LyricsSuggestResponse {
+  data?: { album?: { cover_small?: string } }[];
+}
+
 @Component({
-    selector: "app-bottom-sheet-manage-file",
-    imports: [MatListModule, MatIcon, MatRipple, MatButtonModule, AsyncPipe, MatDividerModule],
-    templateUrl: "./bottom-sheet-manage-file.component.html",
-    styleUrl: "./bottom-sheet-manage-file.component.css",
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: "app-bottom-sheet-manage-file",
+  imports: [MatListModule, MatIcon, MatRipple, MatButtonModule, AsyncPipe, MatDividerModule],
+  templateUrl: "./bottom-sheet-manage-file.component.html",
+  styleUrl: "./bottom-sheet-manage-file.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
   private static readonly DEFAULT_ALBUM_COVER =
@@ -82,7 +87,7 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
       const title = this.chordproService.parseTitle(coveredCachedFile.chordproContent);
       if (!title || coveredCachedFile.cover !== BottomSheetManageFileComponent.DEFAULT_ALBUM_COVER) continue;
       const encodedTitleWithoutAccents = encodeURIComponent(title.normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
-      this.http.get<any>(`https://api.lyrics.ovh/suggest/${encodedTitleWithoutAccents}`).subscribe({
+      this.http.get<LyricsSuggestResponse>(`https://api.lyrics.ovh/suggest/${encodedTitleWithoutAccents}`).subscribe({
         next: (res) => {
           const coverUrl = res?.data?.[0]?.album?.cover_small;
           coveredCachedFile.cover = coverUrl || BottomSheetManageFileComponent.DEFAULT_ALBUM_COVER;

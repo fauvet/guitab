@@ -7,9 +7,7 @@ describe("YouTubeUtil", () => {
     });
 
     it("should convert a youtu.be short link to an embed URL", () => {
-      expect(YouTubeUtil.buildEmbedUrl("https://youtu.be/dQw4w9WgXcQ")).toBe(
-        "https://youtube.com/embed/dQw4w9WgXcQ",
-      );
+      expect(YouTubeUtil.buildEmbedUrl("https://youtu.be/dQw4w9WgXcQ")).toBe("https://youtube.com/embed/dQw4w9WgXcQ");
     });
 
     it("should convert a /watch?v= URL to an embed URL", () => {

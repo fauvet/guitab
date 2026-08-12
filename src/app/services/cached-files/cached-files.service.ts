@@ -19,9 +19,13 @@ export class CachedFilesService {
   }
 
   getCachedFiles$(): Observable<CachedFile[]> {
-    return this.authService.getUser$().pipe(
-      switchMap((user) => (user ? this.firebaseRepository.getCachedFiles$() : this.localRepository.getCachedFiles$())),
-    );
+    return this.authService
+      .getUser$()
+      .pipe(
+        switchMap((user) =>
+          user ? this.firebaseRepository.getCachedFiles$() : this.localRepository.getCachedFiles$(),
+        ),
+      );
   }
 
   saveFile(chordproContent: string): void {
@@ -30,4 +34,3 @@ export class CachedFilesService {
       .catch((err) => console.error("[CachedFilesService] saveFile error:", err));
   }
 }
-

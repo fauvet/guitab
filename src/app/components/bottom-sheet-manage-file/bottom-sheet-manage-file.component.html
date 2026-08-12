@@ -28,7 +28,7 @@
   </mat-list-item>
   <mat-list-item
     [attr.matRipple]="isSaveExistingFileEnabled$ | async"
-    [class.disabled]="!(isSaveExistingFileEnabled$ | async)"
+    [class.disabled]="(isSaveExistingFileEnabled$ | async) !== true"
     (click)="onButtonSaveFileClicked()">
     <mat-icon
       matListItemIcon
