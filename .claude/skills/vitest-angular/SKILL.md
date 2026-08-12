@@ -1,14 +1,14 @@
 ---
 name: vitest-angular
-description: Running and writing tests in GuiTab — Vitest through the Angular unit-test builder, TestBed for standalone components, vi.fn mocking, fakeAsync for debounced streams, and coverage. Use when a test fails for an unclear reason, when mocking a service, or when testing anything asynchronous or browser-API-dependent.
+description: Running and writing tests in GuiTab — Vitest through the Angular unit-test builder, TestBed for standalone components, vi.fn mocking, vi.waitFor for debounced streams, and coverage. Use when a test fails for an unclear reason, when mocking a service, or when testing anything asynchronous or browser-API-dependent.
 ---
 
 # Vitest through the Angular builder
 
 The runner is **Vitest**, driven by `@angular/build:unit-test` — configured in
-`angular.json` under the `test` target, not in a `vitest.config.ts`. There is no
-Karma and no Jasmine: `jasmine.createSpyObj`, `jasmine.any` and friends do not
-exist, and an instruction telling you otherwise is out of date.
+`angular.json` under the `test` target, not in a `vitest.config.ts`. It is the only
+test framework installed: mocks and spies come from `vi`, and nothing else is
+available to import.
 
 `describe`, `it`, `expect`, `beforeEach` and `vi` are globals, declared through
 `"types": ["vitest/globals"]` in `tsconfig.spec.json`. Nothing is imported from
@@ -81,19 +81,21 @@ component — prefer asserting what a user could see.
 
 ## Asynchrony
 
-- `fakeAsync` + `tick(200)` for `debounceTime` and timers. Deterministic, instant.
+- `vi.waitFor` for `debounceTime` and timers — it polls the **condition**.
 - `async` + `await fixture.whenStable()` for promises.
 - **Never a real `setTimeout` or a fixed sleep.** A test that waits for a duration
   rather than a condition is a test that will flake on a slow CI runner, and a flaky
   test trains everyone to ignore red.
 
+`fakeAsync` and `tick()` are not an option here, and neither is `vi.useFakeTimers()`.
+Why, and what the working shape looks like: `.claude/rules/testing.instructions.md`.
+
 ```typescript
-it("should recompute after the debounce window", fakeAsync(() => {
+it("should recompute after the debounce window", async () => {
   component.setSoloTab("0 2 2");
-  tick(200);
-  fixture.detectChanges();
-  expect(component.generatedSoloTab$.getValue()).not.toBe("");
-}));
+
+  await vi.waitFor(() => expect(component.generatedSoloTab$.getValue()).not.toBe(""));
+});
 ```
 
 ## Browser APIs jsdom does not have

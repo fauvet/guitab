@@ -12,7 +12,6 @@ Every component must include these properties in its `@Component` decorator:
 ```typescript
 @Component({
   selector: "app-my-component",
-  standalone: true,
   imports: [/* only what this component uses */],
   templateUrl: "./my-component.component.html",
   styleUrl: "./my-component.component.css",
@@ -20,8 +19,10 @@ Every component must include these properties in its `@Component` decorator:
 })
 ```
 
-- `standalone: true` — no NgModules, ever
-- `ChangeDetectionStrategy.OnPush` — mandatory on every component
+- **No NgModules, ever.** Standalone is the default since Angular 19, so writing
+  `standalone: true` adds nothing — do not add it back.
+- `ChangeDetectionStrategy.OnPush` — mandatory on every component, and ESLint fails the
+  build without it
 - `imports` — declare all Angular Material modules, pipes, and child components used in the template
 
 ## Dependency Injection
@@ -83,7 +84,7 @@ components/my-component/
 Common imports frequently needed:
 
 ```typescript
-import { AsyncPipe, NgIf, NgFor } from "@angular/common";
+import { AsyncPipe } from "@angular/common";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatDialog } from "@angular/material/dialog";
@@ -91,3 +92,7 @@ import { MatBottomSheet } from "@angular/material/bottom-sheet";
 ```
 
 Import only what is used in the template — no barrel imports.
+
+`NgIf` and `NgFor` are not on that list on purpose: conditionals and loops use the
+built-in `@if` / `@for` blocks, which need no import at all. See
+`.claude/skills/angular-standalone/SKILL.md`.

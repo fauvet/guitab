@@ -47,8 +47,7 @@ describe("PitchMonitorComponent", () => {
 });
 ```
 
-Mock injected services with `vi.fn()` — **never `jasmine.createSpyObj`**. Jasmine is
-not installed. Full conventions:
+Mock injected services with `vi.fn()`. Full conventions:
 `.claude/rules/testing.instructions.md`.
 
 ## 2. The template and styles

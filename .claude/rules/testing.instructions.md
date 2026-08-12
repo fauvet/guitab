@@ -9,10 +9,12 @@ applyTo: "**/*.spec.ts"
 
 - **Runner**: Vitest (via `@angular/build:unit-test`, `runner: "vitest"` in `angular.json`)
 - **Globals**: `describe`, `it`, `expect`, `beforeEach`, `vi` — provided by `vitest/globals` (configured in `tsconfig.spec.json`)
-- **Angular testing**: `@angular/core/testing` (`TestBed`, `ComponentFixture`, `fakeAsync`, `tick`)
+- **Angular testing**: `@angular/core/testing` (`TestBed`, `ComponentFixture`) — but not
+  `fakeAsync` / `tick`, which this runner cannot support; see **Async Testing** below
 - Run with: `npm test`
 
-> ⚠️ Karma and Jasmine have been removed. Do NOT use `jasmine.*` APIs.
+Mocks are `vi.fn()` and `vi.spyOn`. Vitest is the only test framework installed, so
+anything else you may remember writing is not available here.
 
 ## Component Test Setup
 

@@ -132,6 +132,7 @@ with it:
 const mockService = { getValue$: vi.fn().mockReturnValue(of("hello")) };
 ```
 
-For time-dependent operators, `fakeAsync` + `tick(200)` from `@angular/core/testing`
-advances a `debounceTime` deterministically. Never a real `setTimeout` in a test:
+For time-dependent operators, wait for the condition with `vi.waitFor` rather than for a
+duration — `fakeAsync` does not work under this runner, and neither does
+`vi.useFakeTimers()`. The reason and the working shape:
 `.claude/rules/testing.instructions.md`.
