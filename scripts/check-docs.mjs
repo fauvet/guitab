@@ -3,10 +3,9 @@
  * Instruction-tree integrity check.
  *
  * The previous setup had two authoritative trees — .github/ for Copilot and
- * nothing for Claude — and they drifted until they contradicted each other: one
- * prompt taught `jasmine.createSpyObj` months after Jasmine had been removed
- * and the testing rules had forbidden it. Whichever an agent read first decided
- * whether the code it wrote compiled.
+ * nothing for Claude — and they drifted until they contradicted each other on
+ * how to write a test. Whichever an agent read first decided whether the code
+ * it wrote compiled.
  *
  * There is now one tree, and this script fails the build on the three ways it
  * could stop being one:
@@ -96,14 +95,21 @@ const INSTRUCTION_FILES = [
 // A repo-relative path in prose or backticks: src/…, .claude/…, scripts/…
 const PATH_PATTERN = /(?:^|[\s`([])((?:src|scripts|\.claude|\.github|e2e|docs)\/[\w./*-]*[\w/])/g;
 
+// Paths that are absent from a clean checkout on purpose: the build output, and
+// the Firebase configuration that `npm run setup:env` writes and .gitignore
+// keeps out. A deliberately absent path is not a rotten reference, and this
+// check must not depend on setup:env having run — `npm run verify` does not run
+// it, so treating these as errors made verify fail on every fresh clone.
+const GENERATED_PATHS = ["docs/", "src/environments/environment.ts"];
+
 for (const file of INSTRUCTION_FILES) {
   const contents = readFileSync(join(ROOT, file), "utf8");
   const seen = new Set();
 
   for (const [, candidate] of contents.matchAll(PATH_PATTERN)) {
-    // A glob is a description, not a path; and the output directory is built,
-    // not committed.
-    if (candidate.includes("*") || candidate.startsWith("docs/") || seen.has(candidate)) continue;
+    // A glob is a description, not a path.
+    if (candidate.includes("*") || seen.has(candidate)) continue;
+    if (GENERATED_PATHS.some((generated) => candidate.startsWith(generated))) continue;
     seen.add(candidate);
 
     if (!existsSync(join(ROOT, candidate))) {
