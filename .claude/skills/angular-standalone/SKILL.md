@@ -17,8 +17,8 @@ the providers that used to live in a module's `providers` array — the router,
 animations, the service worker registration.
 
 `standalone: true` was required when standalone components were introduced; since
-Angular 19 it is the **default** and writing it out is noise. Existing components
-that still carry it are not wrong, just dated.
+Angular 19 it is the **default** and writing it out is noise. No component here carries
+it — do not reintroduce it.
 
 Every component declares what its own template uses:
 
@@ -91,16 +91,20 @@ wrong DOM node and the display silently desynchronises from the data.
 
 ## Signals and RxJS
 
-Angular's signals are available and are the framework's direction of travel. This
-codebase deliberately stays on **RxJS `BehaviorSubject` + `AsyncPipe`** for shared
-state, because that is what every existing service does and a half-migrated app is
-worse than either end state. See
-`.claude/rules/angular-services.instructions.md`.
+Signals are Angular's direction of travel, and this app does not follow it. That is a
+settled decision, not a backlog item: **RxJS `BehaviorSubject` + `AsyncPipe`** is the
+state layer, in every service, without exception. See
+`.claude/rules/angular-services.instructions.md` for the shape it takes.
 
-Where signals fit without splitting the codebase: purely local component state with
-no cross-component consumer, and `input()` / `output()` in new components. If you
-need to bridge, `toSignal()` and `toObservable()` from `@angular/core/rxjs-interop`
-do it — but do not introduce a bridge just to use the newer API.
+The reason is not that signals are worse. It is that a codebase where half the state is
+a subject and half is a signal costs every reader two mental models and every component
+a decision, and it buys nothing until the last subject is gone. Whoever converts this app
+converts all of it, in its own change, with the rules and skills updated in the same
+commit — not one component at a time.
+
+So: no `signal()`, no `computed()`, no `input()` / `output()`, no `toSignal()`. If a
+future dependency hands you a signal, `toObservable()` from
+`@angular/core/rxjs-interop` brings it back to the layer everything else speaks.
 
 ## Lifecycle
 

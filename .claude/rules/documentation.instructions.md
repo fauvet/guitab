@@ -64,10 +64,9 @@ the wrong fix.
 ## A document that has become false is a bug
 
 Correct it where it is wrong, in the same commit as the code. Do not add a note
-elsewhere saying it is out of date — that is exactly how the previous tree ended up
-with a prompt teaching `jasmine.createSpyObj` while the testing rules forbade
-Jasmine, and two documents disagreeing is worse than one being stale, because now
-nobody knows which to trust.
+elsewhere saying it is out of date: two documents disagreeing is worse than one being
+stale, because a stale document is merely wrong, while a contradiction makes the reader
+guess which half to trust — and whichever they read first decides what they write.
 
 If you genuinely cannot fix it in the same change, say so in one sentence, next to
 the claim. The reader who lands on the claim is the one who needs the warning.
