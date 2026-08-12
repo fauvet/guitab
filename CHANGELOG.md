@@ -27,7 +27,13 @@ first entry moves to `## [1.0.0]` when the first release is cut.
   the theme.
 - Turning on "Wake lock" now says so when it cannot work — on a browser without the
   API, or when the request is refused. It used to switch on and let the screen dim
-  anyway, which looks like the app failing rather than the browser declining.
+  anyway, which looks like the app failing rather than the browser declining. The
+  setting also shows whether the screen is actually being held awake, rather than
+  only that it was asked for.
+- **The screen stays awake after switching apps.** Browsers take the wake lock back
+  as soon as the page is hidden, and nothing asked for it again — so answering a
+  message between two songs used to leave the setting switched on over a screen that
+  dimmed for the rest of the session. It is now taken back when you return.
 
 ### Added
 

@@ -83,7 +83,7 @@ On startup, `AppComponent.ngOnInit()` reads `ActivatedRoute.queryParamMap`:
 
 ```
 BluetoothKeepAliveService ← inaudible tone so a speaker does not sleep between songs
-WakeLockService           ← screen wake lock, and the snackbar when it is refused
+WakeLockService           ← holds the screen wake lock, re-takes it on tab return
      ↓ injected by
 AppContextService        ← holds file handle, editing mode, wake lock, Bluetooth
      ↓ injected by
@@ -106,9 +106,8 @@ AuthService     ← anonymous sign-in on startup, Google link/sign-in, isAnonymo
 
 LocalStorageService ← used by ZoomService, LocalCachedFilesRepository, LocalDraftRepository
 
-AubioLoaderService  ← fetches aubio's WebAssembly from assets/ at runtime; lives
-                      inside services/pitch-detection/ rather than in a folder of
-                      its own, being an implementation detail of that boundary
+AubioLoaderService  ← fetches aubio's WebAssembly from assets/ at runtime; it sits
+                      inside services/pitch-detection/, being a detail of that boundary
      ↓ injected by
 PitchDetectionService ← the Web Audio boundary that matters: microphone,
                         AudioContext, pitch + onset detection
@@ -138,7 +137,8 @@ IDraftRepository (interface)
 | `hasEditorUndo$` / `hasEditorRedo$`    | `ChordproService`               | content change → Ace UndoManager                    | HeaderActionsBarComponent                                     |
 | `isRemovableChordEnabled$`             | `ChordproService`               | Ace cursor position listener                        | FooterActionsBarComponent                                     |
 | `areLyricsDisplayed$`                  | `ChordproService`               | BottomSheetSettings toggle                          | CSS class `js-are-lyrics-hided` on `document.body`            |
-| `isWakeLock$`                          | `AppContextService`             | BottomSheetSettings toggle                          | `WakeLockService` (constructor subscription)                  |
+| `isWakeLock$` (the intention)          | `AppContextService`             | BottomSheetSettings toggle                          | `WakeLockService` (constructor subscription)                  |
+| `isKeptAwake$` (the reality)           | `WakeLockService`               | lock granted, released, or taken back by the system | BottomSheetSettings — the two diverge, hence both             |
 | `isBluetoothKeptAlive$`                | `AppContextService`             | BottomSheetSettings toggle                          | `BluetoothKeepAliveService` (constructor subscription)        |
 | `user$`                                | `AuthService`                   | Firebase `onAuthStateChanged`                       | `CachedFilesService`, `BeforeUnloadService`, `LoginComponent` |
 | `cachedFiles$`                         | active `ICachedFilesRepository` | after every open/save                               | `CachedFilesService` → `BottomSheetManageFileComponent`       |
