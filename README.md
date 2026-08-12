@@ -46,7 +46,7 @@
 | ChordPro parsing | [chordproject-parser](https://www.npmjs.com/package/chordproject-parser) |
 | ChordPro editor  | [chordproject-editor](https://www.npmjs.com/package/chordproject-editor) |
 | Chord diagrams   | [svguitar](https://github.com/omnibrain/svguitar)                        |
-| Testing          | [Vitest 4](https://vitest.dev) + [Playwright](https://playwright.dev)    |
+| Testing          | [Vitest 4](https://vitest.dev), in jsdom                                 |
 | PWA              | [Angular Service Worker](https://angular.dev/ecosystem/service-workers)  |
 
 ## Getting started

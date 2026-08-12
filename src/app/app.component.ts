@@ -3,7 +3,6 @@ import { ActivatedRoute, RouterOutlet } from "@angular/router";
 import { ChordproEditorComponent } from "./components/chordpro-editor/chordpro-editor.component";
 import { ChordproViewerComponent } from "./components/chordpro-viewer/chordpro-viewer.component";
 import { AppContextService } from "./services/app-context/app-context.service";
-// import { DiagramChordComponent } from "./components/diagram-chord/diagram-chord.component";
 import { FileUtil } from "./utils/file.util";
 import { ChordproChordsViewerComponent } from "./components/chordpro-chords-viewer/chordpro-chords-viewer.component";
 import { HeaderActionsBarComponent } from "./components/header-actions-bar/header-actions-bar.component";
@@ -37,7 +36,6 @@ interface LaunchQueue {
     RouterOutlet,
     ChordproEditorComponent,
     ChordproViewerComponent,
-    // DiagramChordComponent,
     ChordproChordsViewerComponent,
     HeaderActionsBarComponent,
     FooterActionsBarComponent,
@@ -52,7 +50,7 @@ export class AppComponent implements OnInit {
   private readonly chordproService = inject(ChordproService);
   private readonly matIconRegistry = inject(MatIconRegistry);
   private readonly domSanitizer = inject(DomSanitizer);
-  private readonly acivatedRoute = inject(ActivatedRoute);
+  private readonly activatedRoute = inject(ActivatedRoute);
 
   @HostBinding("class.is-editing")
   isEditing = false;
@@ -68,7 +66,7 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     this.handleLaunchQueue();
     this.appContextService.getIsEditing$().subscribe((isEditing) => (this.isEditing = isEditing));
-    this.acivatedRoute.queryParamMap.subscribe(async (params) => {
+    this.activatedRoute.queryParamMap.subscribe(async (params) => {
       const loadValue = params.get("load");
       const isDemo = loadValue === "demo";
       this.appContextService.setEditing(!isDemo);
