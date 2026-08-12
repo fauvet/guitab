@@ -13,9 +13,10 @@ ASCII tab.
 2. **Never touch Firebase outside `src/app/services/` and `src/app/storage/`.**
    Components call a service; persistence goes through a repository interface.
    ESLint enforces this.
-3. **Never touch Web Audio outside the pitch-detection service.** Same boundary,
-   same reason: it is what keeps the musical logic testable without a
-   microphone.
+3. **Never touch Web Audio outside the two services that own it** — pitch
+   detection and the Bluetooth keep-alive. Same boundary, same reason: it is
+   what keeps the musical logic testable without a microphone. ESLint enforces
+   this too, on the globals rather than on imports.
 4. **State lives in a private `BehaviorSubject`**, exposed as `getFoo$()` and
    `getFoo()`. Components subscribe with `takeUntil(this.unsubscribe$)` and fire
    `unsubscribe$.next()` in `ngOnDestroy`. A leaked subscription is a bug.
@@ -24,9 +25,9 @@ ASCII tab.
 6. **No `any`.** The only sanctioned cast is at a boundary where data genuinely
    arrives untyped — a Firestore snapshot, a WASM return value.
 7. **Never restate what the code already says.** Versions, file trees, route
-   tables, coverage numbers: link to the file, never copy it. The instruction tree
-   that preceded this one drifted precisely there — one prompt taught
-   `jasmine.createSpyObj` months after Jasmine had been removed.
+   tables, coverage numbers: link to the file, never copy it. The test: could a
+   commit that does not touch this document make the sentence false? Then the code
+   should be the one saying it.
 8. **Every dependency added must be GPL-3.0 compatible.** See
    `.claude/rules/dependencies-licensing.instructions.md`.
 9. **Never commit or push unless explicitly asked.**

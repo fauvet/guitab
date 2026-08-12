@@ -17,7 +17,9 @@ AppComponent
 │   │   ├── ChordproEditorComponent    (Ace editor widget)
 │   │   └── ChordproViewerComponent    (rendered chord sheet)
 │   └── ChordproChordsViewerComponent  (SVG chord diagrams grid)
-└── FooterActionsBarComponent          (bottom toolbar)
+├── FooterActionsBarComponent          (bottom toolbar)
+├── AppFooterComponent                 (source, licence, version)
+└── <router-outlet />                  (present, but the app has no second route)
 ```
 
 Dialogs and bottom sheets are opened imperatively via `MatDialog` / `MatBottomSheet` — they are not part of the static template.
@@ -62,30 +64,26 @@ Side-effects after open: `appContextService.setEditing(false)` (preview mode), `
 
 ```
 KeyboardShortcutService.saveFile()
-  ├─> If FileSystemFileHandle exists:
-  │     fileHandle.createWritable() → write → close
-  │     chordproService.updateChordproSaveState()  (clears unsaved flag)
-  │     snackBar.open(...)  (success feedback)
-  └─> Else: saveFileAs() → showSaveFilePicker() or FileSaver.saveAs(blob)
+  ├─> a FileSystemFileHandle exists → write through it, then clear the unsaved flag
+  └─> otherwise → saveFileAs(): showSaveFilePicker(), or a FileSaver blob download
 
-Both paths: cachedFilesService.saveFile(content) to update localStorage history.
+Both paths end at cachedFilesService.saveFile(content).
 ```
 
-`saveFileAs()` builds the filename via `ChordproUtil.buildFileName(content)` → extracts `{title:}` and `{artist:}` → `"Title (Artist).cho"`.
+The filename comes from the content itself — `ChordproUtil.buildFileName()` reads `{title:}` and `{artist:}`.
 
 ## App Bootstrap & Draft Recovery
 
 On startup, `AppComponent.ngOnInit()` reads `ActivatedRoute.queryParamMap`:
 
 - `?load=demo` → `FileUtil.loadSampleFile()` → `setFileHandle()` → `setEditing(true)`
-- Otherwise → `beforeUnloadService.findDraftUnsavedChordproContent()`:
-  - Reads from the active `IDraftRepository` (Firestore if authenticated, localStorage fallback)
-  - If a draft with `hasUnsavedChanges: true` exists → restore it via `chordproService.setChordproContent(draftContent)`
-  - Otherwise → `FileUtil.loadEmptyFile()` → blank slate
+- otherwise → `beforeUnloadService.findDraftUnsavedChordproContent()`, which reads the active `IDraftRepository` (Firestore when authenticated, localStorage otherwise) and restores a draft flagged `hasUnsavedChanges` — or falls back to `FileUtil.loadEmptyFile()` and a blank slate
 
 ## Service Dependency Graph
 
 ```
+BluetoothKeepAliveService ← inaudible tone so a speaker does not sleep between songs
+     ↓ injected by
 AppContextService        ← holds file handle, editing mode, wake lock, Bluetooth
      ↓ injected by
 ChordproService          ← subscribes to fileHandleWithContent$ in constructor
@@ -107,10 +105,12 @@ AuthService     ← anonymous sign-in on startup, Google link/sign-in, isAnonymo
 
 LocalStorageService ← used by ZoomService, LocalCachedFilesRepository, LocalDraftRepository
 
-AubioLoaderService  ← fetches aubio's WebAssembly from assets/ at runtime
+AubioLoaderService  ← fetches aubio's WebAssembly from assets/ at runtime; lives
+                      inside services/pitch-detection/ rather than in a folder of
+                      its own, being an implementation detail of that boundary
      ↓ injected by
-PitchDetectionService ← the only Web Audio boundary: microphone, AudioContext,
-                        pitch + onset detection
+PitchDetectionService ← the Web Audio boundary that matters: microphone,
+                        AudioContext, pitch + onset detection
      ↓ injected by
 PitchMonitorComponent ← opened inside DialogSoloTabEditorComponent
 
@@ -127,36 +127,37 @@ IDraftRepository (interface)
 
 ## State Ownership
 
-| State                                  | Owner                           | Changed by                                          | Consumed by                                                        |
-| -------------------------------------- | ------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------ |
-| `chordproContent$`                     | `ChordproService`               | editor mutations, file open, undo/redo              | ViewerComponent, ChordsViewer, FooterBar                           |
-| `fileHandleWithContent$`               | `AppContextService`             | open file, new file                                 | ChordproService, BottomSheet, KeyboardShortcut                     |
-| `isEditing$`                           | `AppContextService`             | UI buttons, file open/new                           | Header, Footer, AppComponent (CSS class), ChordsViewer             |
-| `chordproSaveState$`                   | `ChordproService`               | file open, file save                                | `hasUnsavedChanges()`, BeforeUnloadService                         |
-| `youTubeUrl$`                          | `ChordproService`               | auto-parsed from `{meta:youtube}` on content change | FooterActionsBarComponent                                          |
-| `hasEditorUndo$` / `hasEditorRedo$`    | `ChordproService`               | content change → Ace UndoManager                    | HeaderActionsBarComponent                                          |
-| `isRemovableChordEnabled$`             | `ChordproService`               | Ace cursor position listener                        | FooterActionsBarComponent                                          |
-| `areLyricsDisplayed$`                  | `ChordproService`               | BottomSheetSettings toggle                          | CSS class `js-are-lyrics-hided` on `document.body`                 |
-| `isWakeLock$`                          | `AppContextService`             | BottomSheetSettings toggle                          | `WakeLockUtil.setWakeLock()` (constructor subscription)            |
-| `isBluetoothKeptAlive$`                | `AppContextService`             | BottomSheetSettings toggle                          | `BluetoothUtil.setBluetoothKeptAlive()` (constructor subscription) |
-| `user$`                                | `AuthService`                   | Firebase `onAuthStateChanged`                       | `CachedFilesService`, `BeforeUnloadService`, `LoginComponent`      |
-| `cachedFiles$`                         | active `ICachedFilesRepository` | after every open/save                               | `CachedFilesService` → `BottomSheetManageFileComponent`            |
-| `zoomStep$`                            | `ZoomService`                   | +/- buttons in Header                               | CSS `--zoom` variable on `<html>` element                          |
-| `status$` / `currentNote$` / `frames$` | `PitchDetectionService`         | microphone blocks, or a decoded audio file          | `PitchMonitorComponent`                                            |
+| State                                  | Owner                           | Changed by                                          | Consumed by                                                   |
+| -------------------------------------- | ------------------------------- | --------------------------------------------------- | ------------------------------------------------------------- |
+| `chordproContent$`                     | `ChordproService`               | editor mutations, file open, undo/redo              | ViewerComponent, ChordsViewer, FooterBar                      |
+| `fileHandleWithContent$`               | `AppContextService`             | open file, new file                                 | ChordproService, BottomSheet, KeyboardShortcut                |
+| `isEditing$`                           | `AppContextService`             | UI buttons, file open/new                           | Header, Footer, AppComponent (CSS class), ChordsViewer        |
+| `chordproSaveState$`                   | `ChordproService`               | file open, file save                                | `hasUnsavedChanges()`, BeforeUnloadService                    |
+| `youTubeUrl$`                          | `ChordproService`               | auto-parsed from `{meta:youtube}` on content change | FooterActionsBarComponent                                     |
+| `hasEditorUndo$` / `hasEditorRedo$`    | `ChordproService`               | content change → Ace UndoManager                    | HeaderActionsBarComponent                                     |
+| `isRemovableChordEnabled$`             | `ChordproService`               | Ace cursor position listener                        | FooterActionsBarComponent                                     |
+| `areLyricsDisplayed$`                  | `ChordproService`               | BottomSheetSettings toggle                          | CSS class `js-are-lyrics-hided` on `document.body`            |
+| `isWakeLock$`                          | `AppContextService`             | BottomSheetSettings toggle                          | `WakeLockUtil.setWakeLock()` (constructor subscription)       |
+| `isBluetoothKeptAlive$`                | `AppContextService`             | BottomSheetSettings toggle                          | `BluetoothKeepAliveService` (constructor subscription)        |
+| `user$`                                | `AuthService`                   | Firebase `onAuthStateChanged`                       | `CachedFilesService`, `BeforeUnloadService`, `LoginComponent` |
+| `cachedFiles$`                         | active `ICachedFilesRepository` | after every open/save                               | `CachedFilesService` → `BottomSheetManageFileComponent`       |
+| `zoomStep$`                            | `ZoomService`                   | +/- buttons in Header                               | `font-size` on the `<html>` element, which scales every `rem` |
+| `status$` / `currentNote$` / `frames$` | `PitchDetectionService`         | microphone blocks, or a decoded audio file          | `PitchMonitorComponent`                                       |
 
 ## Dialog & Bottom Sheet Wiring
 
-| Opened by                             | Component                             | Data in                 | On dismiss / result                            |
-| ------------------------------------- | ------------------------------------- | ----------------------- | ---------------------------------------------- |
-| HeaderActionsBarComponent             | `BottomSheetManageFileComponent`      | —                       | file ops; calls `requestEditorFocus()`         |
-| HeaderActionsBarComponent             | `BottomSheetToolsComponent`           | —                       | opens external tool dialogs                    |
-| HeaderActionsBarComponent             | `BottomSheetSettingsComponent`        | —                       | settings toggles                               |
-| FooterActionsBarComponent             | `BottomSheetInsertDirectiveComponent` | —                       | inserts `{directive:}` via ChordproService     |
-| FooterActionsBarComponent             | `DialogSelectChordComponent`          | —                       | on select: `chordproService.insertChord(name)` |
-| ChordproViewerComponent (chord click) | `DialogDiagramChordComponent`         | `{ chordName: string }` | read-only chord diagram                        |
-| BottomSheetToolsComponent             | `DialogExternalToolComponent`         | `{ src: string }`       | iframe embed (lyrics.ovh, songbpm.com, etc.)   |
-| BottomSheetToolsComponent             | `DialogSoloTabEditorComponent`        | —                       | standalone tab grid generator                  |
-| DialogSoloTabEditorComponent          | `PitchMonitorComponent` (inline)      | —                       | emits `transcribed`, appended to the editor    |
+| Opened by                             | Component                               | Data in                 | On dismiss / result                            |
+| ------------------------------------- | --------------------------------------- | ----------------------- | ---------------------------------------------- |
+| HeaderActionsBarComponent             | `BottomSheetManageFileComponent`        | —                       | file ops; calls `requestEditorFocus()`         |
+| HeaderActionsBarComponent             | `BottomSheetToolsComponent`             | —                       | opens external tool dialogs                    |
+| HeaderActionsBarComponent             | `BottomSheetSettingsComponent`          | —                       | settings toggles                               |
+| FooterActionsBarComponent             | `BottomSheetInsertDirectiveComponent`   | —                       | inserts `{directive:}` via ChordproService     |
+| FooterActionsBarComponent             | `DialogSelectChordComponent`            | —                       | on select: `chordproService.insertChord(name)` |
+| ChordproViewerComponent (chord click) | `DialogDiagramChordComponent`           | `{ chordName: string }` | read-only chord diagram                        |
+| BottomSheetToolsComponent             | `DialogExternalToolComponent`           | `{ src: string }`       | iframe embed (lyrics.ovh, songbpm.com, etc.)   |
+| BottomSheetToolsComponent             | `DialogSoloTabEditorComponent`          | —                       | standalone tab grid generator                  |
+| BottomSheetToolsComponent             | `DialogImportChordsOverLyricsComponent` | —                       | result inserted at the caret                   |
+| DialogSoloTabEditorComponent          | `PitchMonitorComponent` (inline)        | —                       | emits `transcribed`, appended to the editor    |
 
 All bottom sheets call `chordproService.requestEditorFocus()` on dismiss to restore Ace editor focus.
 
