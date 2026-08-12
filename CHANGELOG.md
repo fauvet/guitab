@@ -25,6 +25,9 @@ first entry moves to `## [1.0.0]` when the first release is cut.
   like itself. Two panels that were quietly rendering in grey fallback colours — the
   chords-over-lyrics import preview and the pitch monitor's error text — now follow
   the theme.
+- Turning on "Wake lock" now says so when it cannot work — on a browser without the
+  API, or when the request is refused. It used to switch on and let the screen dim
+  anyway, which looks like the app failing rather than the browser declining.
 
 ### Added
 

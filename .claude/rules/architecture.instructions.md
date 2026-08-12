@@ -83,6 +83,7 @@ On startup, `AppComponent.ngOnInit()` reads `ActivatedRoute.queryParamMap`:
 
 ```
 BluetoothKeepAliveService ← inaudible tone so a speaker does not sleep between songs
+WakeLockService           ← screen wake lock, and the snackbar when it is refused
      ↓ injected by
 AppContextService        ← holds file handle, editing mode, wake lock, Bluetooth
      ↓ injected by
@@ -137,7 +138,7 @@ IDraftRepository (interface)
 | `hasEditorUndo$` / `hasEditorRedo$`    | `ChordproService`               | content change → Ace UndoManager                    | HeaderActionsBarComponent                                     |
 | `isRemovableChordEnabled$`             | `ChordproService`               | Ace cursor position listener                        | FooterActionsBarComponent                                     |
 | `areLyricsDisplayed$`                  | `ChordproService`               | BottomSheetSettings toggle                          | CSS class `js-are-lyrics-hided` on `document.body`            |
-| `isWakeLock$`                          | `AppContextService`             | BottomSheetSettings toggle                          | `WakeLockUtil.setWakeLock()` (constructor subscription)       |
+| `isWakeLock$`                          | `AppContextService`             | BottomSheetSettings toggle                          | `WakeLockService` (constructor subscription)                  |
 | `isBluetoothKeptAlive$`                | `AppContextService`             | BottomSheetSettings toggle                          | `BluetoothKeepAliveService` (constructor subscription)        |
 | `user$`                                | `AuthService`                   | Firebase `onAuthStateChanged`                       | `CachedFilesService`, `BeforeUnloadService`, `LoginComponent` |
 | `cachedFiles$`                         | active `ICachedFilesRepository` | after every open/save                               | `CachedFilesService` → `BottomSheetManageFileComponent`       |

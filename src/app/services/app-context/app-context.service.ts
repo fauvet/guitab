@@ -1,7 +1,7 @@
 import { inject, Injectable } from "@angular/core";
 import { BehaviorSubject, Observable } from "rxjs";
 import { BluetoothKeepAliveService } from "../bluetooth-keep-alive/bluetooth-keep-alive.service";
-import { WakeLockUtil } from "../../utils/wake-lock.util";
+import { WakeLockService } from "../wake-lock/wake-lock.service";
 import { FileUtil } from "../../utils/file.util";
 
 export type FileHandleWithContent = { fileHandle: File | FileSystemFileHandle; content: string };
@@ -11,6 +11,7 @@ export type FileHandleWithContent = { fileHandle: File | FileSystemFileHandle; c
 })
 export class AppContextService {
   private readonly bluetoothKeepAliveService = inject(BluetoothKeepAliveService);
+  private readonly wakeLockService = inject(WakeLockService);
 
   private readonly fileHandleWithContent$ = new BehaviorSubject<null | FileHandleWithContent>(null);
   private readonly isEditing$ = new BehaviorSubject<boolean>(false);
@@ -22,7 +23,7 @@ export class AppContextService {
   // follow them until the tab closes. This is the sanctioned case for omitting
   // `takeUntil` — there is nothing to tear down before.
   constructor() {
-    this.isWakeLock$.subscribe((isWakeLock) => WakeLockUtil.setWakeLock(isWakeLock));
+    this.isWakeLock$.subscribe((isWakeLock) => this.wakeLockService.setKeptAwake(isWakeLock));
     this.isBluetoothKeptAlive$.subscribe((isBluetoothKeptAlive) =>
       this.bluetoothKeepAliveService.setKeptAlive(isBluetoothKeptAlive),
     );
