@@ -129,7 +129,7 @@
 .error {
   margin: 0;
   font-size: 0.875rem;
-  color: var(--mat-sys-error, #b3261e);
+  color: var(--mat-sys-error);
 }
 
 mat-form-field {

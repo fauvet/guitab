@@ -10,6 +10,7 @@
   }
 
   .container-play {
+    display: block;
     flex: 1;
 
     iframe {
@@ -18,17 +19,30 @@
     }
   }
 
-  @media only screen and (max-width: 1440px) {
-    &.is-editing {
-      .container-play {
-        display: none;
-      }
+  /**
+   * On a phone the bar only has room for one of the two: the editing tools while
+   * editing, the video while reading. Both fit side by side on a wide screen.
+   *
+   * Mobile-first, so the narrow case is the base state and the single min-width
+   * query widens it. This used to be a max-width query at 1440px while the
+   * `.mobile-only` pair in styles.scss switches at 1440px min-width — the two
+   * disagreed on what happens at exactly 1440px.
+   */
+  &.is-editing .container-play {
+    display: none;
+  }
+
+  &:not(.is-editing) .container-edition {
+    display: none;
+  }
+
+  @media screen and (min-width: 1440px) {
+    &.is-editing .container-play {
+      display: block;
     }
 
-    &:not(.is-editing) {
-      .container-edition {
-        display: none;
-      }
+    &:not(.is-editing) .container-edition {
+      display: flex;
     }
   }
 }

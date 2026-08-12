@@ -101,10 +101,20 @@ or inline next to the control.
 
 ## Theming
 
-The theme is defined once in `src/styles.scss`. Material 3 exposes its palette as
-CSS custom properties, so overriding a token is preferable to out-specifying a
-component's own selector — an override written against Material's internal class
-names breaks on a minor upgrade, and the failure is visual, so no test catches it.
+The theme is defined once in `src/styles.scss`, through `mat.theme()`, over palettes
+generated from the brand colour into `src/_theme-colors.scss` — that file is schematic
+output, so regenerate it rather than editing it by hand.
+
+Material 3 exposes the resulting palette as `--mat-sys-*` custom properties, so
+overriding a token is preferable to out-specifying a component's own selector — an
+override written against Material's internal class names breaks on a minor upgrade,
+and the failure is visual, so no test catches it.
+
+One trap worth knowing: a `--mat-sys-*` variable written with a fallback,
+`var(--mat-sys-error, #b3261e)`, cannot tell you whether the token resolved. Two
+components carried fallbacks like that for the whole time the theme was still M2 and
+emitted no such variables, and both looked fine — on the fallback. Write the token
+bare, and a missing one shows up immediately.
 
 When a Material component must look different in one place, pass it a class and
 style that class. Reach for `::ng-deep` last: it is deprecated, it leaks out of the

@@ -19,6 +19,12 @@ first entry moves to `## [1.0.0]` when the first release is cut.
   equivalent in a browser, and embedding it requires the whole application to
   carry the same licence. Code from this repository can no longer be reused in a
   permissive or proprietary project.
+- The interface now uses Material 3. Colours, elevation and spacing shift slightly
+  across every button, dialog and bottom sheet; the palette is derived from the same
+  indigo the app already used as its installed-icon colour, so the app still looks
+  like itself. Two panels that were quietly rendering in grey fallback colours — the
+  chords-over-lyrics import preview and the pitch monitor's error text — now follow
+  the theme.
 
 ### Added
 

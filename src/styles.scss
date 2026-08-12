@@ -1,29 +1,62 @@
 @use "@angular/material" as mat;
-@import "material-icons/iconfont/material-icons.css";
+@use "material-icons/iconfont/material-icons.css";
+@use "./theme-colors" as brand;
 
-@include mat.core();
-@include mat.elevation-classes();
-@include mat.app-background();
+/**
+ * Material 3. The previous theme was built with the M2 API, which is why two
+ * components had to write `var(--mat-sys-error, #b3261e)`: the `--mat-sys-*`
+ * system variables they read are only emitted by an M3 theme, so every one of
+ * them was silently resolving to its hardcoded fallback. Those fallbacks are
+ * gone now, and the tokens resolve.
+ *
+ * The palettes are generated from the brand indigo — the same `#4343BE` that
+ * `src/manifest.webmanifest` declares as `theme_color` — rather than picked
+ * from the prebuilt set, none of which lands near it. Regenerate with
+ * `ng generate @angular/material:m3-theme --primary-color="#4343BE"`.
+ *
+ * `theme-type: light` is deliberate: the M2 theme this replaces was light-only,
+ * and M3 otherwise defaults to following `prefers-color-scheme`. Honouring dark
+ * mode is a feature, not a side effect of a theming migration — the chord
+ * sheet's own palette below is tuned for a light background and would need dark
+ * variants first.
+ *
+ * `mat.core()` is an empty mixin in this version, and `mat.elevation-classes()`
+ * / `mat.app-background()` emit helper classes no template here uses — all
+ * three are dropped rather than carried.
+ */
+html {
+  @include mat.theme(
+    (
+      color: (
+        primary: brand.$primary-palette,
+        tertiary: brand.$tertiary-palette,
+        theme-type: light,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}
 
-$my-primary: mat.m2-define-palette(mat.$m2-indigo-palette, 500);
-$my-accent: mat.m2-define-palette(mat.$m2-pink-palette, A200, A100, A400);
-
-$my-theme: mat.m2-define-light-theme(
-  (
-    color: (
-      primary: $my-primary,
-      accent: $my-accent,
-    ),
-    typography: mat.m2-define-typography-config(),
-    density: 0,
-  )
-);
-
-@include mat.all-component-themes($my-theme);
+/**
+ * The chord sheet's own palette. Material's tokens cover the chrome — toolbars,
+ * dialogs, sheets — but nothing in a theme knows what a chord is, so these four
+ * roles are ours to name. They live here rather than in the viewer's stylesheet
+ * because they are what "a chord" and "a section" look like across the app: a
+ * diagram dialog showing the same chord has to match the sheet behind it.
+ */
+:root {
+  --chord-color: #db3e00;
+  --annotation-color: #008702;
+  --section-label-color: #590000;
+  --bridge-background: #0000000f;
+}
 
 body {
   font-family: sans-serif;
   font-size: 1rem;
+  background: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
 }
 
 h1 {
@@ -43,7 +76,7 @@ h3 {
 
 mat-icon {
   &.mat-primary {
-    color: mat.m2-get-color-from-palette($my-primary, 500) !important;
+    color: var(--mat-sys-primary);
   }
 }
 
@@ -75,6 +108,16 @@ mat-list-item {
   }
 }
 
+/**
+ * The one place a max-width query is the right tool, and the reason is narrow:
+ * both classes land on `mat-button` elements, whose `display` Material owns. A
+ * mobile-first version would have to hide the desktop variant by default and
+ * then restore it above the breakpoint — restoring it means writing Material's
+ * internal `display` value into our stylesheet, which breaks silently on a
+ * minor upgrade. Hiding is display-agnostic; un-hiding is not.
+ *
+ * Keep the two breakpoints adjacent so the pair stays in sync.
+ */
 @media screen and (min-width: 1440px) {
   .mobile-only {
     display: none !important;
