@@ -17,7 +17,11 @@ export class LocalStorageService {
     }
   }
 
-  buildBehaviorSubject<T>(key: string, defaultValue: T, reviver?: (key: string, value: any) => T): BehaviorSubject<T> {
+  buildBehaviorSubject<T>(
+    key: string,
+    defaultValue: T,
+    reviver?: (key: string, value: unknown) => unknown,
+  ): BehaviorSubject<T> {
     if (this.DEPRECATED_KEYS.includes(key)) {
       throw new Error(`Local storage key "${key}" is deprecated and should not be used.`);
     }

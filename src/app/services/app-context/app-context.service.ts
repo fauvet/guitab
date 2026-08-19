@@ -1,7 +1,7 @@
-import { Injectable } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
 import { BehaviorSubject, Observable } from "rxjs";
-import { BluetoothUtil } from "../../utils/bluetooth.util";
-import { WakeLockUtil } from "../../utils/wake-lock.util";
+import { BluetoothKeepAliveService } from "../bluetooth-keep-alive/bluetooth-keep-alive.service";
+import { WakeLockService } from "../wake-lock/wake-lock.service";
 import { FileUtil } from "../../utils/file.util";
 
 export type FileHandleWithContent = { fileHandle: File | FileSystemFileHandle; content: string };
@@ -10,15 +10,22 @@ export type FileHandleWithContent = { fileHandle: File | FileSystemFileHandle; c
   providedIn: "root",
 })
 export class AppContextService {
+  private readonly bluetoothKeepAliveService = inject(BluetoothKeepAliveService);
+  private readonly wakeLockService = inject(WakeLockService);
+
   private readonly fileHandleWithContent$ = new BehaviorSubject<null | FileHandleWithContent>(null);
   private readonly isEditing$ = new BehaviorSubject<boolean>(false);
   private readonly isWakeLock$ = new BehaviorSubject<boolean>(false);
   private readonly isBluetoothKeptAlive$ = new BehaviorSubject<boolean>(false);
 
+  // Both subscriptions live for the lifetime of the application: this service is
+  // a root singleton and these two settings drive device state that has to
+  // follow them until the tab closes. This is the sanctioned case for omitting
+  // `takeUntil` — there is nothing to tear down before.
   constructor() {
-    this.isWakeLock$.subscribe((isWakeLock) => WakeLockUtil.setWakeLock(isWakeLock));
+    this.isWakeLock$.subscribe((isWakeLock) => this.wakeLockService.setKeptAwake(isWakeLock));
     this.isBluetoothKeptAlive$.subscribe((isBluetoothKeptAlive) =>
-      BluetoothUtil.setBluetoothKeptAlive(isBluetoothKeptAlive),
+      this.bluetoothKeepAliveService.setKeptAlive(isBluetoothKeptAlive),
     );
   }
 

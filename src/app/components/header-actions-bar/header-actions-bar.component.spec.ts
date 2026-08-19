@@ -1,9 +1,9 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { MatIconTestingModule } from '@angular/material/icon/testing';
-import { HeaderActionsBarComponent } from './header-actions-bar.component';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { NoopAnimationsModule } from "@angular/platform-browser/animations";
+import { MatIconTestingModule } from "@angular/material/icon/testing";
+import { HeaderActionsBarComponent } from "./header-actions-bar.component";
 
-describe('HeaderActionsBarComponent', () => {
+describe("HeaderActionsBarComponent", () => {
   let component: HeaderActionsBarComponent;
   let fixture: ComponentFixture<HeaderActionsBarComponent>;
 
@@ -18,7 +18,7 @@ describe('HeaderActionsBarComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

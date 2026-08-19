@@ -4,9 +4,10 @@ import { AppContextService } from "../../services/app-context/app-context.servic
 import { MatListModule } from "@angular/material/list";
 import { MatIcon } from "@angular/material/icon";
 import { MatRipple } from "@angular/material/core";
-import { BehaviorSubject, map, Subject, takeUntil } from "rxjs";
+import { BehaviorSubject, filter, map, Subject, takeUntil } from "rxjs";
 import { MatButtonModule } from "@angular/material/button";
 import { MatBottomSheetRef } from "@angular/material/bottom-sheet";
+import { MatSnackBar } from "@angular/material/snack-bar";
 import { KeyboardShortcutService } from "../../services/keyboard-shortcut/keyboard-shortcut.service";
 import { AsyncPipe } from "@angular/common";
 import { MatDividerModule } from "@angular/material/divider";
@@ -18,12 +19,17 @@ import { HttpClient } from "@angular/common/http";
 
 export type CoveredCachedFile = CachedFile & { cover: string };
 
+/** Only the members read below; the API returns a great deal more. */
+interface LyricsSuggestResponse {
+  data?: { album?: { cover_small?: string } }[];
+}
+
 @Component({
-    selector: "app-bottom-sheet-manage-file",
-    imports: [MatListModule, MatIcon, MatRipple, MatButtonModule, AsyncPipe, MatDividerModule],
-    templateUrl: "./bottom-sheet-manage-file.component.html",
-    styleUrl: "./bottom-sheet-manage-file.component.css",
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: "app-bottom-sheet-manage-file",
+  imports: [MatListModule, MatIcon, MatRipple, MatButtonModule, AsyncPipe, MatDividerModule],
+  templateUrl: "./bottom-sheet-manage-file.component.html",
+  styleUrl: "./bottom-sheet-manage-file.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
   private static readonly DEFAULT_ALBUM_COVER =
@@ -38,6 +44,7 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
   private readonly chordproService = inject(ChordproService);
   private readonly bottomSheetRef = inject(MatBottomSheetRef<BottomSheetManageFileComponent>);
   private readonly http = inject(HttpClient);
+  private readonly snackBar = inject(MatSnackBar);
 
   isSaveExistingFileEnabled$ = new BehaviorSubject(false);
   cachedFiles$ = this.cachedFilesService
@@ -52,7 +59,9 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
 
   ngOnInit(): void {
-    this.cachedFiles$.subscribe((cachedFiles) => this.onCachedFilesChanged(cachedFiles));
+    this.cachedFiles$
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe((cachedFiles) => this.onCachedFilesChanged(cachedFiles));
 
     this.appContextService
       .getFileHandleWithContent$()
@@ -65,6 +74,18 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
     this.bottomSheetRef.afterDismissed().subscribe(() => {
       this.chordproService.requestEditorFocus();
     });
+
+    this.cachedFilesService
+      .getSyncError$()
+      .pipe(
+        filter((hasError) => hasError),
+        takeUntil(this.unsubscribe$),
+      )
+      .subscribe(() => {
+        this.snackBar.open("Couldn't sync your recent files. Check your connection and try again later.", "Dismiss", {
+          duration: 5000,
+        });
+      });
   }
 
   ngOnDestroy(): void {
@@ -82,7 +103,7 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
       const title = this.chordproService.parseTitle(coveredCachedFile.chordproContent);
       if (!title || coveredCachedFile.cover !== BottomSheetManageFileComponent.DEFAULT_ALBUM_COVER) continue;
       const encodedTitleWithoutAccents = encodeURIComponent(title.normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
-      this.http.get<any>(`https://api.lyrics.ovh/suggest/${encodedTitleWithoutAccents}`).subscribe({
+      this.http.get<LyricsSuggestResponse>(`https://api.lyrics.ovh/suggest/${encodedTitleWithoutAccents}`).subscribe({
         next: (res) => {
           const coverUrl = res?.data?.[0]?.album?.cover_small;
           coveredCachedFile.cover = coverUrl || BottomSheetManageFileComponent.DEFAULT_ALBUM_COVER;

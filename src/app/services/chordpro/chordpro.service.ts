@@ -1,8 +1,10 @@
 import { inject, Injectable } from "@angular/core";
 import { BehaviorSubject, Observable } from "rxjs";
-import { FileUtil } from "../../utils/file.util";
 import { AppContextService, FileHandleWithContent } from "../app-context/app-context.service";
-// @ts-ignore
+// chordproject-editor ships no types. @ts-expect-error rather than @ts-ignore
+// so this line starts failing the build the day the package adds them, instead
+// of silently outliving its reason.
+// @ts-expect-error -- untyped third-party module
 import * as ChordProjectEditor from "chordproject-editor";
 import { StringUtil } from "../../utils/string.util";
 import ChordproSaveState, { areChordproSaveStatesEquals } from "../../types/chordpro-save-state.type";

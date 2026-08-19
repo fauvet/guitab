@@ -10,11 +10,11 @@ import { BehaviorSubject } from "rxjs";
 import { AsyncPipe } from "@angular/common";
 
 @Component({
-    selector: "app-dialog-diagram-chord",
-    imports: [DiagramChordComponent, MatDialogModule, MatButtonModule, AsyncPipe],
-    templateUrl: "./dialog-diagram-chord.component.html",
-    styleUrl: "./dialog-diagram-chord.component.css",
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: "app-dialog-diagram-chord",
+  imports: [DiagramChordComponent, MatDialogModule, MatButtonModule, AsyncPipe],
+  templateUrl: "./dialog-diagram-chord.component.html",
+  styleUrl: "./dialog-diagram-chord.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DialogDiagramChordComponent implements OnInit {
   private readonly chordproService = inject(ChordproService);

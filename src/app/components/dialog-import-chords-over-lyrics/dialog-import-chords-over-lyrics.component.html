@@ -1,23 +1,36 @@
 <h2 mat-dialog-title>Import chords over lyrics</h2>
 <mat-dialog-content>
-    <div class="left-pan">
-        <h3>Input</h3>
-        <textarea placeholder="Paste your chords-over-lyrics text here..." [ngModel]="input$ | async"
-            (ngModelChange)="setInput($event)"></textarea>
-    </div>
-    <div class="right-pan">
-        <h3>ChordPro preview</h3>
-        <textarea class="preview" readonly [ngModel]="preview$ | async"></textarea>
-    </div>
+  <div class="left-pan">
+    <h3>Input</h3>
+    <textarea
+      placeholder="Paste your chords-over-lyrics text here..."
+      [ngModel]="input$ | async"
+      (ngModelChange)="setInput($event)"></textarea>
+  </div>
+  <div class="right-pan">
+    <h3>ChordPro preview</h3>
+    <textarea
+      class="preview"
+      readonly
+      [ngModel]="preview$ | async"></textarea>
+  </div>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
-    <button mat-button mat-dialog-close>
-        Cancel
-    </button>
-    <button mat-button (click)="onCopyClicked()">
-        Copy
-    </button>
-    <button mat-flat-button color="primary" [disabled]="!(preview$ | async)" (click)="onInsertClicked()">
-        Insert
-    </button>
+  <button
+    mat-button
+    mat-dialog-close>
+    Cancel
+  </button>
+  <button
+    mat-button
+    (click)="onCopyClicked()">
+    Copy
+  </button>
+  <button
+    mat-flat-button
+    color="primary"
+    [disabled]="!(preview$ | async)?.length"
+    (click)="onInsertClicked()">
+    Insert
+  </button>
 </mat-dialog-actions>

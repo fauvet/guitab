@@ -13,11 +13,11 @@ import { AsyncPipe } from "@angular/common";
 import { YouTubeUtil } from "../../utils/youtube.util";
 
 @Component({
-    selector: "app-footer-actions-bar",
-    imports: [MatIconModule, MatButtonModule, MatBottomSheetModule, AsyncPipe],
-    templateUrl: "./footer-actions-bar.component.html",
-    styleUrl: "./footer-actions-bar.component.css",
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: "app-footer-actions-bar",
+  imports: [MatIconModule, MatButtonModule, MatBottomSheetModule, AsyncPipe],
+  templateUrl: "./footer-actions-bar.component.html",
+  styleUrl: "./footer-actions-bar.component.css",
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FooterActionsBarComponent implements OnInit {
   private readonly appContextService = inject(AppContextService);

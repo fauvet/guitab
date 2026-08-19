@@ -29,24 +29,36 @@ export class KeyboardShortcutService {
   private async onKeyDown(event: KeyboardEvent): Promise<void> {
     if (document.querySelector(".cdk-overlay-backdrop-showing") !== null) return;
 
-    if (event.ctrlKey && event.key === "z") {
-      event.preventDefault();
-      await this.undo();
-    } else if ((event.ctrlKey && event.key === "y") || (event.ctrlKey && event.shiftKey && event.key === "z")) {
-      event.preventDefault();
-      await this.redo();
-    } else if (event.ctrlKey && event.altKey && event.key === "n") {
-      event.preventDefault();
-      await this.newFile();
-    } else if (event.ctrlKey && event.key === "o") {
-      event.preventDefault();
-      await this.openFile(event);
-    } else if (event.ctrlKey && event.key === "s") {
-      event.preventDefault();
-      await this.saveFile();
-    } else if (event.ctrlKey && event.shiftKey && event.key === "s") {
+    if (!event.ctrlKey) return;
+
+    // Holding Shift makes the browser report the letter in upper case, so
+    // matching event.key directly left Ctrl+Shift+S and Ctrl+Shift+Z
+    // unreachable — the plain Ctrl+S branch never saw an "s" to match, and
+    // nothing happened at all. Normalising first, and testing the Shift
+    // variants before the plain ones, is what makes both orderings safe.
+    const key = event.key.toLowerCase();
+
+    if (event.shiftKey && key === "s") {
       event.preventDefault();
       await this.saveFileAs();
+    } else if (event.shiftKey && key === "z") {
+      event.preventDefault();
+      await this.redo();
+    } else if (key === "y") {
+      event.preventDefault();
+      await this.redo();
+    } else if (key === "z") {
+      event.preventDefault();
+      await this.undo();
+    } else if (event.altKey && key === "n") {
+      event.preventDefault();
+      await this.newFile();
+    } else if (key === "o") {
+      event.preventDefault();
+      await this.openFile(event);
+    } else if (key === "s") {
+      event.preventDefault();
+      await this.saveFile();
     }
   }
 
@@ -72,7 +84,7 @@ export class KeyboardShortcutService {
 
     let file: null | File | FileSystemFileHandle = (event.target as HTMLInputElement)?.files?.[0] ?? null;
     if (this.canOpenFilePicker()) {
-      const filePicker = await (window as any).showOpenFilePicker({
+      const filePicker = await window.showOpenFilePicker({
         types: [
           {
             description: "ChordPro",
@@ -90,6 +102,11 @@ export class KeyboardShortcutService {
     this.appContextService.setEditing(false);
 
     const chordproContent = (await FileUtil.getFileContent(file)) ?? "";
+    // Temporary breadcrumb — see FirebaseCachedFilesRepository for the rest
+    // of this diagnostic trail: the opened file is not reliably reappearing
+    // in Quick Access with nothing thrown anywhere, so this marks exactly
+    // when the save was triggered relative to the write/read log lines.
+    console.info(`[KeyboardShortcutService] openFile: triggering cachedFilesService.saveFile()`);
     this.cachedFilesService.saveFile(chordproContent);
 
     return true;
@@ -121,31 +138,34 @@ export class KeyboardShortcutService {
   }
 
   async saveFileAs(): Promise<boolean> {
-    return new Promise(async (resolve) => {
-      const chordproContent = this.chordproService.getChordproContent();
-      const fileName = ChordproUtil.buildFileName(chordproContent);
+    const chordproContent = this.chordproService.getChordproContent();
+    const fileName = ChordproUtil.buildFileName(chordproContent);
 
-      if (this.canSaveFilePicker()) {
-        const fileHandle = await (window as any).showSaveFilePicker({
-          suggestedName: fileName,
-          types: [
-            {
-              description: "ChordPro",
-              accept: {
-                "text/plain": ChordproUtil.EXTENSIONS,
-              },
+    if (this.canSaveFilePicker()) {
+      const fileHandle = await window.showSaveFilePicker({
+        suggestedName: fileName,
+        types: [
+          {
+            description: "ChordPro",
+            accept: {
+              "text/plain": ChordproUtil.EXTENSIONS,
             },
-          ],
-        });
-        await this.saveFileHandle(fileHandle);
-        await this.appContextService.setFileHandle(fileHandle);
-        resolve(true);
-        return;
-      }
+          },
+        ],
+      });
+      await this.saveFileHandle(fileHandle);
+      await this.appContextService.setFileHandle(fileHandle);
+      return true;
+    }
 
-      const blob = new Blob([chordproContent], { type: "text/plain;charset=utf-8" });
-      FileSaver.saveAs(blob, fileName);
+    // The download fallback has no completion signal, so the only way to know
+    // whether the file reached the disk is to ask. Deferring lets the browser
+    // paint the download first — a confirm() raised before it would be asking
+    // about something the user has not seen yet.
+    const blob = new Blob([chordproContent], { type: "text/plain;charset=utf-8" });
+    FileSaver.saveAs(blob, fileName);
 
+    return new Promise<boolean>((resolve) => {
       setTimeout(() => {
         if (!confirm("Please confirm that the file has been successfully downloaded.")) {
           resolve(false);

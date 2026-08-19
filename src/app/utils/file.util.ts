@@ -1,15 +1,14 @@
 export class FileUtil {
   static async getFileContent(file: null | File | FileSystemFileHandle): Promise<null | string> {
-    return new Promise(async (resolve, reject) => {
-      if (file === null) {
-        resolve("");
-        return;
-      }
+    if (file === null) return "";
 
-      if (file instanceof FileSystemFileHandle) {
-        file = await file.getFile();
-      }
+    // Resolving the handle before constructing the promise rather than inside
+    // its executor: a rejection thrown by an async executor before the first
+    // await is lost, so a failing getFile() would have hung the caller forever
+    // instead of surfacing.
+    const resolvedFile = file instanceof FileSystemFileHandle ? await file.getFile() : file;
 
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = function (event) {
         const fileContent = event.target?.result as null | string;
@@ -18,7 +17,7 @@ export class FileUtil {
       reader.onerror = function () {
         reject(reader.error);
       };
-      reader.readAsText(file, "UTF-8");
+      reader.readAsText(resolvedFile, "UTF-8");
     });
   }
 

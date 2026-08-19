@@ -1,0 +1,19 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+
+        "$collection": {
+          "$itemId": {
+            ".validate": "newData.hasChildren(['ownerId', 'updatedAt', 'createdAt']) && newData.child('ownerId').val() === $uid && (!newData.hasChild('chordproContent') || newData.child('chordproContent').val().length < 500000) && (!data.exists() || newData.child('createdAt').val() === data.child('createdAt').val())"
+          }
+        }
+      }
+    }
+  }
+}

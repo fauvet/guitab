@@ -6,5 +6,15 @@
       margin: auto !important;
       padding: 0 20px;
     }
+
+    /**
+     * A class rather than Material's `color="warn"` input: an M3 theme emits no
+     * `.mat-warn` rule for an icon, so the input would set a class nothing
+     * styles. The token is written bare — with a fallback it could not tell us
+     * it had failed to resolve.
+     */
+    mat-icon.is-not-held {
+      color: var(--mat-sys-error);
+    }
   }
 }

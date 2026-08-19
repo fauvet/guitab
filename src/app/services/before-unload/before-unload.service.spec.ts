@@ -1,12 +1,29 @@
 import { TestBed } from "@angular/core/testing";
-import { Subject } from "rxjs";
+import { of, Subject } from "rxjs";
 import { BeforeUnloadService } from "./before-unload.service";
 import { ChordproService } from "../chordpro/chordpro.service";
+import { AuthService } from "../auth/auth.service";
+import { FirebaseDraftRepository } from "../../storage/firebase/firebase-draft.repository";
+import { DEFAULT_DRAFT } from "../../storage/repositories/draft.repository";
 
 describe("BeforeUnloadService", () => {
   let service: BeforeUnloadService;
   let contentSubject: Subject<string>;
-  let mockChordproService: { getChordproContent$: ReturnType<typeof vi.fn>; hasUnsavedChanges: ReturnType<typeof vi.fn> };
+  let mockChordproService: {
+    getChordproContent$: ReturnType<typeof vi.fn>;
+    hasUnsavedChanges: ReturnType<typeof vi.fn>;
+  };
+
+  const mockAuthService = {
+    getUser: vi.fn().mockReturnValue(null),
+    getUser$: vi.fn().mockReturnValue(of(null)),
+  };
+
+  const mockFirebaseDraftRepo = {
+    getDraft$: vi.fn().mockReturnValue(of(DEFAULT_DRAFT)),
+    getDraft: vi.fn().mockReturnValue(DEFAULT_DRAFT),
+    saveDraft: vi.fn().mockResolvedValue(undefined),
+  };
 
   beforeEach(() => {
     localStorage.clear();
@@ -17,7 +34,11 @@ describe("BeforeUnloadService", () => {
     };
 
     TestBed.configureTestingModule({
-      providers: [{ provide: ChordproService, useValue: mockChordproService }],
+      providers: [
+        { provide: ChordproService, useValue: mockChordproService },
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: FirebaseDraftRepository, useValue: mockFirebaseDraftRepo },
+      ],
     });
     service = TestBed.inject(BeforeUnloadService);
   });

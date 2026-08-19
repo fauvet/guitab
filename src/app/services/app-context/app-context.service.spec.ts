@@ -1,18 +1,23 @@
 import { TestBed } from "@angular/core/testing";
 import { AppContextService } from "./app-context.service";
-import { WakeLockUtil } from "../../utils/wake-lock.util";
-import { BluetoothUtil } from "../../utils/bluetooth.util";
+import { WakeLockService } from "../wake-lock/wake-lock.service";
+import { BluetoothKeepAliveService } from "../bluetooth-keep-alive/bluetooth-keep-alive.service";
 import { FileUtil } from "../../utils/file.util";
 
 describe("AppContextService", () => {
   let service: AppContextService;
-  let wakeLockSpy: ReturnType<typeof vi.spyOn>;
-  let bluetoothSpy: ReturnType<typeof vi.spyOn>;
+  let wakeLockSpy: ReturnType<typeof vi.fn>;
+  let bluetoothSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    wakeLockSpy = vi.spyOn(WakeLockUtil, "setWakeLock").mockResolvedValue(undefined);
-    bluetoothSpy = vi.spyOn(BluetoothUtil, "setBluetoothKeptAlive").mockImplementation(() => {});
-    TestBed.configureTestingModule({});
+    wakeLockSpy = vi.fn().mockResolvedValue(undefined);
+    bluetoothSpy = vi.fn();
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: BluetoothKeepAliveService, useValue: { setKeptAlive: bluetoothSpy } },
+        { provide: WakeLockService, useValue: { setKeptAwake: wakeLockSpy } },
+      ],
+    });
     service = TestBed.inject(AppContextService);
   });
 
@@ -75,14 +80,14 @@ describe("AppContextService", () => {
       expect(service.isWakeLock()).toBe(true);
     });
 
-    it("should call WakeLockUtil.setWakeLock with the new value", () => {
+    it("should call WakeLockService.setKeptAwake with the new value", () => {
       const callsBefore = wakeLockSpy.mock.calls.length;
       service.setWakeLock(true);
       expect(wakeLockSpy).toHaveBeenCalledWith(true);
       expect(wakeLockSpy.mock.calls.length).toBe(callsBefore + 1);
     });
 
-    it("should be a no-op (no extra util call) when value is already the same", () => {
+    it("should be a no-op (no extra service call) when value is already the same", () => {
       const callsBefore = wakeLockSpy.mock.calls.length;
       service.setWakeLock(false); // same as initial
       expect(wakeLockSpy.mock.calls.length).toBe(callsBefore);
@@ -95,14 +100,14 @@ describe("AppContextService", () => {
       expect(service.isBluetoothKeptAlive()).toBe(true);
     });
 
-    it("should call BluetoothUtil.setBluetoothKeptAlive with the new value", () => {
+    it("should call BluetoothKeepAliveService.setKeptAlive with the new value", () => {
       const callsBefore = bluetoothSpy.mock.calls.length;
       service.setBluetoothKeptAlive(true);
       expect(bluetoothSpy).toHaveBeenCalledWith(true);
       expect(bluetoothSpy.mock.calls.length).toBe(callsBefore + 1);
     });
 
-    it("should be a no-op (no extra util call) when value is already the same", () => {
+    it("should be a no-op (no extra service call) when value is already the same", () => {
       const callsBefore = bluetoothSpy.mock.calls.length;
       service.setBluetoothKeptAlive(false); // same as initial
       expect(bluetoothSpy.mock.calls.length).toBe(callsBefore);

@@ -1,35 +1,212 @@
 name: CICD
 
+# One workflow covering both verification and deploy. `deploy` declares
+# `needs: [lint, typecheck, test, database-rules, build]`, so it cannot run
+# unless every one of them has already succeeded in the same run, and it
+# reuses the `build` job's own artifact instead of rebuilding. It additionally
+# requires `github.ref == 'refs/heads/main' && github.event_name == 'push'`,
+# so it only fires after a merge — every other job runs on every push and
+# every pull request.
+#
+# Six jobs, ordered by how fast they fail:
+#   • Lint, formatting, and the instruction-tree integrity check
+#   • TypeScript, with zero errors
+#   • Unit tests with the coverage thresholds from angular.json
+#   • database.rules.json against a local Realtime Database emulator
+#   • The production build, including its bundle budgets
+#   • Deploy to GitHub Pages — main only, after all of the above
+#
+# Every job but database-rules and deploy runs `npm run setup:env` first.
+# src/environments/environment.ts is git-ignored and nothing compiles without
+# it, and a pull request from a fork has no access to repository secrets — so
+# those jobs write a placeholder config instead. `build` uses the real one
+# when secrets are available (always true on a push to this repo, never true
+# on a fork's pull request) and falls back to the placeholder otherwise, which
+# is what lets `deploy` reuse its artifact rather than building a second time
+# with different inputs. None of the verification jobs touch Firebase itself:
+# sign-in only happens in a browser, and the rules job talks to a throwaway
+# local emulator, never the real project.
+
 on:
   push:
-    branches:
-      - main
+    branches: ["**"]
+  pull_request:
+    branches: [main]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  build:
+  lint:
+    name: Lint, format, docs
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
+      - uses: actions/checkout@v5
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6.4.0
+      - uses: actions/setup-node@v5
         with:
-          node-version: "26.3.0"
+          node-version: "24"
+          cache: "npm"
+
+      - run: npm ci
+      - run: npm run setup:env
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: Prettier
+        run: npm run format:check
+
+      - name: Instruction-tree integrity
+        # Fails on a resurrected second instruction tree, a dead path reference,
+        # or a document past its size budget. See scripts/check-docs.mjs.
+        run: npm run check:docs
+
+  typecheck:
+    name: TypeScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - run: npm ci
+      - run: npm run setup:env
+      - run: npm run typecheck
+
+  test:
+    name: Unit tests and coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - run: npm ci
+      - run: npm run setup:env
+
+      - name: Vitest with coverage thresholds
+        # Thresholds live in angular.json and the builder exits non-zero below
+        # them. They are a floor against whole files nobody tested, not a target.
+        run: npm run test:coverage
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+
+  database-rules:
+    name: Database rules (emulator)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Setup Java
+        # Required by the Realtime Database emulator, which the Firebase CLI runs on the JVM.
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      - run: npm ci
+
+      - name: database.rules.json against the emulator
+        # demo-guitab needs no real project or credentials — the "demo-" prefix
+        # tells the emulator to run standalone. See database.rules.spec.ts.
+        run: npm run test:rules:emulator
+
+  build:
+    name: Production build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "npm"
 
       - name: Install dependencies
-        run: npm install
+        # `npm ci` rather than `npm install`: on main this is the build that
+        # gets deployed, so it must use the dependency tree the lockfile pins
+        # and not resolve a fresher one that nothing tested.
+        run: npm ci
 
-      - name: Build
+      - name: Create environment.ts from secrets, or a placeholder
+        # A pull request from a fork sees empty secrets. Building against a
+        # placeholder still exercises everything that can fail at build time —
+        # templates, types, bundle budgets — so the job stays useful either way.
+        # A push to this repo (including main) always has secrets, so this is
+        # also what puts the real config into the artifact `deploy` publishes.
+        env:
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
         run: |
-          npm run build
+          if [ -n "$FIREBASE_API_KEY" ]; then
+            cat > src/environments/environment.ts << 'EOF'
+          import { Environment } from "./environment.template";
+
+          export const environment: Environment = {
+            firebase: {
+              apiKey: "${{ secrets.FIREBASE_API_KEY }}",
+              authDomain: "${{ secrets.FIREBASE_AUTH_DOMAIN }}",
+              databaseURL: "${{ secrets.FIREBASE_DATABASE_URL }}",
+              projectId: "${{ secrets.FIREBASE_PROJECT_ID }}",
+              storageBucket: "${{ secrets.FIREBASE_STORAGE_BUCKET }}",
+              messagingSenderId: "${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}",
+              appId: "${{ secrets.FIREBASE_APP_ID }}",
+            },
+          };
+          EOF
+          else
+            npm run setup:env
+          fi
+
+      - run: npm run build
+
+      - name: Prepare the GitHub Pages output
+        # Only needed on the path deploy actually publishes — a PR or a branch
+        # build has no reason to reshape docs/ for Pages.
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
           mv docs/browser/* docs
           rm -r docs/browser
           cp docs/index.html docs/404.html
+
+      - name: Upload the Pages artifact
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pages-build
+          path: docs/
+          retention-days: 1
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: [lint, typecheck, test, database-rules, build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download the Pages artifact built above
+        uses: actions/download-artifact@v4
+        with:
+          name: pages-build
+          path: docs
 
       - name: Deploy
         uses: crazy-max/ghaction-github-pages@v1

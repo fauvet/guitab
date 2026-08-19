@@ -12,17 +12,26 @@
     <div matListItemLine>{{ "Displays lyrics in addition to chords" }}</div>
   </mat-list-item>
   <mat-divider />
+  @let wakeLockDisplay = wakeLockDisplay$ | async;
+  <!-- The state is spelled out, not only coloured: a red icon on its own says
+       nothing to a screen reader, and nothing to anyone who cannot tell the two
+       shades apart. -->
+  @let wakeLockLine =
+    wakeLockDisplay === "unheld"
+      ? "The screen is not being kept awake"
+      : "Prevents device screens from dimming or locking";
   <mat-list-item
     matRipple
     (click)="onItemWakeLockClicked()">
     <mat-icon
       matListItemIcon
-      [color]="(appContextService.getIsWakeLock$() | async) ? 'primary' : ''"
-      [fontSet]="(appContextService.getIsWakeLock$() | async) ? '' : 'material-icons-outlined'">
+      [color]="wakeLockDisplay === 'held' ? 'primary' : ''"
+      [class.is-not-held]="wakeLockDisplay === 'unheld'"
+      [fontSet]="wakeLockDisplay === 'off' ? 'material-icons-outlined' : ''">
       fluorescent
     </mat-icon>
     <div matListItemTitle>{{ "Wake lock" }}</div>
-    <div matListItemLine>{{ "Prevents device screens from dimming or locking" }}</div>
+    <div matListItemLine>{{ wakeLockLine }}</div>
   </mat-list-item>
   <mat-list-item
     matRipple

@@ -6,4 +6,4 @@ import { AppComponent } from "./app/app.component";
 bootstrapApplication(AppComponent, {
   ...appConfig,
   providers: [provideZoneChangeDetection(), ...appConfig.providers],
-}).catch((err) => console.error(err));
+}).catch((error: unknown) => console.error(error));

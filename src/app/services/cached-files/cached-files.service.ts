@@ -1,44 +1,50 @@
 import { inject, Injectable } from "@angular/core";
-import { ChordproUtil } from "../../utils/chordpro.util";
-import { map, Observable } from "rxjs";
-import _ from "lodash";
+import { Observable, switchMap } from "rxjs";
 import CachedFile from "../../types/cached-file.type";
-import { LocalStorageService } from "../local-storage/local-storage.service";
+import { LocalCachedFilesRepository } from "../../storage/local/local-cached-files.repository";
+import { FirebaseCachedFilesRepository } from "../../storage/firebase/firebase-cached-files.repository";
+import { AuthService } from "../auth/auth.service";
+import { ICachedFilesRepository } from "../../storage/repositories/cached-files.repository";
 
 @Injectable({
   providedIn: "root",
 })
 export class CachedFilesService {
-  private static readonly LOCAL_STORAGE_KEY = "CACHED_FILES";
-  private static readonly DEFAULT_CACHED_FILES_VALUE = [] as CachedFile[];
+  private readonly localRepository = inject(LocalCachedFilesRepository);
+  private readonly firebaseRepository = inject(FirebaseCachedFilesRepository);
+  private readonly authService = inject(AuthService);
 
-  private readonly localStorageService = inject(LocalStorageService);
-  private readonly cachedFiles$ = this.localStorageService.buildBehaviorSubject(
-    CachedFilesService.LOCAL_STORAGE_KEY,
-    CachedFilesService.DEFAULT_CACHED_FILES_VALUE,
-    (key, value) => {
-      if (key === "date") return new Date(value);
-      return value;
-    },
-  );
-
-  private getCachedFiles(): CachedFile[] {
-    return [...this.cachedFiles$.getValue()];
+  private async getActiveRepository(): Promise<ICachedFilesRepository> {
+    // Waits for the first resolved auth state rather than reading getUser()
+    // synchronously — otherwise a save right after startup can land in
+    // localStorage while getCachedFiles$() has already switched to the
+    // Firebase stream, orphaning the save.
+    const user = await this.authService.getUserOnceReady();
+    return user ? this.firebaseRepository : this.localRepository;
   }
 
   getCachedFiles$(): Observable<CachedFile[]> {
-    return this.cachedFiles$.asObservable().pipe(map((cachedFiles: CachedFile[]) => [...cachedFiles]));
+    return this.authService
+      .getUser$()
+      .pipe(
+        switchMap((user) =>
+          user ? this.firebaseRepository.getCachedFiles$() : this.localRepository.getCachedFiles$(),
+        ),
+      );
   }
 
-  saveFile(chordproContent: string): void {
-    const fileBaseName = ChordproUtil.buildFileBaseName(chordproContent);
-    const cachedFiles = this.getCachedFiles().filter((cachedFile) => cachedFile.name != fileBaseName);
-    cachedFiles.push({
-      name: fileBaseName,
-      chordproContent,
-      date: new Date(),
-    });
-    this.cachedFiles$.next(cachedFiles);
-    localStorage[CachedFilesService.LOCAL_STORAGE_KEY] = JSON.stringify(cachedFiles);
+  getSyncError$(): Observable<boolean> {
+    return this.authService
+      .getUser$()
+      .pipe(
+        switchMap((user) => (user ? this.firebaseRepository.getSyncError$() : this.localRepository.getSyncError$())),
+      );
+  }
+
+  async saveFile(chordproContent: string): Promise<void> {
+    const repository = await this.getActiveRepository();
+    await repository
+      .saveFile(chordproContent)
+      .catch((err) => console.error("[CachedFilesService] saveFile error:", err));
   }
 }

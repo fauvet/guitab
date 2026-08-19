@@ -5,7 +5,10 @@ import { AppContextService } from "../app-context/app-context.service";
 
 describe("ChordproService", () => {
   let service: ChordproService;
-  let mockAppContextService: { getFileHandleWithContent$: ReturnType<typeof vi.fn>; getFileHandleWithContent: ReturnType<typeof vi.fn> };
+  let mockAppContextService: {
+    getFileHandleWithContent$: ReturnType<typeof vi.fn>;
+    getFileHandleWithContent: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     mockAppContextService = {

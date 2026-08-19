@@ -25,13 +25,13 @@
   }
 
   ::ng-deep .tab-section {
-    color: #008702;
+    color: var(--annotation-color);
     white-space: nowrap;
   }
 
   ::ng-deep .chord {
     font-weight: bold;
-    color: #db3e00;
+    color: var(--chord-color);
     cursor: pointer;
   }
 
@@ -52,7 +52,7 @@
 
   ::ng-deep .song-metadata {
     margin-bottom: 20px;
-    color: #590000;
+    color: var(--section-label-color);
   }
 
   ::ng-deep .song-content {
@@ -66,11 +66,11 @@
   }
 
   ::ng-deep .comment-line {
-    color: #008702;
+    color: var(--annotation-color);
   }
 
   ::ng-deep .section-title {
-    color: #590000;
+    color: var(--section-label-color);
     margin-bottom: 1rem;
   }
 
@@ -81,6 +81,6 @@
   ::ng-deep .bridge-section {
     padding: 1rem;
     margin-right: 1rem;
-    background: #0000000f;
+    background: var(--bridge-background);
   }
 }

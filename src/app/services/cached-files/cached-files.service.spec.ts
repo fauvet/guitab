@@ -1,17 +1,37 @@
 import { TestBed } from "@angular/core/testing";
-import { firstValueFrom } from "rxjs";
+import { firstValueFrom, of } from "rxjs";
 import { CachedFilesService } from "./cached-files.service";
+import { AuthService } from "../auth/auth.service";
+import { FirebaseCachedFilesRepository } from "../../storage/firebase/firebase-cached-files.repository";
 
 const LS_KEY = "CACHED_FILES";
 const CONTENT_A = "{title: Hotel California}\n{artist: Eagles}";
 const CONTENT_B = "{title: Wonderwall}\n{artist: Oasis}";
+
+const mockAuthService = {
+  getUser: vi.fn().mockReturnValue(null),
+  getUser$: vi.fn().mockReturnValue(of(null)),
+  getUserOnceReady: vi.fn().mockResolvedValue(null),
+};
+
+const mockFirebaseRepo = {
+  getCachedFiles$: vi.fn().mockReturnValue(of([])),
+  saveFile: vi.fn().mockResolvedValue(undefined),
+  getSyncError$: vi.fn().mockReturnValue(of(false)),
+};
 
 describe("CachedFilesService", () => {
   let service: CachedFilesService;
 
   beforeEach(() => {
     localStorage.clear();
-    TestBed.configureTestingModule({});
+    mockAuthService.getUserOnceReady.mockResolvedValue(null);
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: FirebaseCachedFilesRepository, useValue: mockFirebaseRepo },
+      ],
+    });
     service = TestBed.inject(CachedFilesService);
   });
 
@@ -30,7 +50,7 @@ describe("CachedFilesService", () => {
     });
 
     it("should emit a copy — mutations do not affect the internal state", async () => {
-      service.saveFile(CONTENT_A);
+      await service.saveFile(CONTENT_A);
       const files = await firstValueFrom(service.getCachedFiles$());
       files.splice(0);
       const filesAgain = await firstValueFrom(service.getCachedFiles$());
@@ -40,41 +60,41 @@ describe("CachedFilesService", () => {
 
   describe("saveFile", () => {
     it("should add an entry with the correct name derived from title/artist", async () => {
-      service.saveFile(CONTENT_A);
+      await service.saveFile(CONTENT_A);
       const files = await firstValueFrom(service.getCachedFiles$());
       expect(files[0].name).toBe("Hotel California (Eagles)");
     });
 
     it("should add an entry with the original chordpro content", async () => {
-      service.saveFile(CONTENT_A);
+      await service.saveFile(CONTENT_A);
       const files = await firstValueFrom(service.getCachedFiles$());
       expect(files[0].chordproContent).toBe(CONTENT_A);
     });
 
     it("should add an entry with a date instance", async () => {
-      service.saveFile(CONTENT_A);
+      await service.saveFile(CONTENT_A);
       const files = await firstValueFrom(service.getCachedFiles$());
       expect(files[0].date).toBeInstanceOf(Date);
     });
 
     it("should accumulate entries for different songs", async () => {
-      service.saveFile(CONTENT_A);
-      service.saveFile(CONTENT_B);
+      await service.saveFile(CONTENT_A);
+      await service.saveFile(CONTENT_B);
       const files = await firstValueFrom(service.getCachedFiles$());
       expect(files.length).toBe(2);
     });
 
     it("should replace an existing entry when the same name is saved again", async () => {
       const CONTENT_A_V2 = `${CONTENT_A}\n# updated`;
-      service.saveFile(CONTENT_A);
-      service.saveFile(CONTENT_A_V2);
+      await service.saveFile(CONTENT_A);
+      await service.saveFile(CONTENT_A_V2);
       const files = await firstValueFrom(service.getCachedFiles$());
       expect(files.length).toBe(1);
       expect(files[0].chordproContent).toBe(CONTENT_A_V2);
     });
 
-    it("should persist entries to localStorage", () => {
-      service.saveFile(CONTENT_A);
+    it("should persist entries to localStorage", async () => {
+      await service.saveFile(CONTENT_A);
       const raw = localStorage.getItem(LS_KEY);
       expect(raw).not.toBeNull();
       const parsed = JSON.parse(raw!);
@@ -82,12 +102,46 @@ describe("CachedFilesService", () => {
     });
 
     it("should restore persisted entries on service creation", async () => {
-      service.saveFile(CONTENT_A);
+      await service.saveFile(CONTENT_A);
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({});
       const freshService = TestBed.inject(CachedFilesService);
       const files = await firstValueFrom(freshService.getCachedFiles$());
       expect(files[0].name).toBe("Hotel California (Eagles)");
+    });
+
+    it("should wait for the resolved auth state rather than racing it, so a save started before startup finishes still reaches Firebase", async () => {
+      let resolveReady: (user: unknown) => void = () => {};
+      mockAuthService.getUserOnceReady.mockReturnValue(
+        new Promise((resolve) => {
+          resolveReady = resolve;
+        }),
+      );
+
+      const save = service.saveFile(CONTENT_A);
+      resolveReady({ uid: "uid-123" });
+      await save;
+
+      expect(mockFirebaseRepo.saveFile).toHaveBeenCalledWith(CONTENT_A);
+      const rawLocalFiles = localStorage.getItem(LS_KEY);
+      expect(rawLocalFiles === null ? [] : JSON.parse(rawLocalFiles)).toEqual([]);
+    });
+  });
+
+  describe("getSyncError$", () => {
+    it("reads from the local repository (always false) when signed out", async () => {
+      mockAuthService.getUser$.mockReturnValue(of(null));
+      const error = await firstValueFrom(service.getSyncError$());
+      expect(error).toBe(false);
+    });
+
+    it("switches to the Firebase repository's sync error once signed in", async () => {
+      mockFirebaseRepo.getSyncError$.mockReturnValue(of(true));
+      mockAuthService.getUser$.mockReturnValue(of({ uid: "uid-123" }));
+
+      const error = await firstValueFrom(service.getSyncError$());
+
+      expect(error).toBe(true);
     });
   });
 });

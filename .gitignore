@@ -42,3 +42,6 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Firebase / environment secrets (created from environment.template.ts)
+src/environments/environment.ts

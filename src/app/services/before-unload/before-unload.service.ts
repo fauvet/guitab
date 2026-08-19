@@ -1,26 +1,24 @@
 import { inject, Injectable } from "@angular/core";
 import { ChordproService } from "../chordpro/chordpro.service";
-import { LocalStorageService } from "../local-storage/local-storage.service";
 import { skip } from "rxjs";
-
-type Draft = {
-  chordproContent: string;
-  hasUnsavedChanges: boolean;
-};
+import { Draft } from "../../storage/repositories/draft.repository";
+import { LocalDraftRepository } from "../../storage/local/local-draft.repository";
+import { FirebaseDraftRepository } from "../../storage/firebase/firebase-draft.repository";
+import { AuthService } from "../auth/auth.service";
+import { IDraftRepository } from "../../storage/repositories/draft.repository";
 
 @Injectable({
   providedIn: "root",
 })
 export class BeforeUnloadService {
-  private static readonly LOCAL_STORAGE_KEY_DRAFT = "DRAFT";
-
   private readonly chordproService = inject(ChordproService);
-  private readonly localStorageService = inject(LocalStorageService);
+  private readonly authService = inject(AuthService);
+  private readonly localRepository = inject(LocalDraftRepository);
+  private readonly firebaseRepository = inject(FirebaseDraftRepository);
 
-  private readonly draft$ = this.localStorageService.buildBehaviorSubject(BeforeUnloadService.LOCAL_STORAGE_KEY_DRAFT, {
-    chordproContent: "",
-    hasUnsavedChanges: false,
-  } as Draft);
+  private getActiveRepository(): IDraftRepository {
+    return this.authService.getUser() ? this.firebaseRepository : this.localRepository;
+  }
 
   constructor() {
     this.chordproService
@@ -30,12 +28,11 @@ export class BeforeUnloadService {
 
     window.addEventListener("beforeunload", (event) => {
       const hasUnsavedChanges = this.checkForUnsavedChanges(event);
-      const currentDraft = this.draft$.getValue();
-      const newDraft = {
-        ...currentDraft,
-        hasUnsavedChanges,
-      } as Draft;
-      this.draft$.next(newDraft);
+      const current = this.getActiveRepository().getDraft();
+      const newDraft: Draft = { ...current, hasUnsavedChanges };
+      this.getActiveRepository()
+        .saveDraft(newDraft)
+        .catch((err) => console.error("[BeforeUnloadService] saveDraft error:", err));
     });
   }
 
@@ -46,16 +43,18 @@ export class BeforeUnloadService {
   }
 
   findDraftUnsavedChordproContent(): string | null {
-    const draft = this.draft$.getValue();
+    const draft = this.getActiveRepository().getDraft();
     return draft.hasUnsavedChanges ? draft.chordproContent : null;
   }
 
   private onChordproContentChange(chordproContent: string): void {
-    const newDraft = {
+    const newDraft: Draft = {
       chordproContent,
       hasUnsavedChanges: this.chordproService.hasUnsavedChanges(),
-    } as Draft;
-    this.draft$.next(newDraft);
+    };
+    this.getActiveRepository()
+      .saveDraft(newDraft)
+      .catch((err) => console.error("[BeforeUnloadService] saveDraft error:", err));
   }
 
   private checkForUnsavedChanges(event: BeforeUnloadEvent): boolean {
