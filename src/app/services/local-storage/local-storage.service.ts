@@ -27,7 +27,18 @@ export class LocalStorageService {
     }
 
     const localStorageValue = localStorage.getItem(key);
-    const initialValue = localStorageValue !== null ? (JSON.parse(localStorageValue, reviver) as T) : defaultValue;
+    // This runs from a repository's field initializer, at DI construction time —
+    // no component is mounted yet to catch a throw, so a corrupted entry falls
+    // back to defaultValue instead of crashing the whole app at bootstrap. See
+    // the bootstrap exception in "Errors are never swallowed".
+    let initialValue = defaultValue;
+    if (localStorageValue !== null) {
+      try {
+        initialValue = JSON.parse(localStorageValue, reviver) as T;
+      } catch (error: unknown) {
+        console.error(`[LocalStorageService] Corrupted value for "${key}", falling back to the default:`, error);
+      }
+    }
     const behaviorSubject$ = new BehaviorSubject<T>(initialValue);
     behaviorSubject$.subscribe((newValue: T) => {
       if (newValue === null || newValue === undefined) {

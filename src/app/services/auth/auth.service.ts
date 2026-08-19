@@ -21,7 +21,7 @@ export class AuthService {
   private readonly auth: Auth;
 
   private readonly user$ = new BehaviorSubject<User | null>(null);
-  private readonly signInError$ = new BehaviorSubject<boolean>(false);
+  private readonly signInError$ = new BehaviorSubject<Error | null>(null);
   // user$ starts null before the first onAuthStateChanged callback, which is
   // indistinguishable from "signed out" — callers that must not act on that
   // transient null (e.g. picking a storage backend) wait on this instead.
@@ -38,10 +38,14 @@ export class AuthService {
         // keeps reporting it until the anonymous sign-in below resolves,
         // which a caller could mistake for a still-valid session.
         this.user$.next(null);
-        // No session — sign in anonymously to always have a stable uid
+        // No session — sign in anonymously to always have a stable uid. This
+        // runs at app bootstrap with no component mounted yet to hand the
+        // failure to, so it is the one place this service logs itself — see
+        // the bootstrap exception in "Errors are never swallowed".
         signInAnonymously(this.auth).catch((err: unknown) => {
-          console.error("[AuthService] Anonymous sign-in failed:", err);
-          this.signInError$.next(true);
+          const error = err instanceof Error ? err : new Error(String(err));
+          console.error("[AuthService] Anonymous sign-in failed:", error);
+          this.signInError$.next(error);
           this.authReady$.next(true);
         });
       }
@@ -66,11 +70,11 @@ export class AuthService {
     return this.getUser();
   }
 
-  getSignInError$(): Observable<boolean> {
+  getSignInError$(): Observable<Error | null> {
     return this.signInError$.asObservable();
   }
 
-  getSignInError(): boolean {
+  getSignInError(): Error | null {
     return this.signInError$.getValue();
   }
 

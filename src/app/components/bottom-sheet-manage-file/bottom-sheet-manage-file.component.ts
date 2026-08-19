@@ -7,7 +7,7 @@ import { MatRipple } from "@angular/material/core";
 import { BehaviorSubject, filter, map, Subject, takeUntil } from "rxjs";
 import { MatButtonModule } from "@angular/material/button";
 import { MatBottomSheetRef } from "@angular/material/bottom-sheet";
-import { MatSnackBar } from "@angular/material/snack-bar";
+import { NotificationService } from "../../services/notification/notification.service";
 import { KeyboardShortcutService } from "../../services/keyboard-shortcut/keyboard-shortcut.service";
 import { AsyncPipe } from "@angular/common";
 import { MatDividerModule } from "@angular/material/divider";
@@ -44,7 +44,7 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
   private readonly chordproService = inject(ChordproService);
   private readonly bottomSheetRef = inject(MatBottomSheetRef<BottomSheetManageFileComponent>);
   private readonly http = inject(HttpClient);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly notificationService = inject(NotificationService);
 
   isSaveExistingFileEnabled$ = new BehaviorSubject(false);
   cachedFiles$ = this.cachedFilesService
@@ -78,13 +78,14 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
     this.cachedFilesService
       .getSyncError$()
       .pipe(
-        filter((hasError) => hasError),
+        filter((error): error is Error => error !== null),
         takeUntil(this.unsubscribe$),
       )
-      .subscribe(() => {
-        this.snackBar.open("Couldn't sync your recent files. Check your connection and try again later.", "Dismiss", {
-          duration: 5000,
-        });
+      .subscribe((error) => {
+        console.error(error);
+        this.notificationService.showError(
+          "Couldn't sync your recent files. Check your connection and try again later.",
+        );
       });
   }
 
@@ -109,50 +110,85 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
           coveredCachedFile.cover = coverUrl || BottomSheetManageFileComponent.DEFAULT_ALBUM_COVER;
           this.coveredCachedFiles$.next([...coveredCachedFiles]);
         },
+        // The DEFAULT_ALBUM_COVER already covers the user — this is a cosmetic
+        // lookup, not an action to interrupt with a notification.
+        error: (error: unknown) => console.error(error),
       });
     }
   }
 
   async onButtonNewFileClicked(): Promise<void> {
-    const actionPerformed = await this.keyboardShortcutService.newFile();
-    if (!actionPerformed) return;
+    try {
+      const actionPerformed = await this.keyboardShortcutService.newFile();
+      if (!actionPerformed) return;
 
-    this.bottomSheetRef.dismiss();
+      this.bottomSheetRef.dismiss();
+    } catch (error: unknown) {
+      console.error(error);
+      this.notificationService.showError("Could not create a new file.");
+    }
   }
 
   async onButtonOpenFileClicked(event: Event): Promise<void> {
-    const actionPerformed = await this.keyboardShortcutService.openFile(event);
-    if (!actionPerformed) return;
+    try {
+      const actionPerformed = await this.keyboardShortcutService.openFile(event);
+      if (!actionPerformed) return;
 
-    this.bottomSheetRef.dismiss();
+      this.bottomSheetRef.dismiss();
+    } catch (error: unknown) {
+      console.error(error);
+      this.notificationService.showError("Could not open the file.");
+    }
   }
 
   async onButtonSaveFileClicked(): Promise<void> {
     if (!this.isSaveExistingFileEnabled$.getValue()) return;
 
-    const actionPerformed = await this.keyboardShortcutService.saveFile();
-    if (!actionPerformed) return;
+    try {
+      const actionPerformed = await this.keyboardShortcutService.saveFile();
+      if (!actionPerformed) return;
 
-    this.bottomSheetRef.dismiss();
+      this.notifySaved();
+      this.bottomSheetRef.dismiss();
+    } catch (error: unknown) {
+      console.error(error);
+      this.notificationService.showError("Could not save the file.");
+    }
   }
 
   async onButtonSaveFileAsClicked(): Promise<void> {
-    const actionPerformed = await this.keyboardShortcutService.saveFileAs();
-    if (!actionPerformed) return;
+    try {
+      const actionPerformed = await this.keyboardShortcutService.saveFileAs();
+      if (!actionPerformed) return;
 
-    this.bottomSheetRef.dismiss();
+      this.notifySaved();
+      this.bottomSheetRef.dismiss();
+    } catch (error: unknown) {
+      console.error(error);
+      this.notificationService.showError("Could not save the file.");
+    }
   }
 
   async onButtonCachedFileClicked(cachedFile: CachedFile): Promise<void> {
-    await this.appContextService.setFileHandle(
-      new File([cachedFile.chordproContent], "cached_file.cho", {
-        type: "text/plain",
-      }),
-    );
-    this.appContextService.setEditing(false);
-    this.cachedFilesService.saveFile(cachedFile.chordproContent);
+    try {
+      await this.appContextService.setFileHandle(
+        new File([cachedFile.chordproContent], "cached_file.cho", {
+          type: "text/plain",
+        }),
+      );
+      this.appContextService.setEditing(false);
+      await this.cachedFilesService.saveFile(cachedFile.chordproContent);
 
-    this.bottomSheetRef.dismiss();
+      this.bottomSheetRef.dismiss();
+    } catch (error: unknown) {
+      console.error(error);
+      this.notificationService.showError("Could not open this file.");
+    }
+  }
+
+  private notifySaved(): void {
+    const fileName = ChordproUtil.buildFileName(this.chordproService.getChordproContent());
+    this.notificationService.showSuccess(`${fileName} saved`);
   }
 
   canOpenFilePicker(): boolean {

@@ -3,10 +3,10 @@ import { vi, describe, it, expect, beforeEach } from "vitest";
 import { BehaviorSubject } from "rxjs";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { By } from "@angular/platform-browser";
-import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatTooltip } from "@angular/material/tooltip";
 import { LoginComponent } from "./login.component";
 import { AuthService } from "../../services/auth/auth.service";
+import { NotificationService } from "../../services/notification/notification.service";
 import type { User } from "firebase/auth";
 
 const anonymousUser = { uid: "anon-uid", isAnonymous: true, displayName: null, photoURL: null } as User;
@@ -14,7 +14,7 @@ const googleUser = { uid: "google-uid", isAnonymous: false, displayName: "Alice"
 
 function buildMockAuthService(initialUser: User | null = null) {
   const user$ = new BehaviorSubject<User | null>(initialUser);
-  const signInError$ = new BehaviorSubject<boolean>(false);
+  const signInError$ = new BehaviorSubject<Error | null>(null);
   return {
     getUser$: vi.fn().mockReturnValue(user$.asObservable()),
     getSignInError$: vi.fn().mockReturnValue(signInError$.asObservable()),
@@ -30,13 +30,18 @@ describe("LoginComponent", () => {
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
   let mockAuthService: ReturnType<typeof buildMockAuthService>;
+  let mockNotificationService: { showError: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
     mockAuthService = buildMockAuthService(null);
+    mockNotificationService = { showError: vi.fn() };
 
     await TestBed.configureTestingModule({
       imports: [LoginComponent, NoopAnimationsModule],
-      providers: [{ provide: AuthService, useValue: mockAuthService }],
+      providers: [
+        { provide: AuthService, useValue: mockAuthService },
+        { provide: NotificationService, useValue: mockNotificationService },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(LoginComponent);
@@ -150,13 +155,16 @@ describe("LoginComponent", () => {
       expect(mockAuthService.signInWithGoogle).not.toHaveBeenCalled();
     });
 
-    it("resets isSigningIn and shows snack bar when sign-in fails", async () => {
+    it("resets isSigningIn and shows a notification when sign-in fails", async () => {
       mockAuthService.signInWithGoogle.mockRejectedValueOnce(new Error("popup closed"));
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
       component.onSignIn();
       // Each await flushes one microtask cycle (.catch → .finally)
       await Promise.resolve();
       await Promise.resolve();
       expect(component.isSigningIn$.getValue()).toBe(false);
+      expect(mockNotificationService.showError).toHaveBeenCalledTimes(1);
+      expect(consoleErrorSpy).toHaveBeenCalled();
     });
   });
 
@@ -165,25 +173,35 @@ describe("LoginComponent", () => {
       component.onSignOut();
       expect(mockAuthService.signOut).toHaveBeenCalledTimes(1);
     });
+
+    it("shows a notification and logs when sign-out fails", async () => {
+      mockAuthService.signOut.mockRejectedValueOnce(new Error("network error"));
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      component.onSignOut();
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(mockNotificationService.showError).toHaveBeenCalledTimes(1);
+      expect(consoleErrorSpy).toHaveBeenCalled();
+    });
   });
 
   describe("anonymous sign-in failure", () => {
-    it("shows a snack bar when getSignInError$() emits true", () => {
-      const snackBar = TestBed.inject(MatSnackBar);
-      const openSpy = vi.spyOn(snackBar, "open");
+    it("shows a notification and logs the real error when getSignInError$() emits one", () => {
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const signInError = new Error("network error");
 
-      mockAuthService._signInError$.next(true);
+      mockAuthService._signInError$.next(signInError);
 
-      expect(openSpy).toHaveBeenCalledTimes(1);
+      expect(mockNotificationService.showError).toHaveBeenCalledTimes(1);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(signInError);
     });
 
-    it("does not show a snack bar while getSignInError$() stays false", () => {
-      const snackBar = TestBed.inject(MatSnackBar);
-      const openSpy = vi.spyOn(snackBar, "open");
+    it("does not notify while getSignInError$() stays null", () => {
+      mockAuthService._signInError$.next(null);
 
-      mockAuthService._signInError$.next(false);
-
-      expect(openSpy).not.toHaveBeenCalled();
+      expect(mockNotificationService.showError).not.toHaveBeenCalled();
     });
   });
 });

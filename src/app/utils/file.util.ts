@@ -39,8 +39,8 @@ export class FileUtil {
         const file = new File([blob], fileName, {});
         resolve(file);
       };
-      xhr.onerror = (error) => {
-        reject(error);
+      xhr.onerror = () => {
+        reject(new Error(`Could not load asset "${fileName}".`));
       };
       xhr.send();
     });

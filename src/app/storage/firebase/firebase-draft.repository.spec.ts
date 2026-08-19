@@ -50,4 +50,12 @@ describe("FirebaseDraftRepository", () => {
     expect(get).toHaveBeenCalled();
     expect(set).toHaveBeenCalled();
   });
+
+  it("should reject with a clear Error when the write fails, instead of failing silently", async () => {
+    (set as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("permission-denied"));
+
+    await expect(repository.saveDraft({ chordproContent: "test", hasUnsavedChanges: true })).rejects.toThrow(
+      "Could not save your draft.",
+    );
+  });
 });

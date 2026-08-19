@@ -67,6 +67,13 @@ export class MyComponent implements OnInit, OnDestroy {
 - Always use `takeUntil(this.unsubscribe$)` — never unsubscribe manually or store subscription references
 - `unsubscribe$` must be `private readonly`
 
+## Errors
+
+Every `catch` pairs `console.error(error)` with a notification through
+`NotificationService` — the only service allowed to call `MatSnackBar`, and only
+components call it. See "Errors are never swallowed" in
+`engineering-principles.instructions.md`.
+
 ## File Structure
 
 Each component lives in its own folder with exactly these files:

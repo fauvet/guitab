@@ -18,6 +18,10 @@ const MICROPHONE_BOUNDARY_MESSAGE =
   "The microphone belongs to src/app/services/pitch-detection/. Call the service instead — " +
   "see CLAUDE.md hard rule 3.";
 
+const SNACK_BAR_BOUNDARY_MESSAGE =
+  "MatSnackBar belongs to src/app/services/notification/ and src/app/components/. " +
+  "A service or repository throws or rejects instead — see CLAUDE.md hard rule 10.";
+
 module.exports = tseslint.config(
   {
     ignores: ["docs/**", "out-tsc/**", ".angular/**", "coverage/**", "node_modules/**"],
@@ -65,6 +69,23 @@ module.exports = tseslint.config(
                 "Firebase belongs to src/app/services/ and src/app/storage/. Call a service or a repository instead — see CLAUDE.md hard rule 2. A type-only import is fine.",
             },
           ],
+        },
+      ],
+    },
+  },
+  {
+    // The MatSnackBar boundary: a service that shows its own snackbar is a
+    // service that decided how its own failure looks on screen, which is a
+    // component's call — see "Errors are never swallowed". Negated so the one
+    // service that legitimately wraps MatSnackBar stays exempt, rather than
+    // needing a per-line disable.
+    files: ["src/app/services/**/*.ts", "src/app/storage/**/*.ts"],
+    ignores: ["src/app/services/notification/**/*.ts"],
+    rules: {
+      "@typescript-eslint/no-restricted-imports": [
+        "error",
+        {
+          paths: [{ name: "@angular/material/snack-bar", message: SNACK_BAR_BOUNDARY_MESSAGE }],
         },
       ],
     },

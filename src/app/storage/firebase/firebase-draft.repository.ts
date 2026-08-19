@@ -59,12 +59,17 @@ export class FirebaseDraftRepository implements IDraftRepository {
 
     const db = this.firebaseService.getDatabase();
     const draftRef = ref(db, `users/${user.uid}/draft/current`);
-    const existingSnapshot = await get(draftRef);
-    await set(draftRef, {
-      ...draft,
-      ownerId: user.uid,
-      ...(existingSnapshot.exists() ? {} : { createdAt: serverTimestamp() }),
-      updatedAt: serverTimestamp(),
-    });
+
+    try {
+      const existingSnapshot = await get(draftRef);
+      await set(draftRef, {
+        ...draft,
+        ownerId: user.uid,
+        ...(existingSnapshot.exists() ? {} : { createdAt: serverTimestamp() }),
+        updatedAt: serverTimestamp(),
+      });
+    } catch (error: unknown) {
+      throw new Error("Could not save your draft.", { cause: error });
+    }
   }
 }

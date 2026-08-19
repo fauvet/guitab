@@ -95,7 +95,7 @@ HeaderActionsBarComponent
 FooterActionsBarComponent
 BottomSheetManageFileComponent
 BottomSheetSettingsComponent
-
+NotificationService ← the only service allowed to touch MatSnackBar
 FirebaseService ← initializes Firebase app + Realtime Database (no offline persistence)
      ↓ injected by
 AuthService     ← anonymous sign-in on startup, Google link/sign-in, isAnonymous()

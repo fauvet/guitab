@@ -93,7 +93,10 @@ node, so without them a screen reader announces nothing at all. See
 
 `MatSnackBar` is the app's toast: a successful save, a failure that does not block.
 `ngx-toastr` was removed deliberately — do not reintroduce a second notification
-system.
+system. Components reach it through `NotificationService`
+(`src/app/services/notification/`) rather than injecting `MatSnackBar` directly —
+the only service allowed to touch it, so duration and dismiss action stay
+consistent across every call site.
 
 A snackbar is not a place for anything the user must act on or must not miss. It
 disappears, and it is announced once. Errors that need a decision belong in a dialog

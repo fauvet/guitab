@@ -91,6 +91,14 @@ first entry moves to `## [1.0.0]` when the first release is cut.
   a dropped connection — the list simply stayed empty forever with nothing
   logged and nothing shown, on every subsequent visit. A failure is now
   surfaced with a message instead of failing silently.
+- **A batch of actions that used to fail silently now show a message and log
+  the real error:** opening or saving a file when the picker is refused or the
+  disk write fails, saving a keyboard-triggered file action (Ctrl+S,
+  Ctrl+Shift+S), copying a generated tab or converted lyrics to the clipboard,
+  and opening a file from Quick Access or the OS file handler when the cloud
+  sync fails. Every message a save or sync produces now goes through one
+  consistent notification style instead of each screen wording and timing its
+  own.
 
 ## Before this changelog
 

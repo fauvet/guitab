@@ -22,6 +22,7 @@ describe("BottomSheetSettingsComponent", () => {
   let fixture: ComponentFixture<BottomSheetSettingsComponent>;
   let isWakeLock$: BehaviorSubject<boolean>;
   let isKeptAwake$: BehaviorSubject<boolean>;
+  let lastErrorMessage$: BehaviorSubject<string | null>;
   let setWakeLock: ReturnType<typeof vi.fn>;
 
   function renderedText(): string {
@@ -31,6 +32,7 @@ describe("BottomSheetSettingsComponent", () => {
   beforeEach(async () => {
     isWakeLock$ = new BehaviorSubject<boolean>(false);
     isKeptAwake$ = new BehaviorSubject<boolean>(false);
+    lastErrorMessage$ = new BehaviorSubject<string | null>(null);
     setWakeLock = vi.fn();
 
     await TestBed.configureTestingModule({
@@ -50,7 +52,10 @@ describe("BottomSheetSettingsComponent", () => {
         },
         {
           provide: WakeLockService,
-          useValue: { getIsKeptAwake$: () => isKeptAwake$.asObservable() },
+          useValue: {
+            getIsKeptAwake$: () => isKeptAwake$.asObservable(),
+            getLastErrorMessage$: () => lastErrorMessage$.asObservable(),
+          },
         },
         {
           provide: ChordproService,
@@ -111,6 +116,23 @@ describe("BottomSheetSettingsComponent", () => {
       component.onItemWakeLockClicked();
 
       expect(setWakeLock).toHaveBeenCalledWith(false);
+    });
+
+    it("should show the reason inline once the request is refused, instead of failing silently", () => {
+      lastErrorMessage$.next("Could not keep the screen awake.");
+      fixture.detectChanges();
+
+      expect(renderedText()).toContain("Could not keep the screen awake.");
+    });
+
+    it("should say nothing once the request eventually succeeds", () => {
+      lastErrorMessage$.next("Could not keep the screen awake.");
+      fixture.detectChanges();
+
+      lastErrorMessage$.next(null);
+      fixture.detectChanges();
+
+      expect(renderedText()).not.toContain("Could not keep the screen awake.");
     });
   });
 });

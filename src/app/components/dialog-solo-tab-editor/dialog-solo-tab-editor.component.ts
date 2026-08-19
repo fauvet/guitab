@@ -18,6 +18,7 @@ import { debounceTime, takeUntil } from "rxjs/operators";
 import { StringUtil } from "../../utils/string.util";
 import { HandyRow, SoloTabUtil } from "../../utils/solo-tab.util";
 import { PitchMonitorComponent } from "../pitch-monitor/pitch-monitor.component";
+import { NotificationService } from "../../services/notification/notification.service";
 
 @Component({
   selector: "app-dialog-solo-tab-editor",
@@ -40,6 +41,7 @@ import { PitchMonitorComponent } from "../pitch-monitor/pitch-monitor.component"
 })
 export class DialogSoloTabEditorComponent implements OnInit, OnDestroy {
   private readonly dialogRef = inject(MatDialogRef<DialogSoloTabEditorComponent>);
+  private readonly notificationService = inject(NotificationService);
   private readonly unsubscribe$ = new Subject<void>();
 
   @ViewChild("editor") editorRef!: ElementRef<HTMLTextAreaElement>;
@@ -124,9 +126,12 @@ export class DialogSoloTabEditorComponent implements OnInit, OnDestroy {
 
   onCopyClicked(): void {
     const text = this.generatedSoloTab$.getValue();
-    if (text) {
-      navigator.clipboard.writeText(text);
-    }
+    if (!text) return;
+
+    navigator.clipboard.writeText(text).catch((error: unknown) => {
+      console.error(error);
+      this.notificationService.showError("Could not copy the tab to the clipboard.");
+    });
   }
 
   onInsertClicked(): void {

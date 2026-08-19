@@ -94,6 +94,7 @@ export class PitchDetectionService {
       this.startGraph(aubio, stream);
       this.status$.next("listening");
     } catch (error: unknown) {
+      console.error("[PitchDetectionService] startMicrophone failed:", error);
       this.stop();
       this.errorMessage$.next(PitchDetectionService.describe(error));
       this.status$.next("error");
@@ -151,6 +152,7 @@ export class PitchDetectionService {
       this.currentNote$.next(null);
       this.status$.next("idle");
     } catch (error: unknown) {
+      console.error("[PitchDetectionService] analyseFile failed:", error);
       this.errorMessage$.next(PitchDetectionService.describeFile(error));
       this.status$.next("error");
     } finally {

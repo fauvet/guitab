@@ -1,5 +1,4 @@
 import { TestBed } from "@angular/core/testing";
-import { MatSnackBar } from "@angular/material/snack-bar";
 import { WakeLockService } from "./wake-lock.service";
 
 /**
@@ -18,11 +17,18 @@ describe("WakeLockService", () => {
   let service: WakeLockService;
   let request: ReturnType<typeof vi.fn>;
   let release: ReturnType<typeof vi.fn>;
-  let snackBarOpen: ReturnType<typeof vi.fn>;
   let releaseListeners: (() => void)[];
 
   function defineWakeLock(value: unknown): void {
     Object.defineProperty(navigator, "wakeLock", { value, configurable: true });
+  }
+
+  // getLastErrorMessage$() is a BehaviorSubject, so a fresh subscribe always
+  // emits synchronously with the current value — no need to keep it open.
+  function currentErrorMessage(): string | null {
+    let value: string | null = null;
+    service.getLastErrorMessage$().subscribe((message) => (value = message));
+    return value;
   }
 
   function becomeVisible(): void {
@@ -52,11 +58,7 @@ describe("WakeLockService", () => {
     request = vi.fn().mockResolvedValue(sentinel);
     defineWakeLock({ request });
 
-    snackBarOpen = vi.fn();
-
-    TestBed.configureTestingModule({
-      providers: [{ provide: MatSnackBar, useValue: { open: snackBarOpen } }],
-    });
+    TestBed.configureTestingModule({});
     service = TestBed.inject(WakeLockService);
   });
 
@@ -116,7 +118,7 @@ describe("WakeLockService", () => {
 
     await service.setKeptAwake(true);
 
-    expect(snackBarOpen).toHaveBeenCalledTimes(1);
+    expect(currentErrorMessage()).toBe("This browser cannot keep the screen awake.");
   });
 
   it("should tell the user when the request is refused", async () => {
@@ -125,7 +127,19 @@ describe("WakeLockService", () => {
 
     await service.setKeptAwake(true);
 
-    expect(snackBarOpen).toHaveBeenCalledTimes(1);
+    expect(currentErrorMessage()).toBe("Could not keep the screen awake.");
+  });
+
+  it("should clear the error message once a retried request succeeds", async () => {
+    request.mockRejectedValueOnce(new Error("denied"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await service.setKeptAwake(true);
+    expect(currentErrorMessage()).not.toBeNull();
+
+    await service.setKeptAwake(true);
+
+    expect(currentErrorMessage()).toBeNull();
   });
 
   it("should retry after a refusal rather than believe it holds a lock", async () => {
@@ -230,9 +244,9 @@ describe("WakeLockService", () => {
       becomeVisible();
 
       await vi.waitFor(() => expect(request).toHaveBeenCalledTimes(2));
-      // Returning from another app is not an action on the setting: a snackbar
+      // Returning from another app is not an action on the setting: a message
       // here would land on top of the song for something the player did not do.
-      expect(snackBarOpen).not.toHaveBeenCalled();
+      expect(currentErrorMessage()).toBeNull();
       expect(service.isKeptAwake()).toBe(false);
     });
   });

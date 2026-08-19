@@ -51,16 +51,18 @@ describe("AuthService", () => {
 
   it("reports a sign-in error when anonymous sign-in rejects", async () => {
     const { signInAnonymously } = await import("firebase/auth");
-    (signInAnonymously as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("network error"));
+    const rejection = new Error("network error");
+    (signInAnonymously as ReturnType<typeof vi.fn>).mockRejectedValueOnce(rejection);
+    vi.spyOn(console, "error").mockImplementation(() => {});
 
     authCallbacks.callback?.(null);
-    await vi.waitFor(() => expect(service.getSignInError()).toBe(true));
+    await vi.waitFor(() => expect(service.getSignInError()).toBe(rejection));
   });
 
   it("does not report a sign-in error when anonymous sign-in succeeds", async () => {
     authCallbacks.callback?.(null);
     await Promise.resolve();
-    expect(service.getSignInError()).toBe(false);
+    expect(service.getSignInError()).toBeNull();
   });
 
   it("updates user$ when a user session is returned", () => {

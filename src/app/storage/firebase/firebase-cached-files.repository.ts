@@ -16,7 +16,9 @@ export class FirebaseCachedFilesRepository implements ICachedFilesRepository {
   private readonly authService = inject(AuthService);
 
   private readonly cachedFiles$ = new BehaviorSubject<CachedFile[]>([]);
-  private readonly syncError$ = new BehaviorSubject<boolean>(false);
+  // The live listener's own status only — saveFile() below never touches this,
+  // its failure travels by rejecting instead. See "Errors are never swallowed".
+  private readonly syncError$ = new BehaviorSubject<Error | null>(null);
   private snapshotUnsubscribe: Unsubscribe | null = null;
 
   constructor() {
@@ -29,7 +31,7 @@ export class FirebaseCachedFilesRepository implements ICachedFilesRepository {
         this.subscribeToUserFiles(user.uid);
       } else {
         this.cachedFiles$.next([]);
-        this.syncError$.next(false);
+        this.syncError$.next(null);
       }
     });
   }
@@ -52,14 +54,15 @@ export class FirebaseCachedFilesRepository implements ICachedFilesRepository {
         // orderByChild only sorts ascending — Quick Access wants the most recent first.
         files.reverse();
         this.cachedFiles$.next(files);
-        this.syncError$.next(false);
+        this.syncError$.next(null);
       },
       (error: Error) => {
         // Without this callback a failing listener dies silently — cachedFiles$
         // stays frozen at its last value forever, with no way to tell a broken
-        // sync from an empty list.
+        // sync from an empty list. This is continuous state with no awaiting
+        // caller to reject to, so the service logs it itself.
         console.error("[FirebaseCachedFilesRepository] cachedFiles listener error:", error);
-        this.syncError$.next(true);
+        this.syncError$.next(error);
       },
     );
   }
@@ -68,7 +71,7 @@ export class FirebaseCachedFilesRepository implements ICachedFilesRepository {
     return this.cachedFiles$.asObservable();
   }
 
-  getSyncError$(): Observable<boolean> {
+  getSyncError$(): Observable<Error | null> {
     return this.syncError$.asObservable();
   }
 
@@ -90,10 +93,8 @@ export class FirebaseCachedFilesRepository implements ICachedFilesRepository {
         ...(existingSnapshot.exists() ? {} : { createdAt: serverTimestamp() }),
         updatedAt: serverTimestamp(),
       });
-      this.syncError$.next(false);
     } catch (error: unknown) {
-      console.error("[FirebaseCachedFilesRepository] saveFile error:", error);
-      this.syncError$.next(true);
+      throw new Error(`Could not save "${fileBaseName}" to your account.`, { cause: error });
     }
   }
 }

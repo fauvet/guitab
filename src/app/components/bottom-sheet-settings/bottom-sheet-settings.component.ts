@@ -28,7 +28,7 @@ type WakeLockDisplay = "off" | "held" | "unheld";
 export class BottomSheetSettingsComponent implements OnInit {
   public readonly appContextService = inject(AppContextService);
   public readonly chordproService = inject(ChordproService);
-  private readonly wakeLockService = inject(WakeLockService);
+  public readonly wakeLockService = inject(WakeLockService);
   private readonly bottomSheetRef = inject(MatBottomSheetRef<BottomSheetSettingsComponent>);
 
   // Read through the async pipe, so there is no subscription to tear down.

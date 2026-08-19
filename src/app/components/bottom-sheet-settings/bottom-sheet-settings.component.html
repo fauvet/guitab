@@ -33,6 +33,13 @@
     <div matListItemTitle>{{ "Wake lock" }}</div>
     <div matListItemLine>{{ wakeLockLine }}</div>
   </mat-list-item>
+  @if (wakeLockService.getLastErrorMessage$() | async; as wakeLockErrorMessage) {
+    <p
+      class="wake-lock-error"
+      role="alert">
+      {{ wakeLockErrorMessage }}
+    </p>
+  }
   <mat-list-item
     matRipple
     (click)="onItemKeepBluetoothAliveClicked()">

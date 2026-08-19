@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit } from "@
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule } from "@angular/material/icon";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
-import { MatSnackBar } from "@angular/material/snack-bar";
+import { NotificationService } from "../../services/notification/notification.service";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { BehaviorSubject, filter, Observable, Subject, takeUntil } from "rxjs";
 import type { User } from "firebase/auth";
@@ -18,7 +18,7 @@ import { AuthService } from "../../services/auth/auth.service";
 })
 export class LoginComponent implements OnInit, OnDestroy {
   private readonly authService = inject(AuthService);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly notificationService = inject(NotificationService);
   private readonly unsubscribe$ = new Subject<void>();
 
   // Both values reach the template through `| async`, which subscribes,
@@ -34,13 +34,12 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.authService
       .getSignInError$()
       .pipe(
-        filter((hasError) => hasError),
+        filter((error): error is Error => error !== null),
         takeUntil(this.unsubscribe$),
       )
-      .subscribe(() => {
-        this.snackBar.open("Couldn't connect to sign-in. Check your connection and try again later.", "Dismiss", {
-          duration: 5000,
-        });
+      .subscribe((error) => {
+        console.error(error);
+        this.notificationService.showError("Couldn't connect to sign-in. Check your connection and try again later.");
       });
   }
 
@@ -60,7 +59,7 @@ export class LoginComponent implements OnInit, OnDestroy {
       .signInWithGoogle()
       .catch((error: unknown) => {
         console.error("[Login] Sign-in error:", error);
-        this.snackBar.open("Sign-in failed. Please try again.", "Dismiss", { duration: 5000 });
+        this.notificationService.showError("Sign-in failed. Please try again.");
       })
       .finally(() => this.isSigningIn$.next(false));
   }
@@ -68,7 +67,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   onSignOut(): void {
     this.authService.signOut().catch((error: unknown) => {
       console.error("[Login] Sign-out error:", error);
-      this.snackBar.open("Sign-out failed. Please try again.", "Dismiss", { duration: 5000 });
+      this.notificationService.showError("Sign-out failed. Please try again.");
     });
   }
 }

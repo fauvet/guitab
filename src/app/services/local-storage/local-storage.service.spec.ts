@@ -90,6 +90,16 @@ describe("LocalStorageService", () => {
       expect(localStorage.getItem("test-key")).toBeNull();
     });
 
+    it("should fall back to defaultValue and log when the stored value is corrupted JSON", () => {
+      localStorage.setItem("test-key", "{not valid json");
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      const subject = service.buildBehaviorSubject("test-key", 42);
+
+      expect(subject.getValue()).toBe(42);
+      expect(consoleErrorSpy).toHaveBeenCalled();
+    });
+
     it("should throw when using a deprecated key", () => {
       expect(() => service.buildBehaviorSubject(DEPRECATED_KEY, "value")).toThrow(
         `Local storage key "${DEPRECATED_KEY}" is deprecated and should not be used.`,

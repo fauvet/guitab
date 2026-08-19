@@ -33,7 +33,7 @@ export class LocalCachedFilesRepository implements ICachedFilesRepository {
     this.cachedFiles$.next(current);
   }
 
-  getSyncError$(): Observable<boolean> {
-    return of(false);
+  getSyncError$(): Observable<Error | null> {
+    return of(null);
   }
 }

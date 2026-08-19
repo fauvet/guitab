@@ -30,9 +30,13 @@ export class BeforeUnloadService {
       const hasUnsavedChanges = this.checkForUnsavedChanges(event);
       const current = this.getActiveRepository().getDraft();
       const newDraft: Draft = { ...current, hasUnsavedChanges };
+      // The browser gives beforeunload no time budget for a component to react
+      // to a rejection, so there is no catcher to rethrow to — this is the
+      // "Errors are never swallowed" bootstrap-style exception, just at the
+      // other end of the app's life instead of the start.
       this.getActiveRepository()
         .saveDraft(newDraft)
-        .catch((err) => console.error("[BeforeUnloadService] saveDraft error:", err));
+        .catch((err: unknown) => console.error("[BeforeUnloadService] saveDraft error:", err));
     });
   }
 
@@ -52,9 +56,13 @@ export class BeforeUnloadService {
       chordproContent,
       hasUnsavedChanges: this.chordproService.hasUnsavedChanges(),
     };
+    // Same exception as the beforeunload listener above: this fires from a
+    // content-change subscription with no user gesture to attach a
+    // notification to, and draft-saving is a background safety net, not
+    // something the player asked for — logging is all there is to do.
     this.getActiveRepository()
       .saveDraft(newDraft)
-      .catch((err) => console.error("[BeforeUnloadService] saveDraft error:", err));
+      .catch((err: unknown) => console.error("[BeforeUnloadService] saveDraft error:", err));
   }
 
   private checkForUnsavedChanges(event: BeforeUnloadEvent): boolean {

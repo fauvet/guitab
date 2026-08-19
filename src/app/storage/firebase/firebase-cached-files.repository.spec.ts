@@ -87,41 +87,47 @@ describe("FirebaseCachedFilesRepository", () => {
   });
 
   describe("getSyncError$()", () => {
-    it("starts false", async () => {
+    it("starts null", async () => {
       const error = await firstValueFrom(repository.getSyncError$());
-      expect(error).toBe(false);
+      expect(error).toBeNull();
     });
 
-    it("becomes true when the listener reports an error, and logs it rather than swallowing it", async () => {
+    it("carries the Error when the listener reports one, and logs it rather than swallowing it", async () => {
       const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const listenerError = new Error("permission-denied");
 
-      snapshotCallbacks.onError?.(new Error("permission-denied"));
+      snapshotCallbacks.onError?.(listenerError);
 
       const error = await firstValueFrom(repository.getSyncError$());
-      expect(error).toBe(true);
+      expect(error).toBe(listenerError);
       expect(consoleErrorSpy).toHaveBeenCalled();
     });
 
-    it("resets to false once a snapshot succeeds again", async () => {
+    it("resets to null once a snapshot succeeds again", async () => {
       snapshotCallbacks.onError?.(new Error("permission-denied"));
       snapshotCallbacks.onNext?.(buildFakeSnapshot([]));
 
       const error = await firstValueFrom(repository.getSyncError$());
-      expect(error).toBe(false);
+      expect(error).toBeNull();
     });
   });
 
   describe("saveFile()", () => {
-    it("becomes true and logs when the write itself fails, instead of failing silently", async () => {
+    it("rejects with a clear Error when the write itself fails, instead of failing silently", async () => {
       const { set } = await import("firebase/database");
       (set as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("permission-denied"));
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-      await repository.saveFile("{title: Test}");
+      await expect(repository.saveFile("{title: Test}")).rejects.toThrow(/Could not save ".*" to your account\./);
+    });
+
+    it("does not touch getSyncError$() — that reflects only the live listener", async () => {
+      const { set } = await import("firebase/database");
+      (set as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("permission-denied"));
+
+      await repository.saveFile("{title: Test}").catch(() => {});
 
       const error = await firstValueFrom(repository.getSyncError$());
-      expect(error).toBe(true);
-      expect(consoleErrorSpy).toHaveBeenCalled();
+      expect(error).toBeNull();
     });
   });
 });

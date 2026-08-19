@@ -33,7 +33,7 @@ export class CachedFilesService {
       );
   }
 
-  getSyncError$(): Observable<boolean> {
+  getSyncError$(): Observable<Error | null> {
     return this.authService
       .getUser$()
       .pipe(
@@ -43,8 +43,6 @@ export class CachedFilesService {
 
   async saveFile(chordproContent: string): Promise<void> {
     const repository = await this.getActiveRepository();
-    await repository
-      .saveFile(chordproContent)
-      .catch((err) => console.error("[CachedFilesService] saveFile error:", err));
+    await repository.saveFile(chordproContent);
   }
 }

@@ -70,9 +70,37 @@ A component past budget is almost always hiding a util inside itself.
 
 - No empty `catch`. If there is genuinely nothing to do, the comment says why.
 - Type the caught value: `catch (error: unknown)`, never implicitly `any`.
-- A failure the user caused, or needs to know about, surfaces through `MatSnackBar`
-  or inline text — never through `console.log` alone. Microphone permission denied,
-  an audio file that cannot be decoded, a save that failed: all three are visible.
+- **The boundary is fixed: `services/` and `storage/` never touch `MatSnackBar`,
+  directly or through `NotificationService` — only a component decides how a
+  failure reaches the screen.** A one-shot operation (open a file, save, sign in,
+  sync to Firebase) throws or rejects with a clear, human-readable `Error`. It
+  never resolves through a `.catch(err => console.error(err))` that lets the
+  caller believe nothing went wrong, and never returns a sentinel the caller has
+  to remember to check.
+- A continuous state — pitch-detection status, the wake lock, a live Firebase
+  listener — is different: nothing is awaiting a promise that could reject, so
+  the existing `BehaviorSubject` status pattern stays, and the owning service may
+  `console.error` the failure itself at the point it happens, the same way
+  `AuthService`'s bootstrap sign-in already does. What must not happen is a
+  boolean-only sentinel: the state exposed is the `Error` itself, never just a
+  flag, so whatever reads it can say what actually went wrong.
+- Every `catch` in a `components/` file reachable from something a user did pairs
+  two things: `console.error(error)`, and a notification through
+  `NotificationService` (`services/notification/`) — the only service allowed to
+  call `MatSnackBar`, and only components call it. Microphone permission denied,
+  a file that will not decode, a save that failed: all three are visible and all
+  three are logged. A failure with no single action it's "about" — background
+  rendering, a cosmetic lookup with its own fallback — may log without notifying;
+  say why in a comment when that's the choice.
+- A user backing out of something (`AbortError` from `showOpenFilePicker` /
+  `showSaveFilePicker`, a declined `confirm()`) is not a failure. Recognise that
+  one case and return quietly; let everything else through as a real error.
+- One narrow exception: a failure at application bootstrap, before any component
+  is mounted to catch it — `AuthService`'s anonymous sign-in, `FirebaseService`'s
+  constructor, `LocalStorageService` reading a corrupted key. It may
+  `console.error` itself and recover with a sane default, because there is no
+  catcher yet. It stays an exception, not a precedent: the moment a component
+  exists to own the failure, the logging moves there.
 - Services either resolve or reject. They do not return a sentinel the caller has to
   remember to check.
 

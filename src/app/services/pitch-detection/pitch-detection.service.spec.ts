@@ -112,17 +112,20 @@ describe("PitchDetectionService", () => {
       });
     });
 
-    it("should report an error rather than throwing when permission is denied", async () => {
+    it("should report an error rather than throwing when permission is denied, and log it", async () => {
       getUserMedia.mockRejectedValue(new Error("Permission denied"));
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
       await service.startMicrophone();
 
       expect(service.getStatus()).toBe("error");
       expect(service.getErrorMessage()).toBeTruthy();
+      expect(consoleErrorSpy).toHaveBeenCalled();
     });
 
     it("should not leave a half-open microphone after a failed start", async () => {
       getUserMedia.mockRejectedValue(new Error("Permission denied"));
+      vi.spyOn(console, "error").mockImplementation(() => {});
 
       await service.startMicrophone();
 
@@ -318,7 +321,7 @@ describe("PitchDetectionService", () => {
       expect(service.getFrames()).toHaveLength(2);
     });
 
-    it("should report an error rather than throwing on a file it cannot decode", async () => {
+    it("should report an error rather than throwing on a file it cannot decode, and log it", async () => {
       vi.stubGlobal(
         "AudioContext",
         class {
@@ -327,11 +330,13 @@ describe("PitchDetectionService", () => {
           decodeAudioData = vi.fn().mockRejectedValue(new Error("Unsupported"));
         },
       );
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
       await service.analyseFile(fakeFile());
 
       expect(service.getStatus()).toBe("error");
       expect(service.getErrorMessage()).toBeTruthy();
+      expect(consoleErrorSpy).toHaveBeenCalled();
     });
 
     it("should close the audio context it opened for the decode", async () => {
@@ -352,6 +357,7 @@ describe("PitchDetectionService", () => {
 
     it("should report an error rather than throwing when the module cannot be fetched", async () => {
       aubioLoaderService.load.mockRejectedValueOnce(new Error("Failed to fetch"));
+      vi.spyOn(console, "error").mockImplementation(() => {});
 
       await service.startMicrophone();
 

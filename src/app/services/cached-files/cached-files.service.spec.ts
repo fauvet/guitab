@@ -17,7 +17,7 @@ const mockAuthService = {
 const mockFirebaseRepo = {
   getCachedFiles$: vi.fn().mockReturnValue(of([])),
   saveFile: vi.fn().mockResolvedValue(undefined),
-  getSyncError$: vi.fn().mockReturnValue(of(false)),
+  getSyncError$: vi.fn().mockReturnValue(of(null)),
 };
 
 describe("CachedFilesService", () => {
@@ -126,22 +126,31 @@ describe("CachedFilesService", () => {
       const rawLocalFiles = localStorage.getItem(LS_KEY);
       expect(rawLocalFiles === null ? [] : JSON.parse(rawLocalFiles)).toEqual([]);
     });
+
+    it("should propagate a rejection from the active repository instead of swallowing it", async () => {
+      mockAuthService.getUserOnceReady.mockResolvedValue({ uid: "uid-123" });
+      const writeError = new Error("Could not save to your account.");
+      mockFirebaseRepo.saveFile.mockRejectedValueOnce(writeError);
+
+      await expect(service.saveFile(CONTENT_A)).rejects.toThrow(writeError);
+    });
   });
 
   describe("getSyncError$", () => {
-    it("reads from the local repository (always false) when signed out", async () => {
+    it("reads from the local repository (always null) when signed out", async () => {
       mockAuthService.getUser$.mockReturnValue(of(null));
       const error = await firstValueFrom(service.getSyncError$());
-      expect(error).toBe(false);
+      expect(error).toBeNull();
     });
 
     it("switches to the Firebase repository's sync error once signed in", async () => {
-      mockFirebaseRepo.getSyncError$.mockReturnValue(of(true));
+      const syncError = new Error("permission-denied");
+      mockFirebaseRepo.getSyncError$.mockReturnValue(of(syncError));
       mockAuthService.getUser$.mockReturnValue(of({ uid: "uid-123" }));
 
       const error = await firstValueFrom(service.getSyncError$());
 
-      expect(error).toBe(true);
+      expect(error).toBe(syncError);
     });
   });
 });

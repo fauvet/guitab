@@ -1,5 +1,4 @@
-import { inject, Injectable, OnDestroy } from "@angular/core";
-import { MatSnackBar } from "@angular/material/snack-bar";
+import { Injectable, OnDestroy } from "@angular/core";
 import { BehaviorSubject, Observable } from "rxjs";
 
 /**
@@ -30,9 +29,13 @@ import { BehaviorSubject, Observable } from "rxjs";
   providedIn: "root",
 })
 export class WakeLockService implements OnDestroy {
-  private readonly snackBar = inject(MatSnackBar);
-
   private readonly isKeptAwake$ = new BehaviorSubject<boolean>(false);
+  // The *why* behind isKeptAwake$ being false — refused, unsupported, or simply
+  // not requested yet. Not shown as a snackbar: coming back to the app after a
+  // background reacquire is not a user action to interrupt, so this is a status
+  // for BottomSheetSettingsComponent to display inline, the same shape as
+  // PitchDetectionService's errorMessage$.
+  private readonly lastErrorMessage$ = new BehaviorSubject<string | null>(null);
 
   private sentinel: null | WakeLockSentinel = null;
 
@@ -63,6 +66,10 @@ export class WakeLockService implements OnDestroy {
     return this.isKeptAwake$.getValue();
   }
 
+  getLastErrorMessage$(): Observable<string | null> {
+    return this.lastErrorMessage$.asObservable();
+  }
+
   async setKeptAwake(isKeptAwake: boolean): Promise<void> {
     this.isRequested = isKeptAwake;
 
@@ -91,7 +98,7 @@ export class WakeLockService implements OnDestroy {
       // Silently doing nothing would leave the setting switched on while the
       // screen keeps dimming, which reads as the app being broken rather than
       // the browser being old.
-      if (!isSilentOnFailure) this.notify("This browser cannot keep the screen awake.");
+      if (!isSilentOnFailure) this.lastErrorMessage$.next("This browser cannot keep the screen awake.");
       return;
     }
 
@@ -106,15 +113,17 @@ export class WakeLockService implements OnDestroy {
       });
       this.sentinel = sentinel;
       this.setKeptAwakeState(true);
+      this.lastErrorMessage$.next(null);
     } catch (error: unknown) {
       console.error("[WakeLock] Request refused:", error);
-      if (!isSilentOnFailure) this.notify("Could not keep the screen awake.");
+      if (!isSilentOnFailure) this.lastErrorMessage$.next("Could not keep the screen awake.");
     }
   }
 
   private async release(): Promise<void> {
     const sentinel = this.sentinel;
     this.forget();
+    this.lastErrorMessage$.next(null);
 
     await sentinel?.release();
   }
@@ -127,9 +136,5 @@ export class WakeLockService implements OnDestroy {
   private setKeptAwakeState(isKeptAwake: boolean): void {
     if (isKeptAwake === this.isKeptAwake()) return;
     this.isKeptAwake$.next(isKeptAwake);
-  }
-
-  private notify(message: string): void {
-    this.snackBar.open(message, "Dismiss", { duration: 5000 });
   }
 }

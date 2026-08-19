@@ -13,6 +13,12 @@ import { environment } from "../../../environments/environment";
  * Memoizing here expresses the real invariant. It also removes a production
  * risk that had simply never fired: a lazily loaded chunk creating its own
  * injector would have hit the same wall, at runtime, in front of a user.
+ *
+ * The constructor is deliberately unguarded: a Firebase misconfiguration is a
+ * developer error, not a runtime condition, and it happens before any
+ * component is mounted to show it — failing fast at bootstrap is correct here,
+ * not an oversight. See the bootstrap exception in "Errors are never
+ * swallowed".
  */
 let firebaseApp: FirebaseApp | undefined;
 let database: Database | undefined;

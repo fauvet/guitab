@@ -15,6 +15,7 @@ import { KeyboardShortcutService } from "./services/keyboard-shortcut/keyboard-s
 import { BeforeUnloadService } from "./services/before-unload/before-unload.service";
 import { ChordproService } from "./services/chordpro/chordpro.service";
 import { CachedFilesService } from "./services/cached-files/cached-files.service";
+import { NotificationService } from "./services/notification/notification.service";
 
 /**
  * The Launch Handler API, which delivers the files a PWA was opened with.
@@ -50,6 +51,7 @@ export class AppComponent implements OnInit {
   private readonly beforeUnloadService = inject(BeforeUnloadService);
   private readonly chordproService = inject(ChordproService);
   private readonly cachedFilesService = inject(CachedFilesService);
+  private readonly notificationService = inject(NotificationService);
   private readonly matIconRegistry = inject(MatIconRegistry);
   private readonly domSanitizer = inject(DomSanitizer);
   private readonly activatedRoute = inject(ActivatedRoute);
@@ -68,23 +70,41 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     this.handleLaunchQueue();
     this.appContextService.getIsEditing$().subscribe((isEditing) => (this.isEditing = isEditing));
+
+    // This root component is never destroyed, so — like the two subscriptions
+    // above — this one is not torn down either; see AppContextService for the
+    // same reasoning applied to its own constructor subscriptions.
+    this.keyboardShortcutService.getKeyboardFileActionOutcome$().subscribe((outcome) => {
+      if (outcome.type === "saved") {
+        this.notificationService.showSuccess(`${outcome.fileName} saved`);
+        return;
+      }
+      console.error(outcome.error);
+      this.notificationService.showError("Could not complete the keyboard shortcut. Please try again.");
+    });
+
     this.activatedRoute.queryParamMap.subscribe(async (params) => {
       const loadValue = params.get("load");
       const isDemo = loadValue === "demo";
       this.appContextService.setEditing(!isDemo);
 
-      if (isDemo) {
-        const demoFile = await FileUtil.loadSampleFile();
-        await this.appContextService.setFileHandle(demoFile);
-        return;
-      }
+      try {
+        if (isDemo) {
+          const demoFile = await FileUtil.loadSampleFile();
+          await this.appContextService.setFileHandle(demoFile);
+          return;
+        }
 
-      const draftUnsavedChordproContent = this.beforeUnloadService.findDraftUnsavedChordproContent();
-      const emptyFile = await FileUtil.loadEmptyFile();
-      await this.appContextService.setFileHandle(emptyFile);
+        const draftUnsavedChordproContent = this.beforeUnloadService.findDraftUnsavedChordproContent();
+        const emptyFile = await FileUtil.loadEmptyFile();
+        await this.appContextService.setFileHandle(emptyFile);
 
-      if (draftUnsavedChordproContent) {
-        this.chordproService.setChordproContent(draftUnsavedChordproContent);
+        if (draftUnsavedChordproContent) {
+          this.chordproService.setChordproContent(draftUnsavedChordproContent);
+        }
+      } catch (error: unknown) {
+        console.error(error);
+        this.notificationService.showError("Could not load the song.");
       }
     });
   }
@@ -96,11 +116,17 @@ export class AppComponent implements OnInit {
     launchQueue.setConsumer(async (launchParams) => {
       if (!launchParams?.files?.length) return;
       const fileHandle = launchParams.files[0];
-      await this.appContextService.setFileHandle(fileHandle);
-      this.appContextService.setEditing(false);
 
-      const chordproContent = (await FileUtil.getFileContent(fileHandle)) ?? "";
-      this.cachedFilesService.saveFile(chordproContent);
+      try {
+        await this.appContextService.setFileHandle(fileHandle);
+        this.appContextService.setEditing(false);
+
+        const chordproContent = (await FileUtil.getFileContent(fileHandle)) ?? "";
+        await this.cachedFilesService.saveFile(chordproContent);
+      } catch (error: unknown) {
+        console.error(error);
+        this.notificationService.showError("Could not open the file.");
+      }
     });
   }
 }

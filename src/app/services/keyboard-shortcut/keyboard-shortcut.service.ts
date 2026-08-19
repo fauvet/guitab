@@ -1,11 +1,13 @@
 import { inject, Injectable } from "@angular/core";
-import { MatSnackBar } from "@angular/material/snack-bar";
+import { Observable, Subject } from "rxjs";
 import { AppContextService } from "../app-context/app-context.service";
 import { ChordproService } from "../chordpro/chordpro.service";
 import { FileUtil } from "../../utils/file.util";
 import { ChordproUtil } from "../../utils/chordpro.util";
 import FileSaver from "file-saver";
 import { CachedFilesService } from "../cached-files/cached-files.service";
+
+export type KeyboardFileActionOutcome = { type: "saved"; fileName: string } | { type: "error"; error: Error };
 
 @Injectable({
   providedIn: "root",
@@ -14,7 +16,13 @@ export class KeyboardShortcutService {
   private readonly appContextService = inject(AppContextService);
   private readonly chordproService = inject(ChordproService);
   private readonly cachedFilesService = inject(CachedFilesService);
-  private readonly snackBar = inject(MatSnackBar);
+
+  // A "this just happened" event, not state — there is no meaningful last value
+  // to read back, so this is a Subject rather than the BehaviorSubject pair the
+  // rest of the app uses for state. It exists because the keydown listener below
+  // has no component of its own to hand a save failure to; AppComponent, always
+  // mounted, is the one subscriber.
+  private readonly keyboardFileActionOutcome$ = new Subject<KeyboardFileActionOutcome>();
 
   constructor() {
     document.addEventListener("keydown", async (event) => await this.onKeyDown(event));
@@ -24,6 +32,10 @@ export class KeyboardShortcutService {
     // This method exists to allow the service to be explicitly called and injected,
     // preventing errors when injecting the service into a component that does not use it directly.
     // Since this is an Angular service, the constructor is called only once during the application's lifetime.
+  }
+
+  getKeyboardFileActionOutcome$(): Observable<KeyboardFileActionOutcome> {
+    return this.keyboardFileActionOutcome$.asObservable();
   }
 
   private async onKeyDown(event: KeyboardEvent): Promise<void> {
@@ -38,28 +50,42 @@ export class KeyboardShortcutService {
     // variants before the plain ones, is what makes both orderings safe.
     const key = event.key.toLowerCase();
 
-    if (event.shiftKey && key === "s") {
-      event.preventDefault();
-      await this.saveFileAs();
-    } else if (event.shiftKey && key === "z") {
-      event.preventDefault();
-      await this.redo();
-    } else if (key === "y") {
-      event.preventDefault();
-      await this.redo();
-    } else if (key === "z") {
-      event.preventDefault();
-      await this.undo();
-    } else if (event.altKey && key === "n") {
-      event.preventDefault();
-      await this.newFile();
-    } else if (key === "o") {
-      event.preventDefault();
-      await this.openFile(event);
-    } else if (key === "s") {
-      event.preventDefault();
-      await this.saveFile();
+    try {
+      if (event.shiftKey && key === "s") {
+        event.preventDefault();
+        await this.reportSaveOutcome(() => this.saveFileAs());
+      } else if (event.shiftKey && key === "z") {
+        event.preventDefault();
+        await this.redo();
+      } else if (key === "y") {
+        event.preventDefault();
+        await this.redo();
+      } else if (key === "z") {
+        event.preventDefault();
+        await this.undo();
+      } else if (event.altKey && key === "n") {
+        event.preventDefault();
+        await this.newFile();
+      } else if (key === "o") {
+        event.preventDefault();
+        await this.openFile(event);
+      } else if (key === "s") {
+        event.preventDefault();
+        await this.reportSaveOutcome(() => this.saveFile());
+      }
+    } catch (error: unknown) {
+      this.keyboardFileActionOutcome$.next({
+        type: "error",
+        error: error instanceof Error ? error : new Error(String(error)),
+      });
     }
+  }
+
+  private async reportSaveOutcome(save: () => Promise<boolean>): Promise<void> {
+    const isSaved = await save();
+    if (!isSaved) return;
+    const fileName = ChordproUtil.buildFileName(this.chordproService.getChordproContent());
+    this.keyboardFileActionOutcome$.next({ type: "saved", fileName });
   }
 
   async undo(): Promise<void> {
@@ -84,18 +110,23 @@ export class KeyboardShortcutService {
 
     let file: null | File | FileSystemFileHandle = (event.target as HTMLInputElement)?.files?.[0] ?? null;
     if (this.canOpenFilePicker()) {
-      const filePicker = await window.showOpenFilePicker({
-        types: [
-          {
-            description: "ChordPro",
-            accept: {
-              "*/*": ChordproUtil.EXTENSIONS,
+      try {
+        const filePicker = await window.showOpenFilePicker({
+          types: [
+            {
+              description: "ChordPro",
+              accept: {
+                "*/*": ChordproUtil.EXTENSIONS,
+              },
             },
-          },
-        ],
-        multiple: false,
-      });
-      file = filePicker[0];
+          ],
+          multiple: false,
+        });
+        file = filePicker[0];
+      } catch (error: unknown) {
+        if (this.isUserCancelled(error)) return false;
+        throw new Error("Could not open the file picker.", { cause: error });
+      }
     }
 
     await this.appContextService.setFileHandle(file);
@@ -107,7 +138,7 @@ export class KeyboardShortcutService {
     // in Quick Access with nothing thrown anywhere, so this marks exactly
     // when the save was triggered relative to the write/read log lines.
     console.info(`[KeyboardShortcutService] openFile: triggering cachedFilesService.saveFile()`);
-    this.cachedFilesService.saveFile(chordproContent);
+    await this.cachedFilesService.saveFile(chordproContent);
 
     return true;
   }
@@ -122,17 +153,19 @@ export class KeyboardShortcutService {
     if (!isActionPerformed) return false;
 
     const chordproContent = this.chordproService.getChordproContent();
-    this.cachedFilesService.saveFile(chordproContent);
+    await this.cachedFilesService.saveFile(chordproContent);
     return true;
   }
 
   private async saveFileHandle(fileHandle: FileSystemFileHandle): Promise<boolean> {
-    const writable = await fileHandle.createWritable();
-    const chordproContent = this.chordproService.getChordproContent();
-    await writable.write(chordproContent);
-    await writable.close();
-    const fileName = fileHandle.name;
-    this.snackBar.open(`${fileName} saved`, undefined, { duration: 3000 });
+    try {
+      const writable = await fileHandle.createWritable();
+      const chordproContent = this.chordproService.getChordproContent();
+      await writable.write(chordproContent);
+      await writable.close();
+    } catch (error: unknown) {
+      throw new Error(`Could not save "${fileHandle.name}".`, { cause: error });
+    }
     this.chordproService.updateChordproSaveState();
     return true;
   }
@@ -142,17 +175,23 @@ export class KeyboardShortcutService {
     const fileName = ChordproUtil.buildFileName(chordproContent);
 
     if (this.canSaveFilePicker()) {
-      const fileHandle = await window.showSaveFilePicker({
-        suggestedName: fileName,
-        types: [
-          {
-            description: "ChordPro",
-            accept: {
-              "text/plain": ChordproUtil.EXTENSIONS,
+      let fileHandle: FileSystemFileHandle;
+      try {
+        fileHandle = await window.showSaveFilePicker({
+          suggestedName: fileName,
+          types: [
+            {
+              description: "ChordPro",
+              accept: {
+                "text/plain": ChordproUtil.EXTENSIONS,
+              },
             },
-          },
-        ],
-      });
+          ],
+        });
+      } catch (error: unknown) {
+        if (this.isUserCancelled(error)) return false;
+        throw new Error("Could not open the save dialog.", { cause: error });
+      }
       await this.saveFileHandle(fileHandle);
       await this.appContextService.setFileHandle(fileHandle);
       return true;
@@ -172,7 +211,6 @@ export class KeyboardShortcutService {
           return;
         }
 
-        this.snackBar.open(`${fileName} saved`, undefined, { duration: 3000 });
         this.chordproService.updateChordproSaveState();
         resolve(true);
       });
@@ -190,5 +228,9 @@ export class KeyboardShortcutService {
 
   private canSaveFilePicker(): boolean {
     return "showSaveFilePicker" in window;
+  }
+
+  private isUserCancelled(error: unknown): boolean {
+    return error instanceof DOMException && error.name === "AbortError";
   }
 }

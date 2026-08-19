@@ -4,7 +4,7 @@ import { KeyboardShortcutService } from "./keyboard-shortcut.service";
 import { ChordproService } from "../chordpro/chordpro.service";
 import { AppContextService } from "../app-context/app-context.service";
 import { CachedFilesService } from "../cached-files/cached-files.service";
-import { MatSnackBar } from "@angular/material/snack-bar";
+import { ChordproUtil } from "../../utils/chordpro.util";
 
 describe("KeyboardShortcutService", () => {
   let service: KeyboardShortcutService;
@@ -35,11 +35,7 @@ describe("KeyboardShortcutService", () => {
     };
 
     const mockCachedFilesService = {
-      saveFile: vi.fn(),
-    };
-
-    const mockSnackBar = {
-      open: vi.fn(),
+      saveFile: vi.fn().mockResolvedValue(undefined),
     };
 
     TestBed.configureTestingModule({
@@ -47,7 +43,6 @@ describe("KeyboardShortcutService", () => {
         { provide: ChordproService, useValue: mockChordproService },
         { provide: AppContextService, useValue: mockAppContextService },
         { provide: CachedFilesService, useValue: mockCachedFilesService },
-        { provide: MatSnackBar, useValue: mockSnackBar },
       ],
     });
     service = TestBed.inject(KeyboardShortcutService);
@@ -149,6 +144,87 @@ describe("KeyboardShortcutService", () => {
       await Promise.resolve();
 
       expect(undo).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("getKeyboardFileActionOutcome$", () => {
+    const press = (key: string, modifiers: KeyboardEventInit = {}): void => {
+      document.dispatchEvent(new KeyboardEvent("keydown", { key, ctrlKey: true, ...modifiers }));
+    };
+
+    it("should emit a saved outcome once a keyboard-triggered save resolves", async () => {
+      vi.spyOn(service, "saveFile").mockResolvedValue(true);
+      const outcomes: unknown[] = [];
+      service.getKeyboardFileActionOutcome$().subscribe((outcome) => outcomes.push(outcome));
+
+      press("s");
+
+      await vi.waitFor(() =>
+        expect(outcomes).toContainEqual({ type: "saved", fileName: ChordproUtil.buildFileName("") }),
+      );
+    });
+
+    it("should not emit a saved outcome when the save was cancelled by the user", async () => {
+      vi.spyOn(service, "saveFile").mockResolvedValue(false);
+      const outcomes: unknown[] = [];
+      service.getKeyboardFileActionOutcome$().subscribe((outcome) => outcomes.push(outcome));
+
+      press("s");
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(outcomes).toEqual([]);
+    });
+
+    it("should emit an error outcome when a keyboard-triggered action throws", async () => {
+      const error = new Error("Could not save.");
+      vi.spyOn(service, "saveFile").mockRejectedValue(error);
+      const outcomes: unknown[] = [];
+      service.getKeyboardFileActionOutcome$().subscribe((outcome) => outcomes.push(outcome));
+
+      press("s");
+
+      await vi.waitFor(() => expect(outcomes).toContainEqual({ type: "error", error }));
+    });
+  });
+
+  describe("openFile", () => {
+    afterEach(() => {
+      delete (window as any).showOpenFilePicker;
+    });
+
+    it("should return false without throwing when the user cancels the file picker", async () => {
+      (window as any).showOpenFilePicker = vi.fn().mockRejectedValue(new DOMException("cancelled", "AbortError"));
+
+      const result = await service.openFile(new Event("click"));
+
+      expect(result).toBe(false);
+    });
+
+    it("should throw a clear Error when the file picker fails for a reason other than cancellation", async () => {
+      (window as any).showOpenFilePicker = vi.fn().mockRejectedValue(new Error("disk error"));
+
+      await expect(service.openFile(new Event("click"))).rejects.toThrow("Could not open the file picker.");
+    });
+  });
+
+  describe("saveFileAs", () => {
+    afterEach(() => {
+      delete (window as any).showSaveFilePicker;
+    });
+
+    it("should return false without throwing when the user cancels the save dialog", async () => {
+      (window as any).showSaveFilePicker = vi.fn().mockRejectedValue(new DOMException("cancelled", "AbortError"));
+
+      const result = await service.saveFileAs();
+
+      expect(result).toBe(false);
+    });
+
+    it("should throw a clear Error when the save dialog fails for a reason other than cancellation", async () => {
+      (window as any).showSaveFilePicker = vi.fn().mockRejectedValue(new Error("disk error"));
+
+      await expect(service.saveFileAs()).rejects.toThrow("Could not open the save dialog.");
     });
   });
 

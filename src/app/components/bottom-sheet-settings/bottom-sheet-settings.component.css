@@ -18,3 +18,9 @@
     }
   }
 }
+
+.wake-lock-error {
+  margin: 0 20px 8px;
+  font-size: 0.875rem;
+  color: var(--mat-sys-error);
+}

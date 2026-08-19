@@ -2,18 +2,21 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { MatDialogRef } from "@angular/material/dialog";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { DialogSoloTabEditorComponent } from "./dialog-solo-tab-editor.component";
+import { NotificationService } from "../../services/notification/notification.service";
 
 describe("DialogSoloTabEditorComponent", () => {
   let component: DialogSoloTabEditorComponent;
   let fixture: ComponentFixture<DialogSoloTabEditorComponent>;
   const dialogRef = { close: vi.fn() };
   const writeText = vi.fn();
+  const mockNotificationService = { showError: vi.fn() };
 
   beforeEach(async () => {
     // vi.fn() call history survives restoreAllMocks, so shared mocks have to be
     // cleared explicitly or an assertion about "not called" passes or fails
     // depending on which tests ran before it.
     vi.clearAllMocks();
+    writeText.mockResolvedValue(undefined);
 
     // Define the property rather than replacing navigator: Angular Forms reads
     // navigator.userAgent, which lives on the prototype and does not survive a
@@ -25,7 +28,10 @@ describe("DialogSoloTabEditorComponent", () => {
 
     await TestBed.configureTestingModule({
       imports: [DialogSoloTabEditorComponent, NoopAnimationsModule],
-      providers: [{ provide: MatDialogRef, useValue: dialogRef }],
+      providers: [
+        { provide: MatDialogRef, useValue: dialogRef },
+        { provide: NotificationService, useValue: mockNotificationService },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(DialogSoloTabEditorComponent);
@@ -199,6 +205,18 @@ describe("DialogSoloTabEditorComponent", () => {
       component.onCopyClicked();
 
       expect(writeText).not.toHaveBeenCalled();
+    });
+
+    it("should show a notification and log, instead of failing silently, when the clipboard write is refused", async () => {
+      const error = new Error("permission denied");
+      writeText.mockRejectedValue(error);
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      component.onSoloTabChanged("0 2 2");
+
+      component.onCopyClicked();
+      await vi.waitFor(() => expect(mockNotificationService.showError).toHaveBeenCalledTimes(1));
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(error);
     });
   });
 });

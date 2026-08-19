@@ -12,6 +12,7 @@ import {
 import { BehaviorSubject, Subject } from "rxjs";
 import { debounceTime, takeUntil } from "rxjs/operators";
 import { ChordsOverLyricsUtil } from "../../utils/chords-over-lyrics.util";
+import { NotificationService } from "../../services/notification/notification.service";
 
 @Component({
   selector: "app-dialog-import-chords-over-lyrics",
@@ -30,6 +31,7 @@ import { ChordsOverLyricsUtil } from "../../utils/chords-over-lyrics.util";
 })
 export class DialogImportChordsOverLyricsComponent implements OnInit, OnDestroy {
   private readonly dialogRef = inject(MatDialogRef<DialogImportChordsOverLyricsComponent>);
+  private readonly notificationService = inject(NotificationService);
   private readonly unsubscribe$ = new Subject<void>();
 
   readonly input$ = new BehaviorSubject<string>("");
@@ -52,9 +54,12 @@ export class DialogImportChordsOverLyricsComponent implements OnInit, OnDestroy 
 
   onCopyClicked(): void {
     const text = this.preview$.getValue();
-    if (text) {
-      navigator.clipboard.writeText(text);
-    }
+    if (!text) return;
+
+    navigator.clipboard.writeText(text).catch((error: unknown) => {
+      console.error(error);
+      this.notificationService.showError("Could not copy the result to the clipboard.");
+    });
   }
 
   onInsertClicked(): void {

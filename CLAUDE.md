@@ -31,6 +31,11 @@ ASCII tab.
 8. **Every dependency added must be GPL-3.0 compatible.** See
    `.claude/rules/dependencies-licensing.instructions.md`.
 9. **Never commit or push unless explicitly asked.**
+10. **Never call `MatSnackBar` outside `src/app/services/notification/` and
+    `src/app/components/`.** Services and repositories throw or reject with a
+    clear `Error` instead; only a component decides how a failure reaches the
+    screen. ESLint enforces this. See "Errors are never swallowed" in
+    `.claude/rules/engineering-principles.instructions.md`.
 
 ## Tech stack
 
