@@ -4,10 +4,15 @@ import { AppContextService } from "../app-context/app-context.service";
 import { ChordproService } from "../chordpro/chordpro.service";
 import { FileUtil } from "../../utils/file.util";
 import { ChordproUtil } from "../../utils/chordpro.util";
-import FileSaver from "file-saver";
 import { CachedFilesService } from "../cached-files/cached-files.service";
+import { PlatformService } from "../platform/platform.service";
+import { FileTarget } from "../../types/file-target.type";
+import { FileTargetUtil } from "../../utils/file-target.util";
+import { IFileAccessRepository } from "../../storage/repositories/file-access.repository";
+import { WebFileAccessRepository } from "../../storage/web/web-file-access.repository";
+import { NativeFileAccessRepository } from "../../storage/native/native-file-access.repository";
 
-export type KeyboardFileActionOutcome = { type: "saved"; fileName: string } | { type: "error"; error: Error };
+export type FileActionOutcome = { type: "saved"; fileName: string } | { type: "error"; error: Error };
 
 @Injectable({
   providedIn: "root",
@@ -16,13 +21,17 @@ export class KeyboardShortcutService {
   private readonly appContextService = inject(AppContextService);
   private readonly chordproService = inject(ChordproService);
   private readonly cachedFilesService = inject(CachedFilesService);
+  private readonly platformService = inject(PlatformService);
+  private readonly webRepository = inject(WebFileAccessRepository);
+  private readonly nativeRepository = inject(NativeFileAccessRepository);
 
   // A "this just happened" event, not state — there is no meaningful last value
   // to read back, so this is a Subject rather than the BehaviorSubject pair the
   // rest of the app uses for state. It exists because the keydown listener below
   // has no component of its own to hand a save failure to; AppComponent, always
-  // mounted, is the one subscriber.
-  private readonly keyboardFileActionOutcome$ = new Subject<KeyboardFileActionOutcome>();
+  // mounted, is the one subscriber. The launch handler has the same problem, and
+  // is why the name is no longer specific to the keyboard.
+  private readonly fileActionOutcome$ = new Subject<FileActionOutcome>();
 
   constructor() {
     document.addEventListener("keydown", async (event) => await this.onKeyDown(event));
@@ -34,8 +43,40 @@ export class KeyboardShortcutService {
     // Since this is an Angular service, the constructor is called only once during the application's lifetime.
   }
 
-  getKeyboardFileActionOutcome$(): Observable<KeyboardFileActionOutcome> {
-    return this.keyboardFileActionOutcome$.asObservable();
+  getFileActionOutcome$(): Observable<FileActionOutcome> {
+    return this.fileActionOutcome$.asObservable();
+  }
+
+  /**
+   * Opens whatever the host launched the app with — a `.cho` double-clicked in
+   * a desktop file manager, or tapped in Android's.
+   *
+   * Subscribed once by the root component, for the lifetime of the application,
+   * which is why there is no teardown here.
+   */
+  openLaunchedFiles(): void {
+    this.getActiveRepository()
+      .getLaunchedFiles$()
+      .subscribe({
+        next: async ({ fileTarget, content }) => {
+          try {
+            await this.appContextService.setFile(fileTarget, content);
+            this.appContextService.setEditing(false);
+            await this.cachedFilesService.saveFile(content);
+          } catch (error: unknown) {
+            this.reportError(error);
+          }
+        },
+        error: (error: unknown) => this.reportError(error),
+      });
+  }
+
+  /**
+   * The browser strategy or the Android one. Nothing above this line knows which
+   * — that is what lets the same shortcuts drive both.
+   */
+  private getActiveRepository(): IFileAccessRepository {
+    return this.platformService.isNative() ? this.nativeRepository : this.webRepository;
   }
 
   private async onKeyDown(event: KeyboardEvent): Promise<void> {
@@ -74,10 +115,7 @@ export class KeyboardShortcutService {
         await this.reportSaveOutcome(() => this.saveFile());
       }
     } catch (error: unknown) {
-      this.keyboardFileActionOutcome$.next({
-        type: "error",
-        error: error instanceof Error ? error : new Error(String(error)),
-      });
+      this.reportError(error);
     }
   }
 
@@ -85,7 +123,14 @@ export class KeyboardShortcutService {
     const isSaved = await save();
     if (!isSaved) return;
     const fileName = ChordproUtil.buildFileName(this.chordproService.getChordproContent());
-    this.keyboardFileActionOutcome$.next({ type: "saved", fileName });
+    this.fileActionOutcome$.next({ type: "saved", fileName });
+  }
+
+  private reportError(error: unknown): void {
+    this.fileActionOutcome$.next({
+      type: "error",
+      error: error instanceof Error ? error : new Error(String(error)),
+    });
   }
 
   async undo(): Promise<void> {
@@ -99,8 +144,8 @@ export class KeyboardShortcutService {
   async newFile(): Promise<boolean> {
     if (!this.checkUnsavedChanges()) return false;
 
-    const file = await FileUtil.loadEmptyFile();
-    await this.appContextService.setFileHandle(file);
+    const emptyFile = await FileUtil.loadEmptyFile();
+    await this.appContextService.setFile(emptyFile);
     this.appContextService.setEditing(true);
     return true;
   }
@@ -108,48 +153,31 @@ export class KeyboardShortcutService {
   async openFile(event: Event): Promise<boolean> {
     if (!this.checkUnsavedChanges()) return false;
 
-    let file: null | File | FileSystemFileHandle = (event.target as HTMLInputElement)?.files?.[0] ?? null;
-    if (this.canOpenFilePicker()) {
-      try {
-        const filePicker = await window.showOpenFilePicker({
-          types: [
-            {
-              description: "ChordPro",
-              accept: {
-                "*/*": ChordproUtil.EXTENSIONS,
-              },
-            },
-          ],
-          multiple: false,
-        });
-        file = filePicker[0];
-      } catch (error: unknown) {
-        if (this.isUserCancelled(error)) return false;
-        throw new Error("Could not open the file picker.", { cause: error });
-      }
-    }
+    // Null means the user backed out of the picker, or the file input carried
+    // nothing — either way nothing was opened, and the caller must not dismiss
+    // its bottom sheet over it.
+    const pickedFile = await this.getActiveRepository().openFile(event);
+    if (pickedFile === null) return false;
 
-    await this.appContextService.setFileHandle(file);
+    await this.appContextService.setFile(pickedFile.fileTarget, pickedFile.content);
     this.appContextService.setEditing(false);
 
-    const chordproContent = (await FileUtil.getFileContent(file)) ?? "";
     // Temporary breadcrumb — see FirebaseCachedFilesRepository for the rest
     // of this diagnostic trail: the opened file is not reliably reappearing
     // in Quick Access with nothing thrown anywhere, so this marks exactly
     // when the save was triggered relative to the write/read log lines.
     console.info(`[KeyboardShortcutService] openFile: triggering cachedFilesService.saveFile()`);
-    await this.cachedFilesService.saveFile(chordproContent);
+    await this.cachedFilesService.saveFile(pickedFile.content);
 
     return true;
   }
 
   async saveFile(): Promise<boolean> {
-    const fileHandle = this.appContextService.getFileHandleWithContent()?.fileHandle ?? null;
+    const fileTarget = this.appContextService.getFileWithContent()?.fileTarget ?? null;
 
-    const isActionPerformed =
-      !fileHandle || !(fileHandle instanceof FileSystemFileHandle)
-        ? await this.saveFileAs()
-        : await this.saveFileHandle(fileHandle);
+    const isActionPerformed = FileTargetUtil.isWritable(fileTarget)
+      ? await this.writeFile(fileTarget)
+      : await this.saveFileAs();
     if (!isActionPerformed) return false;
 
     const chordproContent = this.chordproService.getChordproContent();
@@ -157,15 +185,12 @@ export class KeyboardShortcutService {
     return true;
   }
 
-  private async saveFileHandle(fileHandle: FileSystemFileHandle): Promise<boolean> {
-    try {
-      const writable = await fileHandle.createWritable();
-      const chordproContent = this.chordproService.getChordproContent();
-      await writable.write(chordproContent);
-      await writable.close();
-    } catch (error: unknown) {
-      throw new Error(`Could not save "${fileHandle.name}".`, { cause: error });
-    }
+  /** Writes over the file we already hold, rather than asking where to put it. */
+  private async writeFile(fileTarget: null | FileTarget): Promise<boolean> {
+    if (fileTarget === null) return false;
+
+    const chordproContent = this.chordproService.getChordproContent();
+    await this.getActiveRepository().writeFile(fileTarget, chordproContent);
     this.chordproService.updateChordproSaveState();
     return true;
   }
@@ -174,47 +199,15 @@ export class KeyboardShortcutService {
     const chordproContent = this.chordproService.getChordproContent();
     const fileName = ChordproUtil.buildFileName(chordproContent);
 
-    if (this.canSaveFilePicker()) {
-      let fileHandle: FileSystemFileHandle;
-      try {
-        fileHandle = await window.showSaveFilePicker({
-          suggestedName: fileName,
-          types: [
-            {
-              description: "ChordPro",
-              accept: {
-                "text/plain": ChordproUtil.EXTENSIONS,
-              },
-            },
-          ],
-        });
-      } catch (error: unknown) {
-        if (this.isUserCancelled(error)) return false;
-        throw new Error("Could not open the save dialog.", { cause: error });
-      }
-      await this.saveFileHandle(fileHandle);
-      await this.appContextService.setFileHandle(fileHandle);
-      return true;
-    }
+    const result = await this.getActiveRepository().saveFileAs(chordproContent, fileName);
+    if (result.outcome === "cancelled") return false;
 
-    // The download fallback has no completion signal, so the only way to know
-    // whether the file reached the disk is to ask. Deferring lets the browser
-    // paint the download first — a confirm() raised before it would be asking
-    // about something the user has not seen yet.
-    const blob = new Blob([chordproContent], { type: "text/plain;charset=utf-8" });
-    FileSaver.saveAs(blob, fileName);
+    // A download-based save-as leaves nothing to write through next time, so the
+    // target stays as it was and the next Ctrl+S asks again.
+    if (result.fileTarget !== null) await this.appContextService.setFile(result.fileTarget, chordproContent);
 
-    return new Promise<boolean>((resolve) => {
-      setTimeout(() => {
-        if (!confirm("Please confirm that the file has been successfully downloaded.")) {
-          resolve(false);
-          return;
-        }
-
-        this.chordproService.updateChordproSaveState();
-        resolve(true);
-      });
-    });
+    this.chordproService.updateChordproSaveState();
+    return true;
   }
 
   private checkUnsavedChanges(): boolean {
@@ -223,14 +216,6 @@ export class KeyboardShortcutService {
   }
 
   public canOpenFilePicker(): boolean {
-    return "showOpenFilePicker" in window;
-  }
-
-  private canSaveFilePicker(): boolean {
-    return "showSaveFilePicker" in window;
-  }
-
-  private isUserCancelled(error: unknown): boolean {
-    return error instanceof DOMException && error.name === "AbortError";
+    return this.getActiveRepository().canPickOpen();
   }
 }

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">GuiTab</string>
+    <string name="title_activity_main">GuiTab</string>
+    <string name="package_name">io.github.fauvet.guitab</string>
+    <string name="custom_url_scheme">io.github.fauvet.guitab</string>
+</resources>

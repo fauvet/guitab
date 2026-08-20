@@ -35,6 +35,7 @@
 - Wake Lock and Bluetooth keep-alive for hands-free reading
 - Draft auto-recovery on page reload
 - Installable as a PWA, with native file handler for `.cho`, `.crd`, `.chopro`, `.chord`, `.pro`
+- Also builds as an Android app from the same source, via [Capacitor](https://capacitorjs.com)
 
 ## Tech stack
 
@@ -48,6 +49,7 @@
 | Chord diagrams   | [svguitar](https://github.com/omnibrain/svguitar)                        |
 | Testing          | [Vitest 4](https://vitest.dev), in jsdom                                 |
 | PWA              | [Angular Service Worker](https://angular.dev/ecosystem/service-workers)  |
+| Android          | [Capacitor](https://capacitorjs.com)                                     |
 
 ## Getting started
 
@@ -64,6 +66,29 @@ npm run deploy     # Deploy to GitHub Pages
 git-ignored, so nothing compiles until it exists. `npm run setup:env` writes a
 placeholder that is enough to build and test; replace it with the real values to
 use sign-in and cloud storage locally.
+
+## Android
+
+The Android app is built from the same source with Capacitor. It needs a JDK and
+the Android SDK — installing Android Studio is the simplest way to get both.
+
+```bash
+npm run build:capacitor   # Angular build for the WebView, into dist/capacitor
+npm run cap:sync          # the above, then copy it into android/
+npm run cap:run:android   # sync, then build and launch on a device or emulator
+npm run cap:open:android  # open the project in Android Studio instead
+```
+
+`android/app/google-services.json` is git-ignored like `environment.ts`, and
+`npm run setup:env` writes a placeholder so the project builds without it. The
+placeholder cannot sign in: to use Google sign-in on a device, register an Android
+app in the Firebase console under the `appId` from `capacitor.config.ts`, add your
+signing certificate's SHA-1, and replace the file with the one it gives you.
+
+Note that `rgcfaIncludeGoogle` in `android/variables.gradle` links Google's
+proprietary `play-services-auth` into the APK. It is needed for native Google
+sign-in and is a licensing decision as much as a build one — the reasoning is next
+to the flag, and in `.claude/skills/capacitor-android/SKILL.md`.
 
 ## ChordPro format
 

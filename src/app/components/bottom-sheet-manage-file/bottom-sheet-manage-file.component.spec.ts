@@ -30,8 +30,8 @@ describe("BottomSheetManageFileComponent", () => {
     saveFile: ReturnType<typeof vi.fn>;
   };
   let mockAppContextService: {
-    getFileHandleWithContent$: ReturnType<typeof vi.fn>;
-    setFileHandle: ReturnType<typeof vi.fn>;
+    getFileWithContent$: ReturnType<typeof vi.fn>;
+    setFile: ReturnType<typeof vi.fn>;
     setEditing: ReturnType<typeof vi.fn>;
   };
   let mockChordproService: {
@@ -63,8 +63,8 @@ describe("BottomSheetManageFileComponent", () => {
     };
 
     mockAppContextService = {
-      getFileHandleWithContent$: vi.fn().mockReturnValue(of(null)),
-      setFileHandle: vi.fn().mockResolvedValue(undefined),
+      getFileWithContent$: vi.fn().mockReturnValue(of(null)),
+      setFile: vi.fn().mockResolvedValue(undefined),
       setEditing: vi.fn(),
     };
 

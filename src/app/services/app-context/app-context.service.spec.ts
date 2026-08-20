@@ -3,6 +3,7 @@ import { AppContextService } from "./app-context.service";
 import { WakeLockService } from "../wake-lock/wake-lock.service";
 import { BluetoothKeepAliveService } from "../bluetooth-keep-alive/bluetooth-keep-alive.service";
 import { FileUtil } from "../../utils/file.util";
+import { FileTargetUtil } from "../../utils/file-target.util";
 
 describe("AppContextService", () => {
   let service: AppContextService;
@@ -30,8 +31,8 @@ describe("AppContextService", () => {
   });
 
   describe("initial state", () => {
-    it("should have null fileHandleWithContent", () => {
-      expect(service.getFileHandleWithContent()).toBeNull();
+    it("should have null fileWithContent", () => {
+      expect(service.getFileWithContent()).toBeNull();
     });
 
     it("should have isEditing = false", () => {
@@ -114,22 +115,37 @@ describe("AppContextService", () => {
     });
   });
 
-  describe("setFileHandle", () => {
-    it("should update fileHandleWithContent with the file and its content", async () => {
+  describe("setFile", () => {
+    it("should update fileWithContent with the file and its content", async () => {
       vi.spyOn(FileUtil, "getFileContent").mockResolvedValue("[Am] Hello world");
       const file = new File([""], "test.cho");
-      await service.setFileHandle(file);
-      expect(service.getFileHandleWithContent()?.fileHandle).toBe(file);
-      expect(service.getFileHandleWithContent()?.content).toBe("[Am] Hello world");
+      await service.setFile(FileTargetUtil.fromFile(file));
+      expect(service.getFileWithContent()?.fileTarget).toEqual(FileTargetUtil.fromFile(file));
+      expect(service.getFileWithContent()?.content).toBe("[Am] Hello world");
     });
 
-    it("should be a no-op when the same file handle is provided again", async () => {
+    // The target is a wrapper built on demand, so the guard cannot compare it by
+    // reference any more — it compares the file inside it. Re-opening the same
+    // file must still not restart the pipeline.
+    it("should be a no-op when the same file is provided again in a new target", async () => {
       vi.spyOn(FileUtil, "getFileContent").mockResolvedValue("content");
       const file = new File([""], "test.cho");
-      await service.setFileHandle(file);
-      const stateBefore = service.getFileHandleWithContent();
-      await service.setFileHandle(file); // same reference → no-op
-      expect(service.getFileHandleWithContent()).toBe(stateBefore);
+      await service.setFile(FileTargetUtil.fromFile(file));
+      const stateBefore = service.getFileWithContent();
+      await service.setFile(FileTargetUtil.fromFile(file));
+      expect(service.getFileWithContent()).toBe(stateBefore);
+    });
+
+    // A native target carries no readable object, so FileUtil throws on it by
+    // design; the repository that picked it passes the content in instead.
+    it("should use the supplied content rather than reading a native target", async () => {
+      const getFileContent = vi.spyOn(FileUtil, "getFileContent");
+      const fileTarget = FileTargetUtil.fromNative("content://songs/1", "song.cho");
+
+      await service.setFile(fileTarget, "{title: Song}");
+
+      expect(service.getFileWithContent()?.content).toBe("{title: Song}");
+      expect(getFileContent).not.toHaveBeenCalled();
     });
   });
 });

@@ -1,5 +1,15 @@
 import { TestBed } from "@angular/core/testing";
 import { WakeLockService } from "./wake-lock.service";
+import { PlatformService } from "../platform/platform.service";
+
+const { keepAwake, allowSleep } = vi.hoisted(() => ({
+  keepAwake: vi.fn(),
+  allowSleep: vi.fn(),
+}));
+
+vi.mock("@capacitor-community/keep-awake", () => ({
+  KeepAwake: { keepAwake, allowSleep },
+}));
 
 /**
  * jsdom has no Screen Wake Lock API, so `navigator.wakeLock` is defined for the
@@ -18,6 +28,15 @@ describe("WakeLockService", () => {
   let request: ReturnType<typeof vi.fn>;
   let release: ReturnType<typeof vi.fn>;
   let releaseListeners: (() => void)[];
+  let mockPlatformService: { isNative: ReturnType<typeof vi.fn> };
+
+  function buildService(): WakeLockService {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [{ provide: PlatformService, useValue: mockPlatformService }],
+    });
+    return TestBed.inject(WakeLockService);
+  }
 
   function defineWakeLock(value: unknown): void {
     Object.defineProperty(navigator, "wakeLock", { value, configurable: true });
@@ -58,8 +77,14 @@ describe("WakeLockService", () => {
     request = vi.fn().mockResolvedValue(sentinel);
     defineWakeLock({ request });
 
-    TestBed.configureTestingModule({});
-    service = TestBed.inject(WakeLockService);
+    // These two are module-level, so afterEach's restoreAllMocks leaves their
+    // call history behind — a "called twice" assertion would otherwise count
+    // every earlier test in the file.
+    keepAwake.mockClear().mockResolvedValue(undefined);
+    allowSleep.mockClear().mockResolvedValue(undefined);
+    mockPlatformService = { isNative: vi.fn().mockReturnValue(false) };
+
+    service = buildService();
   });
 
   afterEach(() => {
@@ -248,6 +273,56 @@ describe("WakeLockService", () => {
       // here would land on top of the song for something the player did not do.
       expect(currentErrorMessage()).toBeNull();
       expect(service.isKeptAwake()).toBe(false);
+    });
+  });
+
+  /**
+   * Android's WebView has no Screen Wake Lock API at all, so the browser path
+   * would only ever reach the "this browser cannot keep the screen awake"
+   * snackbar — on the one device where a music stand is the whole point.
+   */
+  describe("on a device", () => {
+    beforeEach(() => {
+      mockPlatformService.isNative.mockReturnValue(true);
+      // Proving the native path is taken means proving the web one is not.
+      Reflect.deleteProperty(navigator, "wakeLock");
+      service = buildService();
+    });
+
+    it("should hold the screen through the native plugin", async () => {
+      await service.setKeptAwake(true);
+
+      expect(keepAwake).toHaveBeenCalledTimes(1);
+      expect(request).not.toHaveBeenCalled();
+      expect(service.isKeptAwake()).toBe(true);
+    });
+
+    it("should let the screen sleep again when switched off", async () => {
+      await service.setKeptAwake(true);
+      await service.setKeptAwake(false);
+
+      expect(allowSleep).toHaveBeenCalledTimes(1);
+      expect(service.isKeptAwake()).toBe(false);
+    });
+
+    it("should report a refusal instead of claiming the screen is held", async () => {
+      keepAwake.mockRejectedValueOnce(new Error("denied"));
+      vi.spyOn(console, "error").mockImplementation(() => {});
+
+      await service.setKeptAwake(true);
+
+      expect(currentErrorMessage()).toBe("Could not keep the screen awake.");
+      expect(service.isKeptAwake()).toBe(false);
+    });
+
+    // The window flag goes with the activity, and Android sends no event when
+    // it does, so coming back has to re-assert it.
+    it("should take the screen back when the app returns to the foreground", async () => {
+      await service.setKeptAwake(true);
+
+      becomeVisible();
+
+      await vi.waitFor(() => expect(keepAwake).toHaveBeenCalledTimes(2));
     });
   });
 });

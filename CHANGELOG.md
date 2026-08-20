@@ -11,6 +11,29 @@ first entry moves to `## [1.0.0]` when the first release is cut.
 
 ## [Unreleased]
 
+### Added
+
+- **GuiTab now builds as an Android app**, from the same source as the web app,
+  packaged with Capacitor. Opening and saving `.cho` files, Google sign-in, the
+  microphone, and keeping the screen awake all work through the platform's own
+  APIs, because the browser ones they relied on either behave differently inside
+  an Android WebView or do not exist there. Tapping a `.cho` file in a file
+  manager opens it in GuiTab, as it already did on the desktop. The web app is
+  unchanged. Building an APK is documented in `README.md`; note that native
+  Google sign-in links a proprietary Google library into the APK, which is a
+  licensing decision explained in `.claude/skills/capacitor-android/SKILL.md`.
+
+### Fixed
+
+- Saving a file no longer risks failing outright on browsers without the File
+  System Access API. The check for "can this file be written to in place?" read a
+  global that does not exist everywhere, which raised an error instead of
+  answering no.
+- The CSS reset is now part of the app instead of being fetched from
+  `meyerweb.com` on every load. Offline — the case the app is installable for —
+  the page used to render unstyled while waiting for a request that could not
+  succeed.
+
 ### Changed
 
 - **The project is now licensed under the GNU General Public License, version 3

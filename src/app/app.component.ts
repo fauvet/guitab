@@ -17,19 +17,6 @@ import { ChordproService } from "./services/chordpro/chordpro.service";
 import { CachedFilesService } from "./services/cached-files/cached-files.service";
 import { NotificationService } from "./services/notification/notification.service";
 
-/**
- * The Launch Handler API, which delivers the files a PWA was opened with.
- * TypeScript's DOM library does not declare it yet, so the two members this
- * app reads are declared here rather than reached through `any`.
- */
-interface LaunchParams {
-  files?: FileSystemFileHandle[];
-}
-
-interface LaunchQueue {
-  setConsumer(consumer: (launchParams: LaunchParams) => void): void;
-}
-
 @Component({
   selector: "app-root",
   templateUrl: "./app.component.html",
@@ -68,19 +55,19 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.handleLaunchQueue();
+    this.keyboardShortcutService.openLaunchedFiles();
     this.appContextService.getIsEditing$().subscribe((isEditing) => (this.isEditing = isEditing));
 
     // This root component is never destroyed, so — like the two subscriptions
     // above — this one is not torn down either; see AppContextService for the
     // same reasoning applied to its own constructor subscriptions.
-    this.keyboardShortcutService.getKeyboardFileActionOutcome$().subscribe((outcome) => {
+    this.keyboardShortcutService.getFileActionOutcome$().subscribe((outcome) => {
       if (outcome.type === "saved") {
         this.notificationService.showSuccess(`${outcome.fileName} saved`);
         return;
       }
       console.error(outcome.error);
-      this.notificationService.showError("Could not complete the keyboard shortcut. Please try again.");
+      this.notificationService.showError("Could not complete the file action. Please try again.");
     });
 
     this.activatedRoute.queryParamMap.subscribe(async (params) => {
@@ -91,13 +78,13 @@ export class AppComponent implements OnInit {
       try {
         if (isDemo) {
           const demoFile = await FileUtil.loadSampleFile();
-          await this.appContextService.setFileHandle(demoFile);
+          await this.appContextService.setFile(demoFile);
           return;
         }
 
         const draftUnsavedChordproContent = this.beforeUnloadService.findDraftUnsavedChordproContent();
         const emptyFile = await FileUtil.loadEmptyFile();
-        await this.appContextService.setFileHandle(emptyFile);
+        await this.appContextService.setFile(emptyFile);
 
         if (draftUnsavedChordproContent) {
           this.chordproService.setChordproContent(draftUnsavedChordproContent);
@@ -105,27 +92,6 @@ export class AppComponent implements OnInit {
       } catch (error: unknown) {
         console.error(error);
         this.notificationService.showError("Could not load the song.");
-      }
-    });
-  }
-
-  private handleLaunchQueue(): void {
-    if (!("launchQueue" in window)) return;
-
-    const launchQueue = window.launchQueue as unknown as LaunchQueue;
-    launchQueue.setConsumer(async (launchParams) => {
-      if (!launchParams?.files?.length) return;
-      const fileHandle = launchParams.files[0];
-
-      try {
-        await this.appContextService.setFileHandle(fileHandle);
-        this.appContextService.setEditing(false);
-
-        const chordproContent = (await FileUtil.getFileContent(fileHandle)) ?? "";
-        await this.cachedFilesService.saveFile(chordproContent);
-      } catch (error: unknown) {
-        console.error(error);
-        this.notificationService.showError("Could not open the file.");
       }
     });
   }

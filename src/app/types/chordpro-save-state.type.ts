@@ -1,5 +1,8 @@
+import { FileTarget } from "./file-target.type";
+import { FileTargetUtil } from "../utils/file-target.util";
+
 export default interface ChordproSaveState {
-  fileHandle: null | File | FileSystemFileHandle;
+  fileTarget: null | FileTarget;
   chordproContent: string;
 }
 
@@ -10,7 +13,10 @@ export function areChordproSaveStatesEquals(
   chordproSaveState2: NullableChordproSaveState,
 ): boolean {
   return (
-    chordproSaveState1?.fileHandle === chordproSaveState2?.fileHandle &&
+    // Reference equality on the target itself would report a different file on
+    // every read, the target being a wrapper built on demand — see
+    // FileTargetUtil.areSame.
+    FileTargetUtil.areSame(chordproSaveState1?.fileTarget ?? null, chordproSaveState2?.fileTarget ?? null) &&
     chordproSaveState1?.chordproContent === chordproSaveState2?.chordproContent
   );
 }

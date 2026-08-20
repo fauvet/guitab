@@ -68,6 +68,18 @@ module.exports = tseslint.config(
               message:
                 "Firebase belongs to src/app/services/ and src/app/storage/. Call a service or a repository instead — see CLAUDE.md hard rule 2. A type-only import is fine.",
             },
+            {
+              // Capacitor is the same kind of boundary as Firebase and Web
+              // Audio: a plugin call reaches the device, so a component that
+              // makes one can no longer be tested without one. Every one of
+              // them has a service or a repository in front of it, and
+              // PlatformService is the single place that asks what we are
+              // running on.
+              group: ["@capacitor/*", "@capacitor-community/*", "@capacitor-firebase/*", "@capawesome/*"],
+              allowTypeImports: true,
+              message:
+                "Capacitor belongs to src/app/services/ and src/app/storage/. Call a service or a repository instead — see CLAUDE.md hard rule 2. A type-only import is fine.",
+            },
           ],
         },
       ],

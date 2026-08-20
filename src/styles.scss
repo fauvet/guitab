@@ -3,6 +3,158 @@
 @use "./theme-colors" as brand;
 
 /**
+ * Eric Meyer's reset, v2.0 — http://meyerweb.com/eric/tools/css/reset/
+ * Released by its author into the public domain, so it carries no licence
+ * obligation of its own.
+ *
+ * It used to be pulled from meyerweb.com with a <link> in index.html, which
+ * made every page load depend on a third party being reachable — including the
+ * offline load the service worker exists to serve, and every launch of the
+ * Android app, where there may be no network at all. A reset that arrives late,
+ * or never, is worse than no reset: the layout renders unstyled and then jumps.
+ *
+ * It stays first in this file so the Material theme and everything below can
+ * override it, which is the order the <link> used to give.
+ */
+html,
+body,
+div,
+span,
+applet,
+object,
+iframe,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+a,
+abbr,
+acronym,
+address,
+big,
+cite,
+code,
+del,
+dfn,
+em,
+img,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+strike,
+strong,
+sub,
+sup,
+tt,
+var,
+b,
+u,
+i,
+center,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+form,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td,
+article,
+aside,
+canvas,
+details,
+embed,
+figure,
+figcaption,
+footer,
+header,
+hgroup,
+menu,
+nav,
+output,
+ruby,
+section,
+summary,
+time,
+mark,
+audio,
+video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+}
+
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section {
+  display: block;
+}
+
+body {
+  line-height: 1;
+}
+
+ol,
+ul {
+  list-style: none;
+}
+
+blockquote,
+q {
+  quotes: none;
+}
+
+blockquote {
+  &::before,
+  &::after {
+    content: "";
+    content: none;
+  }
+}
+
+q {
+  &::before,
+  &::after {
+    content: "";
+    content: none;
+  }
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/**
  * Material 3. The previous theme was built with the M2 API, which is why two
  * components had to write `var(--mat-sys-error, #b3261e)`: the `--mat-sys-*`
  * system variables they read are only emitted by an M3 theme, so every one of

@@ -1,23 +1,28 @@
 import { inject, Injectable } from "@angular/core";
 import {
   Auth,
+  AuthCredential,
   getAuth,
   GoogleAuthProvider,
+  linkWithCredential,
   linkWithPopup,
   onAuthStateChanged,
   signInAnonymously,
+  signInWithCredential,
   signInWithPopup,
   signOut,
   User,
 } from "firebase/auth";
 import { BehaviorSubject, filter, firstValueFrom, Observable } from "rxjs";
 import { FirebaseService } from "../firebase/firebase.service";
+import { PlatformService } from "../platform/platform.service";
 
 @Injectable({
   providedIn: "root",
 })
 export class AuthService {
   private readonly firebaseService = inject(FirebaseService);
+  private readonly platformService = inject(PlatformService);
   private readonly auth: Auth;
 
   private readonly user$ = new BehaviorSubject<User | null>(null);
@@ -88,11 +93,10 @@ export class AuthService {
    * Falls back to a full sign-in if the Google account is already linked to another uid.
    */
   async signInWithGoogle(): Promise<void> {
-    const provider = new GoogleAuthProvider();
     const current = this.auth.currentUser;
     if (current?.isAnonymous) {
       try {
-        await linkWithPopup(current, provider);
+        await this.linkGoogle(current);
       } catch (error: unknown) {
         // Firebase reports the reason in a `code` field. Narrow on that field
         // rather than on `instanceof Error`: what this branch depends on is the
@@ -104,20 +108,76 @@ export class AuthService {
             : undefined;
         if (code === "auth/credential-already-in-use" || code === "auth/email-already-in-use") {
           // Google account already exists with a different uid — sign in directly
-          await signInWithPopup(this.auth, provider);
+          await this.signInGoogle();
         } else {
           throw error;
         }
       }
     } else {
-      await signInWithPopup(this.auth, provider);
+      await this.signInGoogle();
     }
+  }
+
+  private async signInGoogle(): Promise<void> {
+    const credential = await this.requestNativeGoogleCredential();
+    if (credential !== null) {
+      await signInWithCredential(this.auth, credential);
+      return;
+    }
+
+    await signInWithPopup(this.auth, new GoogleAuthProvider());
+  }
+
+  private async linkGoogle(user: User): Promise<void> {
+    const credential = await this.requestNativeGoogleCredential();
+    if (credential !== null) {
+      await linkWithCredential(user, credential);
+      return;
+    }
+
+    await linkWithPopup(user, new GoogleAuthProvider());
+  }
+
+  /**
+   * The Google consent screen, on a device.
+   *
+   * Google rejects OAuth started from an embedded WebView, so the popup that
+   * works in a browser cannot work here. The native plugin runs the consent
+   * flow through Android instead and hands back an ID token — and with
+   * `skipNativeAuth` it stops there, deliberately: the JS SDK stays the single
+   * owner of the session, because `user$` and every Realtime Database repository are
+   * built on it. Two SDKs holding two ideas of who is signed in is the failure
+   * this avoids.
+   *
+   * Returns null in a browser, where the caller falls back to the popup. The
+   * import is dynamic so the web bundle never carries the plugin.
+   */
+  private async requestNativeGoogleCredential(): Promise<null | AuthCredential> {
+    if (!this.platformService.isNative()) return null;
+
+    const { FirebaseAuthentication } = await import("@capacitor-firebase/authentication");
+    const result = await FirebaseAuthentication.signInWithGoogle({ skipNativeAuth: true });
+
+    const idToken = result.credential?.idToken;
+    if (!idToken) {
+      throw new Error("Google sign-in returned no ID token.");
+    }
+
+    return GoogleAuthProvider.credential(idToken);
   }
 
   /**
    * Signs out then immediately falls back to anonymous authentication.
    */
   async signOut(): Promise<void> {
+    // The native layer caches the chosen Google account independently of the
+    // JS SDK. Left signed in, the next sign-in would skip the account chooser
+    // and silently return the account the user just left.
+    if (this.platformService.isNative()) {
+      const { FirebaseAuthentication } = await import("@capacitor-firebase/authentication");
+      await FirebaseAuthentication.signOut();
+    }
+
     await signOut(this.auth);
     // onAuthStateChanged will trigger signInAnonymously automatically
   }

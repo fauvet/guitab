@@ -6,6 +6,7 @@ import { LocalDraftRepository } from "../../storage/local/local-draft.repository
 import { FirebaseDraftRepository } from "../../storage/firebase/firebase-draft.repository";
 import { AuthService } from "../auth/auth.service";
 import { IDraftRepository } from "../../storage/repositories/draft.repository";
+import { PlatformService } from "../platform/platform.service";
 
 @Injectable({
   providedIn: "root",
@@ -15,6 +16,7 @@ export class BeforeUnloadService {
   private readonly authService = inject(AuthService);
   private readonly localRepository = inject(LocalDraftRepository);
   private readonly firebaseRepository = inject(FirebaseDraftRepository);
+  private readonly platformService = inject(PlatformService);
 
   private getActiveRepository(): IDraftRepository {
     return this.authService.getUser() ? this.firebaseRepository : this.localRepository;
@@ -28,16 +30,58 @@ export class BeforeUnloadService {
 
     window.addEventListener("beforeunload", (event) => {
       const hasUnsavedChanges = this.checkForUnsavedChanges(event);
-      const current = this.getActiveRepository().getDraft();
-      const newDraft: Draft = { ...current, hasUnsavedChanges };
-      // The browser gives beforeunload no time budget for a component to react
-      // to a rejection, so there is no catcher to rethrow to — this is the
-      // "Errors are never swallowed" bootstrap-style exception, just at the
-      // other end of the app's life instead of the start.
-      this.getActiveRepository()
-        .saveDraft(newDraft)
-        .catch((err: unknown) => console.error("[BeforeUnloadService] saveDraft error:", err));
+      this.saveUnsavedChangesFlag(hasUnsavedChanges);
     });
+
+    if (this.platformService.isNative()) {
+      this.listenToAppLifecycle().catch((error: unknown) =>
+        console.error("[BeforeUnloadService] Could not listen to the app lifecycle:", error),
+      );
+    }
+  }
+
+  /**
+   * `beforeunload` never fires on Android — an app is backgrounded or killed,
+   * it is not unloaded. Two events stand in for it.
+   *
+   * The draft content itself is safe either way, being written on every content
+   * change. What would be lost is the flag saying it is unsaved, which is the
+   * one thing the recovery on startup reads.
+   */
+  private async listenToAppLifecycle(): Promise<void> {
+    const { App } = await import("@capacitor/app");
+
+    await App.addListener("appStateChange", ({ isActive }) => {
+      if (isActive) return;
+      this.saveUnsavedChangesFlag(this.chordproService.hasUnsavedChanges());
+    });
+
+    // The hardware back button is this app's equivalent of closing the tab:
+    // there is no second route to go back to, so Android's default is to leave.
+    // The browser answers that with its native "leave site?" prompt, and this is
+    // the same guard.
+    await App.addListener("backButton", () => {
+      const hasUnsavedChanges = this.chordproService.hasUnsavedChanges();
+      this.saveUnsavedChangesFlag(hasUnsavedChanges);
+
+      if (hasUnsavedChanges && !confirm("You have unsaved changes. Are you sure you want to leave?")) return;
+
+      App.exitApp().catch((error: unknown) => console.error("[BeforeUnloadService] exitApp error:", error));
+    });
+  }
+
+  /**
+   * Callers here are all leaving-the-app events, and none of them gives a
+   * component time to react to a rejection — there is no catcher to rethrow to.
+   * This is the "Errors are never swallowed" bootstrap-style exception, at the
+   * other end of the app's life instead of the start.
+   */
+  private saveUnsavedChangesFlag(hasUnsavedChanges: boolean): void {
+    const current = this.getActiveRepository().getDraft();
+    const newDraft: Draft = { ...current, hasUnsavedChanges };
+    this.getActiveRepository()
+      .saveDraft(newDraft)
+      .catch((error: unknown) => console.error("[BeforeUnloadService] saveDraft error:", error));
   }
 
   initialize(): void {

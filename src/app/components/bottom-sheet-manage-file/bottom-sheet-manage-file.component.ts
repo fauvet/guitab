@@ -13,6 +13,7 @@ import { AsyncPipe } from "@angular/common";
 import { MatDividerModule } from "@angular/material/divider";
 import CachedFile from "../../types/cached-file.type";
 import DateUtil from "../../utils/date.util";
+import { FileTargetUtil } from "../../utils/file-target.util";
 import { CachedFilesService } from "../../services/cached-files/cached-files.service";
 import { ChordproService } from "../../services/chordpro/chordpro.service";
 import { HttpClient } from "@angular/common/http";
@@ -64,11 +65,10 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
       .subscribe((cachedFiles) => this.onCachedFilesChanged(cachedFiles));
 
     this.appContextService
-      .getFileHandleWithContent$()
+      .getFileWithContent$()
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((fileHandleWithContent) => {
-        const fileHandle = fileHandleWithContent?.fileHandle ?? null;
-        this.isSaveExistingFileEnabled$.next(!!fileHandle && fileHandle instanceof FileSystemFileHandle);
+      .subscribe((fileWithContent) => {
+        this.isSaveExistingFileEnabled$.next(FileTargetUtil.isWritable(fileWithContent?.fileTarget ?? null));
       });
 
     this.bottomSheetRef.afterDismissed().subscribe(() => {
@@ -171,10 +171,12 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
 
   async onButtonCachedFileClicked(cachedFile: CachedFile): Promise<void> {
     try {
-      await this.appContextService.setFileHandle(
-        new File([cachedFile.chordproContent], "cached_file.cho", {
-          type: "text/plain",
-        }),
+      await this.appContextService.setFile(
+        FileTargetUtil.fromFile(
+          new File([cachedFile.chordproContent], "cached_file.cho", {
+            type: "text/plain",
+          }),
+        ),
       );
       this.appContextService.setEditing(false);
       await this.cachedFilesService.saveFile(cachedFile.chordproContent);

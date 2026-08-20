@@ -1,18 +1,19 @@
 # GuiTab — CLAUDE.md
 
-A ChordPro chord-chart editor and viewer, shipped as an installable PWA. Everything
-runs in the browser; Firebase provides sign-in and per-user cloud storage, nothing
-else. It also captures a hummed melody through the microphone and turns it into an
-ASCII tab.
+A ChordPro chord-chart editor and viewer, shipped as an installable PWA and, from the
+same source, as an Android app packaged with Capacitor. Everything runs in the
+browser; Firebase provides sign-in and per-user cloud storage, nothing else. It also
+captures a hummed melody through the microphone and turns it into an ASCII tab.
 
 ## Hard rules
 
 1. **Every component is standalone and `OnPush`.** No NgModules, no default change
    detection. Dependencies come from `inject()` at field level, never from a
    constructor parameter.
-2. **Never touch Firebase outside `src/app/services/` and `src/app/storage/`.**
-   Components call a service; persistence goes through a repository interface.
-   ESLint enforces this.
+2. **Never touch Firebase or Capacitor outside `src/app/services/` and
+   `src/app/storage/`.** Components call a service; persistence goes through a
+   repository interface. ESLint enforces this. `PlatformService` is the only place
+   that asks which platform we are on — anything else branches on a repository.
 3. **Never touch Web Audio outside the two services that own it** — pitch
    detection and the Bluetooth keep-alive. Same boundary, same reason: it is
    what keeps the musical logic testable without a microphone. ESLint enforces
@@ -41,7 +42,7 @@ ASCII tab.
 
 Angular 22 (standalone, OnPush) · TypeScript strict · Angular Material 22 · RxJS 7 ·
 Firebase Auth + Realtime Database · Vitest 4 · aubio (WebAssembly) for pitch and
-onset detection. Exact versions: `package.json`.
+onset detection · Capacitor for the Android build. Exact versions: `package.json`.
 
 ## Project structure
 
@@ -49,7 +50,7 @@ onset detection. Exact versions: `package.json`.
 src/app/
 ├── components/   # standalone UI, one folder per component
 ├── services/     # root singletons — the only place with side effects
-├── storage/      # repository interfaces + local/ and firebase/ implementations
+├── storage/      # repository interfaces + local/ firebase/ web/ native/ implementations
 ├── types/        # shared interfaces
 └── utils/        # static-method classes, pure, no framework
 ```
@@ -92,6 +93,7 @@ Read the matching document **before** you start, not after:
 - Adding a dependency: `.claude/rules/dependencies-licensing.instructions.md`
 - Committing, branching, reviewing: `.claude/rules/git-workflow.instructions.md`
 - Editing any `.md` in this repo: `.claude/rules/documentation.instructions.md`
+- Anything touching the Android build: `.claude/skills/capacitor-android/SKILL.md`
 
 Domain and stack knowledge lives in `.claude/skills/` — one skill per brick of the
 stack, loaded on demand rather than read every session.

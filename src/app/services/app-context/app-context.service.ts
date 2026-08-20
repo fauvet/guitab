@@ -3,8 +3,10 @@ import { BehaviorSubject, Observable } from "rxjs";
 import { BluetoothKeepAliveService } from "../bluetooth-keep-alive/bluetooth-keep-alive.service";
 import { WakeLockService } from "../wake-lock/wake-lock.service";
 import { FileUtil } from "../../utils/file.util";
+import { FileTarget } from "../../types/file-target.type";
+import { FileTargetUtil } from "../../utils/file-target.util";
 
-export type FileHandleWithContent = { fileHandle: File | FileSystemFileHandle; content: string };
+export type FileWithContent = { fileTarget: null | FileTarget; content: string };
 
 @Injectable({
   providedIn: "root",
@@ -13,7 +15,7 @@ export class AppContextService {
   private readonly bluetoothKeepAliveService = inject(BluetoothKeepAliveService);
   private readonly wakeLockService = inject(WakeLockService);
 
-  private readonly fileHandleWithContent$ = new BehaviorSubject<null | FileHandleWithContent>(null);
+  private readonly fileWithContent$ = new BehaviorSubject<null | FileWithContent>(null);
   private readonly isEditing$ = new BehaviorSubject<boolean>(false);
   private readonly isWakeLock$ = new BehaviorSubject<boolean>(false);
   private readonly isBluetoothKeptAlive$ = new BehaviorSubject<boolean>(false);
@@ -29,12 +31,12 @@ export class AppContextService {
     );
   }
 
-  getFileHandleWithContent$(): Observable<null | FileHandleWithContent> {
-    return this.fileHandleWithContent$.asObservable();
+  getFileWithContent$(): Observable<null | FileWithContent> {
+    return this.fileWithContent$.asObservable();
   }
 
-  getFileHandleWithContent(): null | FileHandleWithContent {
-    return this.fileHandleWithContent$.getValue();
+  getFileWithContent(): null | FileWithContent {
+    return this.fileWithContent$.getValue();
   }
 
   getIsEditing$(): Observable<boolean> {
@@ -61,10 +63,15 @@ export class AppContextService {
     return this.isBluetoothKeptAlive$.getValue();
   }
 
-  async setFileHandle(fileHandle: null | File | FileSystemFileHandle): Promise<void> {
-    if (fileHandle == this.getFileHandleWithContent()?.fileHandle) return;
-    const content = await FileUtil.getFileContent(fileHandle);
-    this.fileHandleWithContent$.next({ fileHandle, content } as FileHandleWithContent);
+  /**
+   * `content` is only ever supplied for a target a util cannot read — a native
+   * URI, whose bytes the repository that picked it already holds. Leaving it out
+   * keeps the web path exactly as it was.
+   */
+  async setFile(fileTarget: null | FileTarget, content?: string): Promise<void> {
+    if (FileTargetUtil.areSame(fileTarget, this.getFileWithContent()?.fileTarget ?? null)) return;
+    const resolvedContent = content ?? (await FileUtil.getFileContent(fileTarget)) ?? "";
+    this.fileWithContent$.next({ fileTarget, content: resolvedContent });
   }
 
   setEditing(isEditing: boolean): void {

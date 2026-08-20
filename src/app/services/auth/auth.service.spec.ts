@@ -2,12 +2,18 @@ import { TestBed } from "@angular/core/testing";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import { AuthService } from "./auth.service";
 import { FirebaseService } from "../firebase/firebase.service";
+import { PlatformService } from "../platform/platform.service";
 
 // vi.hoisted() ensures these are accessible inside the vi.mock() factory,
 // which is statically hoisted to the top of the file before any imports.
 const { authCallbacks, mockAuth } = vi.hoisted(() => ({
   authCallbacks: { callback: null as ((user: unknown) => void) | null },
   mockAuth: { currentUser: null as unknown },
+}));
+
+const { nativeSignInWithGoogle, nativeSignOut } = vi.hoisted(() => ({
+  nativeSignInWithGoogle: vi.fn(),
+  nativeSignOut: vi.fn(),
 }));
 
 vi.mock("firebase/auth", () => ({
@@ -18,25 +24,45 @@ vi.mock("firebase/auth", () => ({
   }),
   signInAnonymously: vi.fn().mockResolvedValue({}),
   signInWithPopup: vi.fn().mockResolvedValue({}),
+  signInWithCredential: vi.fn().mockResolvedValue({}),
   linkWithPopup: vi.fn().mockResolvedValue({}),
+  linkWithCredential: vi.fn().mockResolvedValue({}),
   signOut: vi.fn().mockResolvedValue(undefined),
-  GoogleAuthProvider: vi.fn(),
+  GoogleAuthProvider: Object.assign(vi.fn(), { credential: vi.fn(() => ({ providerId: "google.com" })) }),
+}));
+
+vi.mock("@capacitor-firebase/authentication", () => ({
+  FirebaseAuthentication: { signInWithGoogle: nativeSignInWithGoogle, signOut: nativeSignOut },
 }));
 
 const mockFirebaseService = { getApp: vi.fn().mockReturnValue({}) };
 
 describe("AuthService", () => {
   let service: AuthService;
+  let mockPlatformService: { isNative: ReturnType<typeof vi.fn> };
+
+  const buildService = (): AuthService => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        AuthService,
+        { provide: FirebaseService, useValue: mockFirebaseService },
+        { provide: PlatformService, useValue: mockPlatformService },
+      ],
+    });
+    return TestBed.inject(AuthService);
+  };
 
   beforeEach(() => {
     authCallbacks.callback = null;
     mockAuth.currentUser = null;
     vi.clearAllMocks();
 
-    TestBed.configureTestingModule({
-      providers: [AuthService, { provide: FirebaseService, useValue: mockFirebaseService }],
-    });
-    service = TestBed.inject(AuthService);
+    nativeSignInWithGoogle.mockResolvedValue({ credential: { idToken: "id-token" } });
+    nativeSignOut.mockResolvedValue(undefined);
+    mockPlatformService = { isNative: vi.fn().mockReturnValue(false) };
+
+    service = buildService();
   });
 
   it("should be created", () => {
@@ -136,11 +162,73 @@ describe("AuthService", () => {
     });
   });
 
+  // Google refuses OAuth started from an embedded WebView, so on a device the
+  // popup cannot be the mechanism. The native plugin runs the consent flow and
+  // returns an ID token; the JS SDK stays the owner of the session.
+  describe("signInWithGoogle() on a device", () => {
+    beforeEach(() => {
+      mockPlatformService.isNative.mockReturnValue(true);
+      service = buildService();
+    });
+
+    it("links the anonymous account with the credential rather than opening a popup", async () => {
+      const { linkWithCredential, linkWithPopup } = await import("firebase/auth");
+      mockAuth.currentUser = { isAnonymous: true };
+
+      await service.signInWithGoogle();
+
+      expect(nativeSignInWithGoogle).toHaveBeenCalledWith({ skipNativeAuth: true });
+      expect(linkWithCredential).toHaveBeenCalledTimes(1);
+      expect(linkWithPopup).not.toHaveBeenCalled();
+    });
+
+    it("signs in with the credential when the user is not anonymous", async () => {
+      const { signInWithCredential, signInWithPopup } = await import("firebase/auth");
+      mockAuth.currentUser = { isAnonymous: false };
+
+      await service.signInWithGoogle();
+
+      expect(signInWithCredential).toHaveBeenCalledTimes(1);
+      expect(signInWithPopup).not.toHaveBeenCalled();
+    });
+
+    it("keeps the fallback when the Google account already belongs to another uid", async () => {
+      const { linkWithCredential, signInWithCredential } = await import("firebase/auth");
+      mockAuth.currentUser = { isAnonymous: true };
+      (linkWithCredential as ReturnType<typeof vi.fn>).mockRejectedValueOnce({
+        code: "auth/credential-already-in-use",
+      });
+
+      await service.signInWithGoogle();
+
+      expect(signInWithCredential).toHaveBeenCalledTimes(1);
+    });
+
+    it("fails rather than signing in when the plugin returned no ID token", async () => {
+      nativeSignInWithGoogle.mockResolvedValue({ credential: {} });
+      mockAuth.currentUser = { isAnonymous: false };
+
+      await expect(service.signInWithGoogle()).rejects.toThrow(/no ID token/);
+    });
+  });
+
   describe("signOut()", () => {
     it("calls Firebase signOut", async () => {
       const { signOut } = await import("firebase/auth");
       await service.signOut();
       expect(signOut).toHaveBeenCalledTimes(1);
+      expect(nativeSignOut).not.toHaveBeenCalled();
+    });
+
+    // The native layer caches the chosen account on its own; left signed in it
+    // would skip the chooser and hand back the account the user just left.
+    it("also signs the native layer out on a device", async () => {
+      mockPlatformService.isNative.mockReturnValue(true);
+      service = buildService();
+
+      await service.signOut();
+
+      expect(nativeSignOut).toHaveBeenCalledTimes(1);
     });
   });
 

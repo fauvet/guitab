@@ -1,0 +1,10 @@
+# Prettier reads the root .gitignore and this file, but not nested ones — so
+# everything `npx cap sync` generates under android/ has to be named again here,
+# even though android/.gitignore already keeps it out of git.
+#
+# All of it is a copy of the build output or of capacitor.config.ts. Formatting
+# a generated copy would turn every sync into a diff.
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+android/app/src/main/assets/capacitor.plugins.json
+android/app/src/main/res/xml/config.xml

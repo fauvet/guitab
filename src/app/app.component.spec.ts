@@ -5,10 +5,7 @@ import { MatIconTestingModule } from "@angular/material/icon/testing";
 import { of, Subject } from "rxjs";
 import { AppComponent } from "./app.component";
 import { CachedFilesService } from "./services/cached-files/cached-files.service";
-import {
-  KeyboardShortcutService,
-  KeyboardFileActionOutcome,
-} from "./services/keyboard-shortcut/keyboard-shortcut.service";
+import { KeyboardShortcutService, FileActionOutcome } from "./services/keyboard-shortcut/keyboard-shortcut.service";
 import { NotificationService } from "./services/notification/notification.service";
 import { FileUtil } from "./utils/file.util";
 
@@ -32,7 +29,7 @@ describe("AppComponent", () => {
     expect(app).toBeTruthy();
   });
 
-  describe("handleLaunchQueue", () => {
+  describe("opening a launched file", () => {
     const originalLaunchQueue = (window as { launchQueue?: unknown }).launchQueue;
 
     afterEach(() => {
@@ -100,8 +97,10 @@ describe("AppComponent", () => {
       const fakeFileHandle = {} as unknown as FileSystemFileHandle;
       await consumer!({ files: [fakeFileHandle] });
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith(cacheError);
-      expect(mockNotificationService.showError).toHaveBeenCalledTimes(1);
+      await vi.waitFor(() => expect(consoleErrorSpy).toHaveBeenCalledWith(cacheError));
+      expect(mockNotificationService.showError).toHaveBeenCalledWith(
+        "Could not complete the file action. Please try again.",
+      );
     });
   });
 
@@ -132,17 +131,18 @@ describe("AppComponent", () => {
   });
 
   describe("keyboard file action outcomes", () => {
-    function configureWithKeyboardOutcome(outcome$: Subject<KeyboardFileActionOutcome>) {
+    function configureWithKeyboardOutcome(outcome$: Subject<FileActionOutcome>) {
       const mockNotificationService = { showError: vi.fn(), showSuccess: vi.fn() };
       const mockKeyboardShortcutService = {
         initialize: vi.fn(),
-        getKeyboardFileActionOutcome$: () => outcome$.asObservable(),
+        openLaunchedFiles: vi.fn(),
+        getFileActionOutcome$: () => outcome$.asObservable(),
       };
       return { mockNotificationService, mockKeyboardShortcutService };
     }
 
     it("shows a success notification once a keyboard-triggered save resolves", async () => {
-      const outcome$ = new Subject<KeyboardFileActionOutcome>();
+      const outcome$ = new Subject<FileActionOutcome>();
       const { mockNotificationService, mockKeyboardShortcutService } = configureWithKeyboardOutcome(outcome$);
 
       await TestBed.resetTestingModule()
@@ -165,7 +165,7 @@ describe("AppComponent", () => {
     });
 
     it("logs and shows an error notification, instead of failing silently, when a keyboard-triggered action throws", async () => {
-      const outcome$ = new Subject<KeyboardFileActionOutcome>();
+      const outcome$ = new Subject<FileActionOutcome>();
       const { mockNotificationService, mockKeyboardShortcutService } = configureWithKeyboardOutcome(outcome$);
       const error = new Error("Could not save.");
 

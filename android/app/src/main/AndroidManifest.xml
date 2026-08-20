@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
+            android:name=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:theme="@style/AppTheme.NoActionBarLaunch"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!--
+                The native counterpart of the PWA manifest's file_handlers.
+
+                ChordPro has no registered MIME type, so matching has to happen
+                on the file name, and Android's pathPattern is not a regular
+                expression: ".*\\.cho" stops at the first dot in the path, so a
+                file called "wonderful.tonight.cho" needs the two-dot variant as
+                well. Repeating the pattern is the documented workaround, not an
+                oversight.
+            -->
+            <intent-filter android:label="@string/app_name">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="content" />
+                <data android:scheme="file" />
+                <data android:host="*" />
+                <data android:mimeType="*/*" />
+                <data android:pathPattern=".*\\.cho" />
+                <data android:pathPattern=".*\\..*\\.cho" />
+                <data android:pathPattern=".*\\.crd" />
+                <data android:pathPattern=".*\\..*\\.crd" />
+                <data android:pathPattern=".*\\.chopro" />
+                <data android:pathPattern=".*\\..*\\.chopro" />
+                <data android:pathPattern=".*\\.chord" />
+                <data android:pathPattern=".*\\..*\\.chord" />
+                <data android:pathPattern=".*\\.pro" />
+                <data android:pathPattern=".*\\..*\\.pro" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/*" />
+            </intent-filter>
+        </activity>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
+        </provider>
+    </application>
+
+    <!-- Permissions -->
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!--
+        Humming a solo goes through getUserMedia in the WebView. Capacitor
+        forwards the WebView's permission request to Android, but without the
+        declaration below Android refuses it outright and the user is never
+        asked — the microphone simply never starts, with nothing to explain why.
+    -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+</manifest>

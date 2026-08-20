@@ -6,14 +6,14 @@ import { AppContextService } from "../app-context/app-context.service";
 describe("ChordproService", () => {
   let service: ChordproService;
   let mockAppContextService: {
-    getFileHandleWithContent$: ReturnType<typeof vi.fn>;
-    getFileHandleWithContent: ReturnType<typeof vi.fn>;
+    getFileWithContent$: ReturnType<typeof vi.fn>;
+    getFileWithContent: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(() => {
     mockAppContextService = {
-      getFileHandleWithContent$: vi.fn().mockReturnValue(EMPTY),
-      getFileHandleWithContent: vi.fn().mockReturnValue(null),
+      getFileWithContent$: vi.fn().mockReturnValue(EMPTY),
+      getFileWithContent: vi.fn().mockReturnValue(null),
     };
 
     TestBed.configureTestingModule({

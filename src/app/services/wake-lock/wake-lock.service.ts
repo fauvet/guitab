@@ -1,5 +1,6 @@
-import { Injectable, OnDestroy } from "@angular/core";
+import { inject, Injectable, OnDestroy } from "@angular/core";
 import { BehaviorSubject, Observable } from "rxjs";
+import { PlatformService } from "../platform/platform.service";
 
 /**
  * Holds a Screen Wake Lock so the phone does not dim in the middle of a song.
@@ -29,6 +30,8 @@ import { BehaviorSubject, Observable } from "rxjs";
   providedIn: "root",
 })
 export class WakeLockService implements OnDestroy {
+  private readonly platformService = inject(PlatformService);
+
   private readonly isKeptAwake$ = new BehaviorSubject<boolean>(false);
   // The *why* behind isKeptAwake$ being false — refused, unsupported, or simply
   // not requested yet. Not shown as a snackbar: coming back to the app after a
@@ -94,6 +97,11 @@ export class WakeLockService implements OnDestroy {
   private async acquire({ isSilentOnFailure }: { isSilentOnFailure: boolean }): Promise<void> {
     if (this.sentinel) return;
 
+    if (this.platformService.isNative()) {
+      await this.acquireNative(isSilentOnFailure);
+      return;
+    }
+
     if (!("wakeLock" in navigator)) {
       // Silently doing nothing would leave the setting switched on while the
       // screen keeps dimming, which reads as the app being broken rather than
@@ -120,7 +128,35 @@ export class WakeLockService implements OnDestroy {
     }
   }
 
+  /**
+   * Android has no `WakeLockSentinel`, and no event for the system taking the
+   * lock back — the window flag is simply dropped with the activity. So there
+   * is nothing to hold on to here, and `isKeptAwake$` follows the request
+   * rather than an observed reality. Coming back to the app re-acquires through
+   * the same visibilitychange path as the browser, which is what makes that
+   * approximation hold.
+   */
+  private async acquireNative(isSilentOnFailure: boolean): Promise<void> {
+    try {
+      const { KeepAwake } = await import("@capacitor-community/keep-awake");
+      await KeepAwake.keepAwake();
+      this.setKeptAwakeState(true);
+      this.lastErrorMessage$.next(null);
+    } catch (error: unknown) {
+      console.error("[WakeLock] Native keep-awake refused:", error);
+      if (!isSilentOnFailure) this.lastErrorMessage$.next("Could not keep the screen awake.");
+    }
+  }
+
   private async release(): Promise<void> {
+    if (this.platformService.isNative()) {
+      this.forget();
+      this.lastErrorMessage$.next(null);
+      const { KeepAwake } = await import("@capacitor-community/keep-awake");
+      await KeepAwake.allowSleep();
+      return;
+    }
+
     const sentinel = this.sentinel;
     this.forget();
     this.lastErrorMessage$.next(null);

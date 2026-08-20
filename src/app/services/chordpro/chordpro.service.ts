@@ -1,6 +1,6 @@
 import { inject, Injectable } from "@angular/core";
 import { BehaviorSubject, Observable } from "rxjs";
-import { AppContextService, FileHandleWithContent } from "../app-context/app-context.service";
+import { AppContextService, FileWithContent } from "../app-context/app-context.service";
 // chordproject-editor ships no types. @ts-expect-error rather than @ts-ignore
 // so this line starts failing the build the day the package adds them, instead
 // of silently outliving its reason.
@@ -34,8 +34,8 @@ export class ChordproService {
 
   constructor() {
     this.appContextService
-      .getFileHandleWithContent$()
-      .subscribe(async (fileHandleWithContent) => await this.onFileHandleWithContentChanged(fileHandleWithContent));
+      .getFileWithContent$()
+      .subscribe(async (fileWithContent) => await this.onFileWithContentChanged(fileWithContent));
     this.chordproContent$.subscribe((chordproContent) => this.onChordproContentChanged(chordproContent));
     this.areLyricsDisplayed$.subscribe((areLyricsDisplayed) => this.onAreLyricsDisplayed(areLyricsDisplayed));
   }
@@ -44,8 +44,8 @@ export class ChordproService {
     return ChordProjectEditor.Main.getEditor();
   }
 
-  private async onFileHandleWithContentChanged(fileHandleWithContent: null | FileHandleWithContent): Promise<void> {
-    const chordproContent = fileHandleWithContent?.content ?? "";
+  private async onFileWithContentChanged(fileWithContent: null | FileWithContent): Promise<void> {
+    const chordproContent = fileWithContent?.content ?? "";
     this.resetHistoryState();
     this.updateChordproSaveState(chordproContent);
     this.setChordproContent(chordproContent);
@@ -101,7 +101,7 @@ export class ChordproService {
 
   private buildChordproSaveState(chordproContent = this.getChordproContent()): ChordproSaveState {
     return {
-      fileHandle: this.appContextService.getFileHandleWithContent()?.fileHandle ?? null,
+      fileTarget: this.appContextService.getFileWithContent()?.fileTarget ?? null,
       chordproContent: chordproContent,
     };
   }
