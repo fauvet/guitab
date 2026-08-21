@@ -3,6 +3,18 @@
   gap: 12px;
   user-select: none;
   overflow-x: auto;
+  /*
+   * Same fix as header-actions-bar.component.css: a mat-icon-button's
+   * invisible 48px touch target is wider and taller than its 40px visible
+   * box, so it pokes 4px past this element's own edge on every side it's
+   * flush against — a permanent overflow (setting overflow-x forces the UA
+   * to compute overflow-y as auto too, per the CSS overflow spec) that
+   * overflow-x: auto normally hides until something makes the browser
+   * paint the scrollbar. The padding gives it room; the matching negative
+   * margin keeps the row's outer position and size identical to before.
+   */
+  padding: 4px;
+  margin: -4px;
 
   .container-edition {
     display: flex;

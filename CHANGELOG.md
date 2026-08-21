@@ -87,6 +87,12 @@ first entry moves to `## [1.0.0]` when the first release is cut.
 - File open/save, keyboard-triggered save, clipboard copy of a generated tab
   or converted lyrics, and Quick Access/file-handler sync failures show a
   message and log the error, through one consistent notification style.
+- The header and footer toolbars no longer show a spurious horizontal
+  **and vertical** scrollbar on interaction: every icon button's invisible
+  accessible touch target was permanently a few pixels wider and taller
+  than the row itself — an overflow `overflow-x: auto` (which per the CSS
+  spec forces `overflow-y` to compute as `auto` too) only revealed once
+  something, like a click, made the browser paint the scrollbar.
 
 ## Before this changelog
 

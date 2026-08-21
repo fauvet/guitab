@@ -3,6 +3,20 @@
   gap: 12px;
   user-select: none;
   overflow-x: auto;
+  /*
+   * A mat-icon-button's invisible 48px touch target is wider and taller
+   * than its 40px visible box, so it always pokes 4px past this element's
+   * own edge on every side it's flush against — the first/last buttons
+   * horizontally, every button vertically (setting overflow-x forces the
+   * UA to compute overflow-y as auto too, per the CSS overflow spec, so
+   * that 4px is a real, permanent overflow, not just a horizontal one).
+   * overflow-x: auto only hides it until something (e.g. a click) makes
+   * the browser paint the scrollbar. The padding gives the touch target
+   * room to sit inside client{Width,Height}; the matching negative margin
+   * keeps the row's outer position and size identical to before.
+   */
+  padding: 4px;
+  margin: -4px;
 
   .separator {
     flex: 1;
