@@ -30,7 +30,7 @@
     <p>No songs saved yet.</p>
   } @else {
     <mat-list>
-      @for (cachedFile of cachedFiles; track cachedFile.name) {
+      @for (cachedFile of cachedFiles; track cachedFile.id) {
         <mat-list-item
           matRipple
           (click)="onListItemOpenClicked(cachedFile)">

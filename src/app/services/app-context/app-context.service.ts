@@ -14,6 +14,7 @@ export class AppContextService {
   private readonly wakeLockService = inject(WakeLockService);
 
   private readonly fileHandleWithContent$ = new BehaviorSubject<null | FileHandleWithContent>(null);
+  private readonly fileId$ = new BehaviorSubject<string | null>(null);
   private readonly isEditing$ = new BehaviorSubject<boolean>(false);
   private readonly isWakeLock$ = new BehaviorSubject<boolean>(false);
   private readonly isBluetoothKeptAlive$ = new BehaviorSubject<boolean>(false);
@@ -35,6 +36,14 @@ export class AppContextService {
 
   getFileHandleWithContent(): null | FileHandleWithContent {
     return this.fileHandleWithContent$.getValue();
+  }
+
+  getFileId$(): Observable<string | null> {
+    return this.fileId$.asObservable();
+  }
+
+  getFileId(): string | null {
+    return this.fileId$.getValue();
   }
 
   getIsEditing$(): Observable<boolean> {
@@ -61,10 +70,19 @@ export class AppContextService {
     return this.isBluetoothKeptAlive$.getValue();
   }
 
-  async setFileHandle(fileHandle: null | File | FileSystemFileHandle): Promise<void> {
+  async setFileHandle(fileHandle: null | File | FileSystemFileHandle, id: string | null = null): Promise<void> {
     if (fileHandle == this.getFileHandleWithContent()?.fileHandle) return;
     const content = await FileUtil.getFileContent(fileHandle);
     this.fileHandleWithContent$.next({ fileHandle, content } as FileHandleWithContent);
+    this.fileId$.next(id);
+  }
+
+  // Deliberately independent of fileHandleWithContent$: patching the id there
+  // would re-trigger ChordproService's file-load reaction (history reset,
+  // content overwrite) on every autosave that assigns or updates an id.
+  setFileId(id: string): void {
+    if (id === this.getFileId()) return;
+    this.fileId$.next(id);
   }
 
   setEditing(isEditing: boolean): void {

@@ -31,7 +31,7 @@ describe("DialogFileGalleryComponent", () => {
   let mockNotificationService: { showSuccess: ReturnType<typeof vi.fn>; showError: ReturnType<typeof vi.fn> };
   let mockConfirmService: { confirm: ReturnType<typeof vi.fn> };
 
-  const song: CachedFile = { name: "Song", chordproContent: "{title: Song}", date: new Date() };
+  const song: CachedFile = { id: "song-id", name: "Song", chordproContent: "{title: Song}", date: new Date() };
 
   beforeEach(async () => {
     cachedFiles$ = new BehaviorSubject<CachedFile[]>([]);
@@ -80,8 +80,9 @@ describe("DialogFileGalleryComponent", () => {
       await component.onListItemOpenClicked(song);
 
       expect(mockAppContextService.setFileHandle).toHaveBeenCalledTimes(1);
+      expect(mockAppContextService.setFileHandle).toHaveBeenCalledWith(expect.any(File), song.id);
       expect(mockAppContextService.setEditing).toHaveBeenCalledWith(false);
-      expect(mockCachedFilesService.saveFile).toHaveBeenCalledWith(song.chordproContent, song.name);
+      expect(mockCachedFilesService.saveFile).toHaveBeenCalledWith(song.chordproContent, song.id, song.name);
       expect(mockDialogRef.close).toHaveBeenCalled();
     });
 
@@ -134,7 +135,7 @@ describe("DialogFileGalleryComponent", () => {
         `Delete "${song.name}"? This cannot be undone.`,
         "Delete",
       );
-      expect(mockCachedFilesService.deleteFile).toHaveBeenCalledWith(song.name);
+      expect(mockCachedFilesService.deleteFile).toHaveBeenCalledWith(song.id);
       expect(mockNotificationService.showSuccess).toHaveBeenCalledTimes(1);
     });
 
@@ -173,7 +174,7 @@ describe("DialogFileGalleryComponent", () => {
       await component.onButtonImportClicked(new Event("change"));
 
       expect(mockCachedFilesService.saveFile).toHaveBeenCalledTimes(2);
-      expect(mockCachedFilesService.saveFile).toHaveBeenCalledWith("{title: Imported}", "imported");
+      expect(mockCachedFilesService.saveFile).toHaveBeenCalledWith("{title: Imported}", null, "imported");
       expect(mockNotificationService.showSuccess).toHaveBeenCalledWith("2 file(s) imported.");
     });
 
@@ -189,7 +190,7 @@ describe("DialogFileGalleryComponent", () => {
       await component.onButtonImportClicked(event);
 
       expect(mockCachedFilesService.saveFile).toHaveBeenCalledTimes(1);
-      expect(mockCachedFilesService.saveFile).toHaveBeenCalledWith("{title: Imported}", "imported");
+      expect(mockCachedFilesService.saveFile).toHaveBeenCalledWith("{title: Imported}", null, "imported");
       expect(mockNotificationService.showSuccess).toHaveBeenCalledWith("1 file(s) imported.");
     });
 
@@ -205,8 +206,8 @@ describe("DialogFileGalleryComponent", () => {
 
       await component.onButtonImportClicked(event);
 
-      expect(mockCachedFilesService.saveFile).toHaveBeenNthCalledWith(1, "no directives here", "song-one");
-      expect(mockCachedFilesService.saveFile).toHaveBeenNthCalledWith(2, "no directives here", "song-two");
+      expect(mockCachedFilesService.saveFile).toHaveBeenNthCalledWith(1, "no directives here", null, "song-one");
+      expect(mockCachedFilesService.saveFile).toHaveBeenNthCalledWith(2, "no directives here", null, "song-two");
     });
 
     it("returns quietly without notifying when the user cancels the picker", async () => {
@@ -245,7 +246,12 @@ describe("DialogFileGalleryComponent", () => {
 
     it("zips every song and downloads a single archive", async () => {
       const downloadBlobSpy = vi.spyOn(FileUtil, "downloadBlob").mockImplementation(() => {});
-      const otherSong: CachedFile = { name: "Other", chordproContent: "{title: Other}", date: new Date() };
+      const otherSong: CachedFile = {
+        id: "other-id",
+        name: "Other",
+        chordproContent: "{title: Other}",
+        date: new Date(),
+      };
       cachedFiles$.next([song, otherSong]);
 
       await component.onButtonDownloadAllClicked();

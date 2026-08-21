@@ -77,9 +77,15 @@ GuiTab stores in it mirrors what Firestore held:
 /users/{uid}/cachedFiles/{fileId}   ← { name, chordproContent, date }
 ```
 
-`fileId` is the song's name, run through `RealtimeDatabaseUtil.sanitizeKey()`
-(`src/app/utils/realtime-database.util.ts`) — a Realtime Database key forbids
-`. # $ [ ]` in addition to `/`, which plain `encodeURIComponent` does not escape.
+`fileId` is an opaque, stable identifier — `crypto.randomUUID()` for a new song,
+inherited unchanged for an existing one — never derived from the song's title or
+artist. `CachedFile.name` is display-only and can change on every save; if the key
+were derived from it, retyping a title mid-edit would silently orphan the old node
+instead of updating it. A generated UUID never contains the characters a Realtime
+Database key forbids (`. # $ [ /`), so it needs no escaping — `fileId` is used
+verbatim as the path segment, and must never be run through an encoder a second
+time, which would double-encode an id inherited from elsewhere and fork the record
+onto a new path.
 
 Every written record must carry `ownerId`, `updatedAt`, and `createdAt` **on
 creation only**. `FirebaseDraftRepository.saveDraft()` shows the shape: read the

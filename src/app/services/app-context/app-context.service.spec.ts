@@ -34,6 +34,10 @@ describe("AppContextService", () => {
       expect(service.getFileHandleWithContent()).toBeNull();
     });
 
+    it("should have null fileId", () => {
+      expect(service.getFileId()).toBeNull();
+    });
+
     it("should have isEditing = false", () => {
       expect(service.isEditing()).toBe(false);
     });
@@ -130,6 +134,43 @@ describe("AppContextService", () => {
       const stateBefore = service.getFileHandleWithContent();
       await service.setFileHandle(file); // same reference → no-op
       expect(service.getFileHandleWithContent()).toBe(stateBefore);
+    });
+
+    it("should default fileId to null when no id is given", async () => {
+      vi.spyOn(FileUtil, "getFileContent").mockResolvedValue("content");
+      await service.setFileHandle(new File([""], "test.cho"));
+      expect(service.getFileId()).toBeNull();
+    });
+
+    it("should set fileId when an id is given", async () => {
+      vi.spyOn(FileUtil, "getFileContent").mockResolvedValue("content");
+      await service.setFileHandle(new File([""], "test.cho"), "cached-file-id");
+      expect(service.getFileId()).toBe("cached-file-id");
+    });
+  });
+
+  describe("setFileId", () => {
+    it("should update the fileId", () => {
+      service.setFileId("new-id");
+      expect(service.getFileId()).toBe("new-id");
+    });
+
+    it("should be a no-op (no new emission) when the id is already the same", () => {
+      service.setFileId("new-id");
+      const values: (string | null)[] = [];
+      service.getFileId$().subscribe((v) => values.push(v));
+      service.setFileId("new-id");
+      expect(values).toEqual(["new-id"]); // only the initial emission from subscribing
+    });
+
+    it("should not emit through getFileHandleWithContent$(), so it never re-triggers a file-load reaction", () => {
+      const emissions: unknown[] = [];
+      service.getFileHandleWithContent$().subscribe((v) => emissions.push(v));
+      const emissionsBefore = emissions.length;
+
+      service.setFileId("new-id");
+
+      expect(emissions.length).toBe(emissionsBefore);
     });
   });
 });

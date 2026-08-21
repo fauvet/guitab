@@ -137,7 +137,8 @@ export class AppComponent implements OnInit {
         this.appContextService.setEditing(false);
 
         const chordproContent = (await FileUtil.getFileContent(fileHandle)) ?? "";
-        await this.cachedFilesService.saveFile(chordproContent);
+        const fileId = await this.cachedFilesService.saveFile(chordproContent, this.appContextService.getFileId());
+        this.appContextService.setFileId(fileId);
       } catch (error: unknown) {
         console.error(error);
         this.notificationService.showError("Could not open the file.");

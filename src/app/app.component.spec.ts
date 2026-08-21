@@ -4,6 +4,7 @@ import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { MatIconTestingModule } from "@angular/material/icon/testing";
 import { of, Subject } from "rxjs";
 import { AppComponent } from "./app.component";
+import { AppContextService } from "./services/app-context/app-context.service";
 import { CachedFilesService } from "./services/cached-files/cached-files.service";
 import { KeyboardShortcutService } from "./services/keyboard-shortcut/keyboard-shortcut.service";
 import { ChordproService } from "./services/chordpro/chordpro.service";
@@ -46,7 +47,10 @@ describe("AppComponent", () => {
     });
 
     it("registers a file opened through the PWA file handler as a cached file", async () => {
-      const mockCachedFilesService = { saveFile: vi.fn(), getSyncError$: vi.fn().mockReturnValue(of(null)) };
+      const mockCachedFilesService = {
+        saveFile: vi.fn().mockResolvedValue("launched-file-id"),
+        getSyncError$: vi.fn().mockReturnValue(of(null)),
+      };
       let consumer: FakeLaunchConsumer | null = null;
       (window as { launchQueue?: unknown }).launchQueue = {
         setConsumer: (fn: FakeLaunchConsumer) => (consumer = fn),
@@ -62,12 +66,14 @@ describe("AppComponent", () => {
 
       const fixture = TestBed.createComponent(AppComponent);
       fixture.detectChanges();
+      const appContextService = TestBed.inject(AppContextService);
 
       expect(consumer).not.toBeNull();
       const fakeFileHandle = {} as unknown as FileSystemFileHandle;
       await consumer!({ files: [fakeFileHandle] });
 
-      expect(mockCachedFilesService.saveFile).toHaveBeenCalledWith("{title: Test Song}");
+      expect(mockCachedFilesService.saveFile).toHaveBeenCalledWith("{title: Test Song}", null);
+      expect(appContextService.getFileId()).toBe("launched-file-id");
     });
 
     it("logs and shows an error notification when syncing the opened file fails, instead of failing silently", async () => {

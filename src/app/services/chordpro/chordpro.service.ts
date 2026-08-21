@@ -294,7 +294,8 @@ export class ChordproService {
     if (!this.hasUnsavedChanges()) return;
 
     const chordproContent = this.getChordproContent();
-    await this.cachedFilesService.saveFile(chordproContent);
+    const fileId = await this.cachedFilesService.saveFile(chordproContent, this.appContextService.getFileId());
+    this.appContextService.setFileId(fileId);
     this.updateChordproSaveState(chordproContent);
     this.autosaveError$.next(null);
   }

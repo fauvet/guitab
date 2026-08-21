@@ -75,6 +75,14 @@ first entry moves to `## [1.0.0]` when the first release is cut.
 
 ### Fixed
 
+- **Typing a song's title or artist gradually could leave several orphaned
+  copies of it behind instead of one.** A saved song was keyed by a name
+  derived from its `{title:}`/`{artist:}` directives, recomputed on every
+  autosave — if that derived name changed between two autosaves (a title typed
+  with pauses, or an existing song renamed mid-edit), the old entry was never
+  found again and a new one was created next to it. Every song now gets a
+  stable id on its first save, independent of its display name, and every
+  later autosave in the same session updates that one record.
 - **Draft autosave and "save to your account" silently stopped persisting after
   the first write to a given record.** Both wrote with Firebase's `set()`, which
   replaces the whole node rather than merging — updates deliberately omitted

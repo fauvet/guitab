@@ -23,19 +23,28 @@ export class LocalCachedFilesRepository implements ICachedFilesRepository {
   );
 
   getCachedFiles$(): Observable<CachedFile[]> {
-    return this.cachedFiles$.asObservable().pipe(map((files) => [...files]));
+    return this.cachedFiles$.asObservable().pipe(map((files) => files.map((f) => ({ ...f, id: this.matchId(f) }))));
   }
 
-  async saveFile(chordproContent: string, fallbackName?: string): Promise<void> {
+  async saveFile(chordproContent: string, id: string | null, fallbackName?: string): Promise<string> {
+    const fileId = id ?? crypto.randomUUID();
     const fileBaseName = ChordproUtil.buildFileBaseName(chordproContent, fallbackName);
-    const current = [...this.cachedFiles$.getValue()].filter((f) => f.name !== fileBaseName);
-    current.push({ name: fileBaseName, chordproContent, date: new Date() });
+    const current = this.cachedFiles$.getValue().filter((f) => this.matchId(f) !== fileId);
+    current.push({ id: fileId, name: fileBaseName, chordproContent, date: new Date() });
+    this.cachedFiles$.next(current);
+    return fileId;
+  }
+
+  async deleteFile(id: string): Promise<void> {
+    const current = this.cachedFiles$.getValue().filter((f) => this.matchId(f) !== id);
     this.cachedFiles$.next(current);
   }
 
-  async deleteFile(name: string): Promise<void> {
-    const current = this.cachedFiles$.getValue().filter((f) => f.name !== name);
-    this.cachedFiles$.next(current);
+  // A record saved before this field existed has no `id` in localStorage —
+  // its `name` was the de facto unique key then, and the old code already
+  // guaranteed that uniqueness, so it stays a safe stand-in until the next save.
+  private matchId(cachedFile: CachedFile): string {
+    return cachedFile.id ?? cachedFile.name;
   }
 
   getSyncError$(): Observable<Error | null> {

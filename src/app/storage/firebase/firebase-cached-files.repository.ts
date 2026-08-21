@@ -16,7 +16,6 @@ import { ICachedFilesRepository } from "../repositories/cached-files.repository"
 import { FirebaseService } from "../../services/firebase/firebase.service";
 import { AuthService } from "../../services/auth/auth.service";
 import { ChordproUtil } from "../../utils/chordpro.util";
-import { RealtimeDatabaseUtil } from "../../utils/realtime-database.util";
 import CachedFile from "../../types/cached-file.type";
 
 @Injectable({
@@ -57,6 +56,7 @@ export class FirebaseCachedFilesRepository implements ICachedFilesRepository {
         snapshot.forEach((child) => {
           const data = child.val() as Record<string, unknown>;
           files.push({
+            id: child.key as string,
             name: data["name"] as string,
             chordproContent: data["chordproContent"] as string,
             date: typeof data["updatedAt"] === "number" ? new Date(data["updatedAt"]) : new Date(),
@@ -86,13 +86,18 @@ export class FirebaseCachedFilesRepository implements ICachedFilesRepository {
     return this.syncError$.asObservable();
   }
 
-  async saveFile(chordproContent: string, fallbackName?: string): Promise<void> {
+  async saveFile(chordproContent: string, id: string | null, fallbackName?: string): Promise<string> {
+    // A fresh UUID or an id read back from a record is always RTDB-safe as-is
+    // — never sanitize it here. Re-sanitizing an already-sanitized legacy key
+    // (from before ids existed) would double-encode it into a different key,
+    // silently forking that record into a new sibling node the first time it
+    // is resaved after this change ships.
+    const fileId = id ?? crypto.randomUUID();
     const user = this.authService.getUser();
-    if (!user) return;
+    if (!user) return fileId;
 
     const db = this.firebaseService.getDatabase();
     const fileBaseName = ChordproUtil.buildFileBaseName(chordproContent, fallbackName);
-    const fileId = RealtimeDatabaseUtil.sanitizeKey(fileBaseName);
     const fileRef = ref(db, `users/${user.uid}/cachedFiles/${fileId}`);
 
     try {
@@ -116,23 +121,23 @@ export class FirebaseCachedFilesRepository implements ICachedFilesRepository {
           updatedAt: serverTimestamp(),
         });
       }
+      return fileId;
     } catch (error: unknown) {
       throw new Error(`Could not save "${fileBaseName}" to your account.`, { cause: error });
     }
   }
 
-  async deleteFile(name: string): Promise<void> {
+  async deleteFile(id: string): Promise<void> {
     const user = this.authService.getUser();
     if (!user) return;
 
     const db = this.firebaseService.getDatabase();
-    const fileId = RealtimeDatabaseUtil.sanitizeKey(name);
-    const fileRef = ref(db, `users/${user.uid}/cachedFiles/${fileId}`);
+    const fileRef = ref(db, `users/${user.uid}/cachedFiles/${id}`);
 
     try {
       await remove(fileRef);
     } catch (error: unknown) {
-      throw new Error(`Could not delete "${name}".`, { cause: error });
+      throw new Error(`Could not delete this song.`, { cause: error });
     }
   }
 }

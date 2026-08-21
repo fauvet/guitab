@@ -9,6 +9,8 @@ describe("ChordproService", () => {
   let mockAppContextService: {
     getFileHandleWithContent$: ReturnType<typeof vi.fn>;
     getFileHandleWithContent: ReturnType<typeof vi.fn>;
+    getFileId: ReturnType<typeof vi.fn>;
+    setFileId: ReturnType<typeof vi.fn>;
   };
   let mockCachedFilesService: { saveFile: ReturnType<typeof vi.fn> };
 
@@ -16,10 +18,12 @@ describe("ChordproService", () => {
     mockAppContextService = {
       getFileHandleWithContent$: vi.fn().mockReturnValue(EMPTY),
       getFileHandleWithContent: vi.fn().mockReturnValue(null),
+      getFileId: vi.fn().mockReturnValue(null),
+      setFileId: vi.fn(),
     };
 
     mockCachedFilesService = {
-      saveFile: vi.fn().mockResolvedValue(undefined),
+      saveFile: vi.fn().mockResolvedValue("generated-id"),
     };
 
     TestBed.configureTestingModule({
@@ -156,7 +160,7 @@ describe("ChordproService", () => {
 
       await service.saveNow();
 
-      expect(mockCachedFilesService.saveFile).toHaveBeenCalledWith("something new");
+      expect(mockCachedFilesService.saveFile).toHaveBeenCalledWith("something new", null);
       expect(service.hasUnsavedChanges()).toBe(false);
     });
 
@@ -167,13 +171,28 @@ describe("ChordproService", () => {
 
       await expect(service.saveNow()).rejects.toThrow(error);
     });
+
+    it("assigns the id returned by the first save and reuses it on the second, instead of asking for a new one each time", async () => {
+      mockCachedFilesService.saveFile.mockResolvedValueOnce("new-id");
+      service.setChordproContent("first version");
+      await service.saveNow();
+
+      expect(mockAppContextService.setFileId).toHaveBeenCalledWith("new-id");
+
+      mockAppContextService.getFileId.mockReturnValue("new-id");
+      mockCachedFilesService.saveFile.mockClear();
+      service.setChordproContent("second version");
+      await service.saveNow();
+
+      expect(mockCachedFilesService.saveFile).toHaveBeenCalledWith("second version", "new-id");
+    });
   });
 
   describe("autosave", () => {
     it("persists content to the active repository once the player stops typing", async () => {
       service.setChordproContent("humming along");
 
-      await vi.waitFor(() => expect(mockCachedFilesService.saveFile).toHaveBeenCalledWith("humming along"), {
+      await vi.waitFor(() => expect(mockCachedFilesService.saveFile).toHaveBeenCalledWith("humming along", null), {
         timeout: 3000,
       });
     });

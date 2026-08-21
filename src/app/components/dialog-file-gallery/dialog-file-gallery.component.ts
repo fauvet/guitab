@@ -62,13 +62,14 @@ export class DialogFileGalleryComponent {
     try {
       await this.appContextService.setFileHandle(
         new File([cachedFile.chordproContent], "cached_file.cho", { type: "text/plain" }),
+        cachedFile.id,
       );
       this.appContextService.setEditing(false);
       // Re-save with the entry's existing name as the fallback: if the
       // content still has no {title:}/{artist:} of its own, this keeps the
       // song under the identity it already has instead of collapsing it
       // (and any other untitled song) back to the generic default.
-      await this.cachedFilesService.saveFile(cachedFile.chordproContent, cachedFile.name);
+      await this.cachedFilesService.saveFile(cachedFile.chordproContent, cachedFile.id, cachedFile.name);
 
       this.dialogRef.close();
     } catch (error: unknown) {
@@ -115,7 +116,7 @@ export class DialogFileGalleryComponent {
     if (!confirmed) return;
 
     try {
-      await this.cachedFilesService.deleteFile(cachedFile.name);
+      await this.cachedFilesService.deleteFile(cachedFile.id);
       this.notificationService.showSuccess(`"${cachedFile.name}" deleted.`);
     } catch (error: unknown) {
       console.error(error);
@@ -140,7 +141,7 @@ export class DialogFileGalleryComponent {
         // original filename, so two untitled imports stay two distinct
         // entries instead of colliding on the same derived name.
         const fallbackName = file.name.replace(/\.[^./]+$/, "");
-        await this.cachedFilesService.saveFile(content, fallbackName);
+        await this.cachedFilesService.saveFile(content, null, fallbackName);
         importedCount++;
       }
 

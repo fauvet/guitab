@@ -6,6 +6,7 @@ import { FirebaseService } from "../../services/firebase/firebase.service";
 import { AuthService } from "../../services/auth/auth.service";
 
 interface FakeChildSnapshot {
+  key: string;
   val(): unknown;
 }
 
@@ -13,10 +14,15 @@ interface FakeSnapshot {
   forEach(callback: (child: FakeChildSnapshot) => void): void;
 }
 
-function buildFakeSnapshot(records: unknown[]): FakeSnapshot {
+interface FakeRecord {
+  key: string;
+  value: Record<string, unknown>;
+}
+
+function buildFakeSnapshot(records: FakeRecord[]): FakeSnapshot {
   return {
     forEach: (callback) => {
-      for (const record of records) callback({ val: () => record });
+      for (const record of records) callback({ key: record.key, val: () => record.value });
     },
   };
 }
@@ -76,16 +82,17 @@ describe("FirebaseCachedFilesRepository", () => {
     expect(onValue).toHaveBeenCalled();
   });
 
-  it("reverses the ascending snapshot order, so the newest file comes first", async () => {
+  it("reverses the ascending snapshot order, so the newest file comes first, and maps the node key to id", async () => {
     snapshotCallbacks.onNext?.(
       buildFakeSnapshot([
-        { name: "Older", chordproContent: "a", updatedAt: 1 },
-        { name: "Newer", chordproContent: "b", updatedAt: 2 },
+        { key: "id-older", value: { name: "Older", chordproContent: "a", updatedAt: 1 } },
+        { key: "id-newer", value: { name: "Newer", chordproContent: "b", updatedAt: 2 } },
       ]),
     );
 
     const files = await firstValueFrom(repository.getCachedFiles$());
     expect(files.map((file) => file.name)).toEqual(["Newer", "Older"]);
+    expect(files.map((file) => file.id)).toEqual(["id-newer", "id-older"]);
   });
 
   describe("getSyncError$()", () => {
@@ -119,14 +126,16 @@ describe("FirebaseCachedFilesRepository", () => {
       const { set } = await import("firebase/database");
       (set as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("permission-denied"));
 
-      await expect(repository.saveFile("{title: Test}")).rejects.toThrow(/Could not save ".*" to your account\./);
+      await expect(repository.saveFile("{title: Test}", "song-1")).rejects.toThrow(
+        /Could not save ".*" to your account\./,
+      );
     });
 
     it("should set() a brand-new file with createdAt, and never update() it", async () => {
       const { get, set, update } = await import("firebase/database");
       (get as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ exists: () => false });
 
-      await repository.saveFile("{title: Test}");
+      await repository.saveFile("{title: Test}", "song-1");
 
       expect(set).toHaveBeenCalledWith(
         expect.anything(),
@@ -139,7 +148,7 @@ describe("FirebaseCachedFilesRepository", () => {
       const { get, set, update } = await import("firebase/database");
       (get as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ exists: () => true });
 
-      await repository.saveFile("{title: Test}");
+      await repository.saveFile("{title: Test}", "song-1");
 
       const [, payload] = (update as ReturnType<typeof vi.fn>).mock.calls[0] as [unknown, Record<string, unknown>];
       expect(payload).toMatchObject({ ownerId: uid });
@@ -154,10 +163,40 @@ describe("FirebaseCachedFilesRepository", () => {
       const { set } = await import("firebase/database");
       (set as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("permission-denied"));
 
-      await repository.saveFile("{title: Test}").catch(() => {});
+      await repository.saveFile("{title: Test}", "song-1").catch(() => {});
 
       const error = await firstValueFrom(repository.getSyncError$());
       expect(error).toBeNull();
+    });
+
+    it("mints a random id and returns it when none is given", async () => {
+      const id = await repository.saveFile("{title: Test}", null);
+
+      expect(id).toMatch(/^[0-9a-f-]{36}$/);
+      expect(ref).toHaveBeenCalledWith(database, `users/${uid}/cachedFiles/${id}`);
+    });
+
+    it("writes to the same ref path across two saves with the same id, even if the derived name changes", async () => {
+      await repository.saveFile("{title: S}", "song-1");
+      await repository.saveFile("{title: Song title}", "song-1");
+
+      const cachedFilesRefCalls = (ref as ReturnType<typeof vi.fn>).mock.calls.filter(
+        ([, path]) => typeof path === "string" && path.startsWith(`users/${uid}/cachedFiles/`),
+      );
+      expect(cachedFilesRefCalls).toHaveLength(2);
+      expect(cachedFilesRefCalls.every(([, path]) => path === `users/${uid}/cachedFiles/song-1`)).toBe(true);
+    });
+
+    it("uses an id verbatim, even one that already looks percent-encoded, instead of re-encoding it", async () => {
+      // Regression test: a legacy id inherited from the old name-based key
+      // scheme is already percent-encoded (e.g. from a title like "Mr. Blue
+      // Sky"). Sanitizing it again would escape the literal "%" itself,
+      // silently forking the record onto a new path.
+      const legacyId = "Mr%2E%20Blue%20Sky";
+
+      await repository.saveFile("{title: Mr. Blue Sky}", legacyId);
+
+      expect(ref).toHaveBeenCalledWith(database, `users/${uid}/cachedFiles/${legacyId}`);
     });
   });
 
@@ -165,9 +204,9 @@ describe("FirebaseCachedFilesRepository", () => {
     it("removes the entry at the same path saveFile() would have written it to", async () => {
       const { remove } = await import("firebase/database");
 
-      await repository.deleteFile("Test");
+      await repository.deleteFile("song-1");
 
-      expect(ref).toHaveBeenCalledWith(database, `users/${uid}/cachedFiles/Test`);
+      expect(ref).toHaveBeenCalledWith(database, `users/${uid}/cachedFiles/song-1`);
       expect(remove).toHaveBeenCalled();
     });
 
@@ -175,7 +214,7 @@ describe("FirebaseCachedFilesRepository", () => {
       const { remove } = await import("firebase/database");
       (remove as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("permission-denied"));
 
-      await expect(repository.deleteFile("Test")).rejects.toThrow(/Could not delete "Test"\./);
+      await expect(repository.deleteFile("song-1")).rejects.toThrow(/Could not delete this song\./);
     });
   });
 });
