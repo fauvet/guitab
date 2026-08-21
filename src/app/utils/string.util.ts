@@ -19,6 +19,10 @@ export class StringUtil {
     return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
 
+  static stripDiacritics(value: string): string {
+    return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  }
+
   static insert(string: string, insertion: string, index: number): string {
     return string.slice(0, index) + insertion + string.slice(index);
   }

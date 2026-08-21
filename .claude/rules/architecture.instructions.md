@@ -48,7 +48,7 @@ User types in editor
 
 ```
 BottomSheetManageFileComponent / KeyboardShortcutService.openFile()
-  └─> chordproService.hasUnsavedChanges() → confirm() if needed
+  └─> chordproService.hasUnsavedChanges() → ConfirmService.confirm() if needed
         └─> window.showOpenFilePicker() or <input type="file"> fallback
               └─> appContextService.setFileHandle(file)
                     └─> FileUtil.getFileContent(file) → fileHandleWithContent$.next()
@@ -64,13 +64,13 @@ Side-effects after open: `appContextService.setEditing(false)` (preview mode), `
 
 ```
 KeyboardShortcutService.saveFile()
-  ├─> a FileSystemFileHandle exists → write through it, then clear the unsaved flag
-  └─> otherwise → saveFileAs(): showSaveFilePicker(), or a FileSaver blob download
-
-Both paths end at cachedFilesService.saveFile(content).
+  ├─> a real FileSystemFileHandle exists → write through it, then cachedFilesService.saveFile(content)
+  └─> otherwise (Quick Access, new file, demo, draft) → cachedFilesService.saveFile(content) directly
 ```
 
-The filename comes from the content itself — `ChordproUtil.buildFileName()` reads `{title:}` and `{artist:}`.
+saveFileAs() (Ctrl+Shift+S) is the separate, explicit "get a local copy" action — showSaveFilePicker(),
+or a FileSaver blob download — and never runs as a side effect of a plain save. The filename comes from
+the content itself — `ChordproUtil.buildFileName()` reads `{title:}` and `{artist:}`.
 
 ## App Bootstrap & Draft Recovery
 
@@ -96,6 +96,7 @@ FooterActionsBarComponent
 BottomSheetManageFileComponent
 BottomSheetSettingsComponent
 NotificationService ← the only service allowed to touch MatSnackBar
+ConfirmService      ← the only service allowed to open DialogConfirmComponent
 FirebaseService ← initializes Firebase app + Realtime Database (no offline persistence)
      ↓ injected by
 AuthService     ← anonymous sign-in on startup, Google link/sign-in, isAnonymous()
@@ -147,18 +148,19 @@ IDraftRepository (interface)
 
 ## Dialog & Bottom Sheet Wiring
 
-| Opened by                             | Component                               | Data in                 | On dismiss / result                            |
-| ------------------------------------- | --------------------------------------- | ----------------------- | ---------------------------------------------- |
-| HeaderActionsBarComponent             | `BottomSheetManageFileComponent`        | —                       | file ops; calls `requestEditorFocus()`         |
-| HeaderActionsBarComponent             | `BottomSheetToolsComponent`             | —                       | opens external tool dialogs                    |
-| HeaderActionsBarComponent             | `BottomSheetSettingsComponent`          | —                       | settings toggles                               |
-| FooterActionsBarComponent             | `BottomSheetInsertDirectiveComponent`   | —                       | inserts `{directive:}` via ChordproService     |
-| FooterActionsBarComponent             | `DialogSelectChordComponent`            | —                       | on select: `chordproService.insertChord(name)` |
-| ChordproViewerComponent (chord click) | `DialogDiagramChordComponent`           | `{ chordName: string }` | read-only chord diagram                        |
-| BottomSheetToolsComponent             | `DialogExternalToolComponent`           | `{ src: string }`       | iframe embed (lyrics.ovh, songbpm.com, etc.)   |
-| BottomSheetToolsComponent             | `DialogSoloTabEditorComponent`          | —                       | standalone tab grid generator                  |
-| BottomSheetToolsComponent             | `DialogImportChordsOverLyricsComponent` | —                       | result inserted at the caret                   |
-| DialogSoloTabEditorComponent          | `PitchMonitorComponent` (inline)        | —                       | emits `transcribed`, appended to the editor    |
+| Opened by                             | Component                               | Data in                 | On dismiss / result                                                        |
+| ------------------------------------- | --------------------------------------- | ----------------------- | -------------------------------------------------------------------------- |
+| HeaderActionsBarComponent             | `BottomSheetManageFileComponent`        | —                       | file ops; calls `requestEditorFocus()`                                     |
+| HeaderActionsBarComponent             | `BottomSheetToolsComponent`             | —                       | opens external tool dialogs                                                |
+| HeaderActionsBarComponent             | `BottomSheetSettingsComponent`          | —                       | settings toggles                                                           |
+| FooterActionsBarComponent             | `BottomSheetInsertDirectiveComponent`   | —                       | inserts `{directive:}` via ChordproService                                 |
+| FooterActionsBarComponent             | `DialogSelectChordComponent`            | —                       | on select: `chordproService.insertChord(name)`                             |
+| ChordproViewerComponent (chord click) | `DialogDiagramChordComponent`           | `{ chordName: string }` | read-only chord diagram                                                    |
+| BottomSheetToolsComponent             | `DialogExternalToolComponent`           | `{ src: string }`       | iframe embed (lyrics.ovh, songbpm.com, etc.)                               |
+| BottomSheetToolsComponent             | `DialogSoloTabEditorComponent`          | —                       | standalone tab grid generator                                              |
+| BottomSheetToolsComponent             | `DialogImportChordsOverLyricsComponent` | —                       | result inserted at the caret                                               |
+| DialogSoloTabEditorComponent          | `PitchMonitorComponent` (inline)        | —                       | emits `transcribed`, appended to the editor                                |
+| BottomSheetManageFileComponent        | `DialogFileGalleryComponent`            | —                       | full song library: open, download, delete, import via `CachedFilesService` |
 
 All bottom sheets call `chordproService.requestEditorFocus()` on dismiss to restore Ace editor focus.
 
@@ -203,11 +205,9 @@ correctly. How the detection works: the `web-audio-pitch` skill.
 
 `chordproService.hasUnsavedChanges()` compares `chordproSaveState$` (snapshot at last open/save) against the current `{ fileHandle, chordproContent }`.
 
-Used in three places:
-
-1. `window.beforeunload` — `BeforeUnloadService` triggers browser native warning, saves draft to localStorage
-2. Before `openFile()` — confirmation dialog
-3. Before `newFile()` — confirmation dialog
+Used in two places: `window.beforeunload` (`BeforeUnloadService` triggers the browser's
+native warning and saves a draft to localStorage) and before `openFile()` or
+`newFile()` (a `ConfirmService` dialog).
 
 Draft structure stored under the `DRAFT` localStorage key: `{ chordproContent: string, hasUnsavedChanges: boolean }`.
 

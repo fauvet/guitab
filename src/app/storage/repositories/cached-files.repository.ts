@@ -3,8 +3,14 @@ import CachedFile from "../../types/cached-file.type";
 
 export interface ICachedFilesRepository {
   getCachedFiles$(): Observable<CachedFile[]>;
+  /**
+   * Rejects with a clear Error on failure — a caller-visible one-shot operation, never swallowed.
+   * `fallbackName` is used only when the content has neither `{title:}` nor `{artist:}` — see
+   * `ChordproUtil.buildFileBaseName()`.
+   */
+  saveFile(chordproContent: string, fallbackName?: string): Promise<void>;
   /** Rejects with a clear Error on failure — a caller-visible one-shot operation, never swallowed. */
-  saveFile(chordproContent: string): Promise<void>;
+  deleteFile(name: string): Promise<void>;
   /**
    * The live cachedFiles listener's status — null while it is in sync, the
    * Error it last reported otherwise. This reflects only the listener, not

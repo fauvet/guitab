@@ -26,10 +26,15 @@ export class LocalCachedFilesRepository implements ICachedFilesRepository {
     return this.cachedFiles$.asObservable().pipe(map((files) => [...files]));
   }
 
-  async saveFile(chordproContent: string): Promise<void> {
-    const fileBaseName = ChordproUtil.buildFileBaseName(chordproContent);
+  async saveFile(chordproContent: string, fallbackName?: string): Promise<void> {
+    const fileBaseName = ChordproUtil.buildFileBaseName(chordproContent, fallbackName);
     const current = [...this.cachedFiles$.getValue()].filter((f) => f.name !== fileBaseName);
     current.push({ name: fileBaseName, chordproContent, date: new Date() });
+    this.cachedFiles$.next(current);
+  }
+
+  async deleteFile(name: string): Promise<void> {
+    const current = this.cachedFiles$.getValue().filter((f) => f.name !== name);
     this.cachedFiles$.next(current);
   }
 

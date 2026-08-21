@@ -4,7 +4,7 @@ import { AppContextService } from "../../services/app-context/app-context.servic
 import { MatListModule } from "@angular/material/list";
 import { MatIcon } from "@angular/material/icon";
 import { MatRipple } from "@angular/material/core";
-import { BehaviorSubject, filter, map, Subject, takeUntil } from "rxjs";
+import { filter, map, Subject, takeUntil } from "rxjs";
 import { MatButtonModule } from "@angular/material/button";
 import { MatBottomSheetRef } from "@angular/material/bottom-sheet";
 import { NotificationService } from "../../services/notification/notification.service";
@@ -15,25 +15,21 @@ import CachedFile from "../../types/cached-file.type";
 import DateUtil from "../../utils/date.util";
 import { CachedFilesService } from "../../services/cached-files/cached-files.service";
 import { ChordproService } from "../../services/chordpro/chordpro.service";
-import { HttpClient } from "@angular/common/http";
-
-export type CoveredCachedFile = CachedFile & { cover: string };
-
-/** Only the members read below; the API returns a great deal more. */
-interface LyricsSuggestResponse {
-  data?: { album?: { cover_small?: string } }[];
-}
+import { MatDialog } from "@angular/material/dialog";
+import { DialogFileGalleryComponent } from "../dialog-file-gallery/dialog-file-gallery.component";
+import { AlbumCoverComponent } from "../album-cover/album-cover.component";
 
 @Component({
   selector: "app-bottom-sheet-manage-file",
-  imports: [MatListModule, MatIcon, MatRipple, MatButtonModule, AsyncPipe, MatDividerModule],
+  imports: [MatListModule, MatIcon, MatRipple, MatButtonModule, AsyncPipe, MatDividerModule, AlbumCoverComponent],
   templateUrl: "./bottom-sheet-manage-file.component.html",
   styleUrl: "./bottom-sheet-manage-file.component.css",
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
-  private static readonly DEFAULT_ALBUM_COVER =
-    "https://upload.wikimedia.org/wikipedia/commons/3/3c/No-album-art.png?20160131100336";
+  // Quick access is a fast shortcut to the last few songs, not the library —
+  // the "Song library…" dialog is where every saved song lives.
+  private static readonly MAX_RECENT_FILES = 5;
 
   readonly CHORDPRO_EXTENSIONS = ChordproUtil.EXTENSIONS;
   readonly BUILD_TIME_AGO = DateUtil.buildTimeAgo;
@@ -43,34 +39,22 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
   private readonly cachedFilesService = inject(CachedFilesService);
   private readonly chordproService = inject(ChordproService);
   private readonly bottomSheetRef = inject(MatBottomSheetRef<BottomSheetManageFileComponent>);
-  private readonly http = inject(HttpClient);
   private readonly notificationService = inject(NotificationService);
+  private readonly dialog = inject(MatDialog);
 
-  isSaveExistingFileEnabled$ = new BehaviorSubject(false);
   cachedFiles$ = this.cachedFilesService
     .getCachedFiles$()
     .pipe(
       map((cachedFiles: CachedFile[]) =>
-        [...cachedFiles].sort((cachedFile1, cachedFile2) => cachedFile2.date.getTime() - cachedFile1.date.getTime()),
+        [...cachedFiles]
+          .sort((cachedFile1, cachedFile2) => cachedFile2.date.getTime() - cachedFile1.date.getTime())
+          .slice(0, BottomSheetManageFileComponent.MAX_RECENT_FILES),
       ),
     );
-  coveredCachedFiles$ = new BehaviorSubject<CoveredCachedFile[]>([]);
 
   private readonly unsubscribe$ = new Subject<void>();
 
   ngOnInit(): void {
-    this.cachedFiles$
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((cachedFiles) => this.onCachedFilesChanged(cachedFiles));
-
-    this.appContextService
-      .getFileHandleWithContent$()
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((fileHandleWithContent) => {
-        const fileHandle = fileHandleWithContent?.fileHandle ?? null;
-        this.isSaveExistingFileEnabled$.next(!!fileHandle && fileHandle instanceof FileSystemFileHandle);
-      });
-
     this.bottomSheetRef.afterDismissed().subscribe(() => {
       this.chordproService.requestEditorFocus();
     });
@@ -91,30 +75,6 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.unsubscribe$.next();
-  }
-
-  private onCachedFilesChanged(cachedFiles: CachedFile[]): void {
-    const coveredCachedFiles = cachedFiles.map(
-      (cachedFile) =>
-        ({ ...cachedFile, cover: BottomSheetManageFileComponent.DEFAULT_ALBUM_COVER }) as CoveredCachedFile,
-    );
-    this.coveredCachedFiles$.next([...coveredCachedFiles]);
-
-    for (const coveredCachedFile of coveredCachedFiles) {
-      const title = this.chordproService.parseTitle(coveredCachedFile.chordproContent);
-      if (!title || coveredCachedFile.cover !== BottomSheetManageFileComponent.DEFAULT_ALBUM_COVER) continue;
-      const encodedTitleWithoutAccents = encodeURIComponent(title.normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
-      this.http.get<LyricsSuggestResponse>(`https://api.lyrics.ovh/suggest/${encodedTitleWithoutAccents}`).subscribe({
-        next: (res) => {
-          const coverUrl = res?.data?.[0]?.album?.cover_small;
-          coveredCachedFile.cover = coverUrl || BottomSheetManageFileComponent.DEFAULT_ALBUM_COVER;
-          this.coveredCachedFiles$.next([...coveredCachedFiles]);
-        },
-        // The DEFAULT_ALBUM_COVER already covers the user — this is a cosmetic
-        // lookup, not an action to interrupt with a notification.
-        error: (error: unknown) => console.error(error),
-      });
-    }
   }
 
   async onButtonNewFileClicked(): Promise<void> {
@@ -141,9 +101,16 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
     }
   }
 
-  async onButtonSaveFileClicked(): Promise<void> {
-    if (!this.isSaveExistingFileEnabled$.getValue()) return;
+  onButtonSongLibraryClicked(): void {
+    this.bottomSheetRef.dismiss();
+    this.dialog.open(DialogFileGalleryComponent, {
+      height: "95%",
+      width: "95%",
+      panelClass: "dialog-panel-fill",
+    });
+  }
 
+  async onButtonSaveFileClicked(): Promise<void> {
     try {
       const actionPerformed = await this.keyboardShortcutService.saveFile();
       if (!actionPerformed) return;
@@ -177,7 +144,11 @@ export class BottomSheetManageFileComponent implements OnInit, OnDestroy {
         }),
       );
       this.appContextService.setEditing(false);
-      await this.cachedFilesService.saveFile(cachedFile.chordproContent);
+      // Re-save with the entry's existing name as the fallback: if the
+      // content still has no {title:}/{artist:} of its own, this keeps the
+      // song under the identity it already has instead of collapsing it
+      // (and any other untitled song) back to the generic default.
+      await this.cachedFilesService.saveFile(cachedFile.chordproContent, cachedFile.name);
 
       this.bottomSheetRef.dismiss();
     } catch (error: unknown) {

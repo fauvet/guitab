@@ -1,5 +1,5 @@
 import { inject, Injectable } from "@angular/core";
-import { get, onValue, orderByChild, query, ref, serverTimestamp, set, Unsubscribe } from "firebase/database";
+import { get, onValue, orderByChild, query, ref, remove, serverTimestamp, set, Unsubscribe } from "firebase/database";
 import { BehaviorSubject, Observable } from "rxjs";
 import { ICachedFilesRepository } from "../repositories/cached-files.repository";
 import { FirebaseService } from "../../services/firebase/firebase.service";
@@ -75,12 +75,12 @@ export class FirebaseCachedFilesRepository implements ICachedFilesRepository {
     return this.syncError$.asObservable();
   }
 
-  async saveFile(chordproContent: string): Promise<void> {
+  async saveFile(chordproContent: string, fallbackName?: string): Promise<void> {
     const user = this.authService.getUser();
     if (!user) return;
 
     const db = this.firebaseService.getDatabase();
-    const fileBaseName = ChordproUtil.buildFileBaseName(chordproContent);
+    const fileBaseName = ChordproUtil.buildFileBaseName(chordproContent, fallbackName);
     const fileId = RealtimeDatabaseUtil.sanitizeKey(fileBaseName);
     const fileRef = ref(db, `users/${user.uid}/cachedFiles/${fileId}`);
 
@@ -95,6 +95,21 @@ export class FirebaseCachedFilesRepository implements ICachedFilesRepository {
       });
     } catch (error: unknown) {
       throw new Error(`Could not save "${fileBaseName}" to your account.`, { cause: error });
+    }
+  }
+
+  async deleteFile(name: string): Promise<void> {
+    const user = this.authService.getUser();
+    if (!user) return;
+
+    const db = this.firebaseService.getDatabase();
+    const fileId = RealtimeDatabaseUtil.sanitizeKey(name);
+    const fileRef = ref(db, `users/${user.uid}/cachedFiles/${fileId}`);
+
+    try {
+      await remove(fileRef);
+    } catch (error: unknown) {
+      throw new Error(`Could not delete "${name}".`, { cause: error });
     }
   }
 }

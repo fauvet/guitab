@@ -95,7 +95,7 @@ export class AppComponent implements OnInit {
           return;
         }
 
-        const draftUnsavedChordproContent = this.beforeUnloadService.findDraftUnsavedChordproContent();
+        const draftUnsavedChordproContent = await this.beforeUnloadService.findDraftUnsavedChordproContent();
         const emptyFile = await FileUtil.loadEmptyFile();
         await this.appContextService.setFileHandle(emptyFile);
 

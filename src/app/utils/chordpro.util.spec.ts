@@ -26,8 +26,20 @@ describe("ChordproUtil", () => {
       expect(ChordproUtil.buildFileBaseName(content)).toBe("Hotel California (Eagles)");
     });
 
-    it("should return 'null (null)' when neither title nor artist is present", () => {
-      expect(ChordproUtil.buildFileBaseName("some content without directives")).toBe("null (null)");
+    it("should return 'Untitled' when neither title nor artist is present and no fallback is given", () => {
+      expect(ChordproUtil.buildFileBaseName("some content without directives")).toBe("Untitled");
+    });
+
+    it("should return the fallback name when neither title nor artist is present", () => {
+      expect(ChordproUtil.buildFileBaseName("some content without directives", "my-song")).toBe("my-song");
+    });
+
+    it("should return just the title when only the title is present", () => {
+      expect(ChordproUtil.buildFileBaseName("{title: Hotel California}")).toBe("Hotel California");
+    });
+
+    it("should return just the artist when only the artist is present", () => {
+      expect(ChordproUtil.buildFileBaseName("{artist: Eagles}")).toBe("Eagles");
     });
 
     it("should trim whitespace around title and artist", () => {
@@ -44,6 +56,10 @@ describe("ChordproUtil", () => {
 
     it("should use .cho as the preferred extension", () => {
       expect(ChordproUtil.PREFERRED_EXTENSION).toBe(".cho");
+    });
+
+    it("should append the extension to the fallback name when there is no title or artist", () => {
+      expect(ChordproUtil.buildFileName("no directives here", "my-song")).toBe("my-song.cho");
     });
   });
 

@@ -4,7 +4,9 @@ import { KeyboardShortcutService } from "./keyboard-shortcut.service";
 import { ChordproService } from "../chordpro/chordpro.service";
 import { AppContextService } from "../app-context/app-context.service";
 import { CachedFilesService } from "../cached-files/cached-files.service";
+import { ConfirmService } from "../confirm/confirm.service";
 import { ChordproUtil } from "../../utils/chordpro.util";
+import { FileUtil } from "../../utils/file.util";
 
 describe("KeyboardShortcutService", () => {
   let service: KeyboardShortcutService;
@@ -16,6 +18,8 @@ describe("KeyboardShortcutService", () => {
     updateChordproSaveState: ReturnType<typeof vi.fn>;
     getChordproContent$: ReturnType<typeof vi.fn>;
   };
+  let mockCachedFilesService: { saveFile: ReturnType<typeof vi.fn> };
+  let mockConfirmService: { confirm: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
     mockChordproService = {
@@ -34,8 +38,12 @@ describe("KeyboardShortcutService", () => {
       setFileHandle: vi.fn().mockResolvedValue(undefined),
     };
 
-    const mockCachedFilesService = {
+    mockCachedFilesService = {
       saveFile: vi.fn().mockResolvedValue(undefined),
+    };
+
+    mockConfirmService = {
+      confirm: vi.fn().mockResolvedValue(true),
     };
 
     TestBed.configureTestingModule({
@@ -43,6 +51,7 @@ describe("KeyboardShortcutService", () => {
         { provide: ChordproService, useValue: mockChordproService },
         { provide: AppContextService, useValue: mockAppContextService },
         { provide: CachedFilesService, useValue: mockCachedFilesService },
+        { provide: ConfirmService, useValue: mockConfirmService },
       ],
     });
     service = TestBed.inject(KeyboardShortcutService);
@@ -188,9 +197,58 @@ describe("KeyboardShortcutService", () => {
     });
   });
 
+  describe("newFile", () => {
+    beforeEach(() => {
+      vi.spyOn(FileUtil, "loadEmptyFile").mockResolvedValue(new File([""], "empty.cho"));
+    });
+
+    it("proceeds without asking when there are no unsaved changes", async () => {
+      mockChordproService.hasUnsavedChanges.mockReturnValue(false);
+
+      const result = await service.newFile();
+
+      expect(mockConfirmService.confirm).not.toHaveBeenCalled();
+      expect(result).toBe(true);
+    });
+
+    it("asks for confirmation when there are unsaved changes, and proceeds once confirmed", async () => {
+      mockChordproService.hasUnsavedChanges.mockReturnValue(true);
+      mockConfirmService.confirm.mockResolvedValue(true);
+
+      const result = await service.newFile();
+
+      expect(mockConfirmService.confirm).toHaveBeenCalledWith(
+        "You have unsaved changes. Are you sure you want to discard them?",
+        "Discard",
+      );
+      expect(result).toBe(true);
+    });
+
+    it("does nothing when the user declines to discard unsaved changes", async () => {
+      mockChordproService.hasUnsavedChanges.mockReturnValue(true);
+      mockConfirmService.confirm.mockResolvedValue(false);
+
+      const result = await service.newFile();
+
+      expect(result).toBe(false);
+    });
+  });
+
   describe("openFile", () => {
     afterEach(() => {
       delete (window as any).showOpenFilePicker;
+    });
+
+    it("does not open the picker when the user declines to discard unsaved changes", async () => {
+      mockChordproService.hasUnsavedChanges.mockReturnValue(true);
+      mockConfirmService.confirm.mockResolvedValue(false);
+      const showOpenFilePicker = vi.fn();
+      (window as any).showOpenFilePicker = showOpenFilePicker;
+
+      const result = await service.openFile(new Event("click"));
+
+      expect(result).toBe(false);
+      expect(showOpenFilePicker).not.toHaveBeenCalled();
     });
 
     it("should return false without throwing when the user cancels the file picker", async () => {
@@ -205,6 +263,33 @@ describe("KeyboardShortcutService", () => {
       (window as any).showOpenFilePicker = vi.fn().mockRejectedValue(new Error("disk error"));
 
       await expect(service.openFile(new Event("click"))).rejects.toThrow("Could not open the file picker.");
+    });
+  });
+
+  describe("saveFile", () => {
+    // FileSystemFileHandle does not exist as a global in the jsdom test
+    // environment (same limitation noted in file.util.spec.ts), so only the
+    // no-real-handle branch — the common case since the Firebase migration,
+    // and the one that used to wrongly fall through to a disk dialog — can be
+    // exercised directly here.
+    it("saves straight to the active repository with no disk dialog when there is no real file handle", async () => {
+      const showSaveFilePicker = vi.fn();
+      (window as any).showSaveFilePicker = showSaveFilePicker;
+
+      const result = await service.saveFile();
+
+      expect(result).toBe(true);
+      expect(mockCachedFilesService.saveFile).toHaveBeenCalledWith("");
+      expect(mockChordproService.updateChordproSaveState).toHaveBeenCalled();
+      expect(showSaveFilePicker).not.toHaveBeenCalled();
+      delete (window as any).showSaveFilePicker;
+    });
+
+    it("propagates a rejection from the active repository instead of swallowing it", async () => {
+      const error = new Error('Could not save "song.cho" to your account.');
+      mockCachedFilesService.saveFile.mockRejectedValueOnce(error);
+
+      await expect(service.saveFile()).rejects.toThrow(error);
     });
   });
 
@@ -225,6 +310,33 @@ describe("KeyboardShortcutService", () => {
       (window as any).showSaveFilePicker = vi.fn().mockRejectedValue(new Error("disk error"));
 
       await expect(service.saveFileAs()).rejects.toThrow("Could not open the save dialog.");
+    });
+
+    describe("download fallback (no showSaveFilePicker)", () => {
+      it("downloads the file, then asks for confirmation that it landed", async () => {
+        const downloadSpy = vi.spyOn(FileUtil, "downloadAsFile").mockImplementation(() => {});
+        mockConfirmService.confirm.mockResolvedValue(true);
+
+        const result = await service.saveFileAs();
+
+        expect(downloadSpy).toHaveBeenCalled();
+        expect(mockConfirmService.confirm).toHaveBeenCalledWith(
+          "Please confirm that the file has been successfully downloaded.",
+          "Yes, downloaded",
+        );
+        expect(mockChordproService.updateChordproSaveState).toHaveBeenCalled();
+        expect(result).toBe(true);
+      });
+
+      it("returns false without updating the save state when the user says it did not download", async () => {
+        vi.spyOn(FileUtil, "downloadAsFile").mockImplementation(() => {});
+        mockConfirmService.confirm.mockResolvedValue(false);
+
+        const result = await service.saveFileAs();
+
+        expect(mockChordproService.updateChordproSaveState).not.toHaveBeenCalled();
+        expect(result).toBe(false);
+      });
     });
   });
 

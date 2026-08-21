@@ -1,0 +1,71 @@
+<h2 mat-dialog-title>Song library</h2>
+<mat-dialog-content>
+  @let cachedFiles = (cachedFiles$ | async) ?? [];
+
+  <div class="container-toolbar">
+    <button
+      mat-flat-button
+      (click)="canOpenFilePicker() ? onButtonImportClicked($event) : inputImportFile.click()">
+      <mat-icon fontSet="material-icons-outlined">upload_file</mat-icon>
+      Import
+    </button>
+    <input
+      class="file-input"
+      #inputImportFile
+      type="file"
+      hidden
+      multiple
+      [accept]="CHORDPRO_EXTENSIONS"
+      (change)="onButtonImportClicked($event)" />
+    <button
+      mat-flat-button
+      [disabled]="cachedFiles.length === 0"
+      (click)="onButtonDownloadAllClicked()">
+      <mat-icon fontSet="material-icons-outlined">archive</mat-icon>
+      Download all
+    </button>
+  </div>
+
+  @if (cachedFiles.length === 0) {
+    <p>No songs saved yet.</p>
+  } @else {
+    <mat-list>
+      @for (cachedFile of cachedFiles; track cachedFile.name) {
+        <mat-list-item
+          matRipple
+          (click)="onListItemOpenClicked(cachedFile)">
+          <app-album-cover
+            matListItemIcon
+            [chordproContent]="cachedFile.chordproContent" />
+          <span matListItemTitle>{{ cachedFile.name }}</span>
+          <span matListItemLine>{{ BUILD_TIME_AGO(cachedFile.date) }}</span>
+          <div
+            class="container-item-actions"
+            matListItemMeta>
+            <button
+              aria-label="Download this song"
+              title="Download this song"
+              mat-icon-button
+              (click)="onButtonDownloadClicked(cachedFile, $event)">
+              <mat-icon fontSet="material-icons-outlined">download</mat-icon>
+            </button>
+            <button
+              aria-label="Delete this song"
+              title="Delete this song"
+              mat-icon-button
+              (click)="onButtonDeleteClicked(cachedFile, $event)">
+              <mat-icon fontSet="material-icons-outlined">delete</mat-icon>
+            </button>
+          </div>
+        </mat-list-item>
+      }
+    </mat-list>
+  }
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button
+    mat-button
+    mat-dialog-close>
+    Close
+  </button>
+</mat-dialog-actions>

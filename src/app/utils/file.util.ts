@@ -1,4 +1,27 @@
+import FileSaver from "file-saver";
+
 export class FileUtil {
+  static downloadAsFile(content: string, fileName: string): void {
+    FileUtil.downloadBlob(new Blob([content], { type: "text/plain;charset=utf-8" }), fileName);
+  }
+
+  static downloadBlob(blob: Blob, fileName: string): void {
+    FileSaver.saveAs(blob, fileName);
+  }
+
+  static isUserCancelledFilePicker(error: unknown): boolean {
+    return error instanceof DOMException && error.name === "AbortError";
+  }
+
+  // The File System Access API is Chromium-only — Firefox, Safari and every
+  // mobile browser never declare FileSystemFileHandle as a global at all, so
+  // a bare `instanceof FileSystemFileHandle` throws a ReferenceError there
+  // instead of just returning false. `typeof` is the one operator that never
+  // throws on an undeclared identifier.
+  static isFileSystemFileHandle(value: unknown): value is FileSystemFileHandle {
+    return typeof FileSystemFileHandle !== "undefined" && value instanceof FileSystemFileHandle;
+  }
+
   static async getFileContent(file: null | File | FileSystemFileHandle): Promise<null | string> {
     if (file === null) return "";
 
@@ -6,7 +29,7 @@ export class FileUtil {
     // its executor: a rejection thrown by an async executor before the first
     // await is lost, so a failing getFile() would have hung the caller forever
     // instead of surfacing.
-    const resolvedFile = file instanceof FileSystemFileHandle ? await file.getFile() : file;
+    const resolvedFile = FileUtil.isFileSystemFileHandle(file) ? await file.getFile() : file;
 
     return new Promise((resolve, reject) => {
       const reader = new FileReader();

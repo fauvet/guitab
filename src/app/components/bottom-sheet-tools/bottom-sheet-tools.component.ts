@@ -36,6 +36,7 @@ export class BottomSheetToolsComponent implements OnInit {
         },
         height: "95%",
         width: "95%",
+        panelClass: "dialog-panel-fill",
       })
       .afterClosed()
       .subscribe(() => {});
@@ -68,6 +69,7 @@ export class BottomSheetToolsComponent implements OnInit {
         data: {},
         height: "95%",
         width: "95%",
+        panelClass: "dialog-panel-fill",
       })
       .afterClosed()
       .subscribe((result: string | undefined) => {
@@ -83,6 +85,7 @@ export class BottomSheetToolsComponent implements OnInit {
       .open(DialogImportChordsOverLyricsComponent, {
         height: "95%",
         width: "95%",
+        panelClass: "dialog-panel-fill",
       })
       .afterClosed()
       .subscribe((result: string | undefined) => {

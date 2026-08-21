@@ -4,8 +4,8 @@ import { AppContextService } from "../app-context/app-context.service";
 import { ChordproService } from "../chordpro/chordpro.service";
 import { FileUtil } from "../../utils/file.util";
 import { ChordproUtil } from "../../utils/chordpro.util";
-import FileSaver from "file-saver";
 import { CachedFilesService } from "../cached-files/cached-files.service";
+import { ConfirmService } from "../confirm/confirm.service";
 
 export type KeyboardFileActionOutcome = { type: "saved"; fileName: string } | { type: "error"; error: Error };
 
@@ -16,6 +16,7 @@ export class KeyboardShortcutService {
   private readonly appContextService = inject(AppContextService);
   private readonly chordproService = inject(ChordproService);
   private readonly cachedFilesService = inject(CachedFilesService);
+  private readonly confirmService = inject(ConfirmService);
 
   // A "this just happened" event, not state — there is no meaningful last value
   // to read back, so this is a Subject rather than the BehaviorSubject pair the
@@ -97,7 +98,7 @@ export class KeyboardShortcutService {
   }
 
   async newFile(): Promise<boolean> {
-    if (!this.checkUnsavedChanges()) return false;
+    if (!(await this.checkUnsavedChanges())) return false;
 
     const file = await FileUtil.loadEmptyFile();
     await this.appContextService.setFileHandle(file);
@@ -106,7 +107,7 @@ export class KeyboardShortcutService {
   }
 
   async openFile(event: Event): Promise<boolean> {
-    if (!this.checkUnsavedChanges()) return false;
+    if (!(await this.checkUnsavedChanges())) return false;
 
     let file: null | File | FileSystemFileHandle = (event.target as HTMLInputElement)?.files?.[0] ?? null;
     if (this.canOpenFilePicker()) {
@@ -124,7 +125,7 @@ export class KeyboardShortcutService {
         });
         file = filePicker[0];
       } catch (error: unknown) {
-        if (this.isUserCancelled(error)) return false;
+        if (FileUtil.isUserCancelledFilePicker(error)) return false;
         throw new Error("Could not open the file picker.", { cause: error });
       }
     }
@@ -133,11 +134,6 @@ export class KeyboardShortcutService {
     this.appContextService.setEditing(false);
 
     const chordproContent = (await FileUtil.getFileContent(file)) ?? "";
-    // Temporary breadcrumb — see FirebaseCachedFilesRepository for the rest
-    // of this diagnostic trail: the opened file is not reliably reappearing
-    // in Quick Access with nothing thrown anywhere, so this marks exactly
-    // when the save was triggered relative to the write/read log lines.
-    console.info(`[KeyboardShortcutService] openFile: triggering cachedFilesService.saveFile()`);
     await this.cachedFilesService.saveFile(chordproContent);
 
     return true;
@@ -146,14 +142,20 @@ export class KeyboardShortcutService {
   async saveFile(): Promise<boolean> {
     const fileHandle = this.appContextService.getFileHandleWithContent()?.fileHandle ?? null;
 
-    const isActionPerformed =
-      !fileHandle || !(fileHandle instanceof FileSystemFileHandle)
-        ? await this.saveFileAs()
-        : await this.saveFileHandle(fileHandle);
-    if (!isActionPerformed) return false;
+    if (FileUtil.isFileSystemFileHandle(fileHandle)) {
+      const isActionPerformed = await this.saveFileHandle(fileHandle);
+      if (!isActionPerformed) return false;
 
-    const chordproContent = this.chordproService.getChordproContent();
-    await this.cachedFilesService.saveFile(chordproContent);
+      await this.cachedFilesService.saveFile(this.chordproService.getChordproContent());
+      return true;
+    }
+
+    // Nothing to write through to disk — the content came from Quick Access,
+    // a new file, the demo, or a restored draft. Saving now means upserting
+    // to the active account/local repository directly, with no disk dialog:
+    // saveFileAs() is reserved for the explicit "get a local copy" action.
+    await this.cachedFilesService.saveFile(this.chordproService.getChordproContent());
+    this.chordproService.updateChordproSaveState();
     return true;
   }
 
@@ -189,7 +191,7 @@ export class KeyboardShortcutService {
           ],
         });
       } catch (error: unknown) {
-        if (this.isUserCancelled(error)) return false;
+        if (FileUtil.isUserCancelledFilePicker(error)) return false;
         throw new Error("Could not open the save dialog.", { cause: error });
       }
       await this.saveFileHandle(fileHandle);
@@ -199,27 +201,25 @@ export class KeyboardShortcutService {
 
     // The download fallback has no completion signal, so the only way to know
     // whether the file reached the disk is to ask. Deferring lets the browser
-    // paint the download first — a confirm() raised before it would be asking
+    // paint the download first — a dialog raised before it would be asking
     // about something the user has not seen yet.
-    const blob = new Blob([chordproContent], { type: "text/plain;charset=utf-8" });
-    FileSaver.saveAs(blob, fileName);
+    FileUtil.downloadAsFile(chordproContent, fileName);
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
-    return new Promise<boolean>((resolve) => {
-      setTimeout(() => {
-        if (!confirm("Please confirm that the file has been successfully downloaded.")) {
-          resolve(false);
-          return;
-        }
+    const confirmed = await this.confirmService.confirm(
+      "Please confirm that the file has been successfully downloaded.",
+      "Yes, downloaded",
+    );
+    if (!confirmed) return false;
 
-        this.chordproService.updateChordproSaveState();
-        resolve(true);
-      });
-    });
+    this.chordproService.updateChordproSaveState();
+    return true;
   }
 
-  private checkUnsavedChanges(): boolean {
+  private async checkUnsavedChanges(): Promise<boolean> {
     const hasUnsavedChanges = this.chordproService.hasUnsavedChanges();
-    return !hasUnsavedChanges || confirm("You have unsaved changes. Are you sure you want to discard them?");
+    if (!hasUnsavedChanges) return true;
+    return this.confirmService.confirm("You have unsaved changes. Are you sure you want to discard them?", "Discard");
   }
 
   public canOpenFilePicker(): boolean {
@@ -228,9 +228,5 @@ export class KeyboardShortcutService {
 
   private canSaveFilePicker(): boolean {
     return "showSaveFilePicker" in window;
-  }
-
-  private isUserCancelled(error: unknown): boolean {
-    return error instanceof DOMException && error.name === "AbortError";
   }
 }

@@ -1,9 +1,11 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { MatBottomSheetRef } from "@angular/material/bottom-sheet";
+import { MatDialog } from "@angular/material/dialog";
 import { HttpClient } from "@angular/common/http";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
-import { of, throwError, Subject } from "rxjs";
+import { of, Subject } from "rxjs";
 import { BottomSheetManageFileComponent } from "./bottom-sheet-manage-file.component";
+import { DialogFileGalleryComponent } from "../dialog-file-gallery/dialog-file-gallery.component";
 import { CachedFilesService } from "../../services/cached-files/cached-files.service";
 import { KeyboardShortcutService } from "../../services/keyboard-shortcut/keyboard-shortcut.service";
 import { AppContextService } from "../../services/app-context/app-context.service";
@@ -41,6 +43,7 @@ describe("BottomSheetManageFileComponent", () => {
   };
   let mockNotificationService: { showError: ReturnType<typeof vi.fn>; showSuccess: ReturnType<typeof vi.fn> };
   let mockHttpClient: { get: ReturnType<typeof vi.fn> };
+  let mockDialog: { open: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
     cachedFiles$ = new Subject<CachedFile[]>();
@@ -76,6 +79,7 @@ describe("BottomSheetManageFileComponent", () => {
 
     mockNotificationService = { showError: vi.fn(), showSuccess: vi.fn() };
     mockHttpClient = { get: vi.fn().mockReturnValue(of({})) };
+    mockDialog = { open: vi.fn() };
 
     await TestBed.configureTestingModule({
       imports: [BottomSheetManageFileComponent, NoopAnimationsModule],
@@ -87,6 +91,7 @@ describe("BottomSheetManageFileComponent", () => {
         { provide: ChordproService, useValue: mockChordproService },
         { provide: NotificationService, useValue: mockNotificationService },
         { provide: HttpClient, useValue: mockHttpClient },
+        { provide: MatDialog, useValue: mockDialog },
       ],
     }).compileComponents();
 
@@ -117,28 +122,11 @@ describe("BottomSheetManageFileComponent", () => {
     });
   });
 
-  it("stops reacting to cachedFiles$ once destroyed, so the subscription does not leak", () => {
-    const cachedFile: CachedFile = { name: "Song", chordproContent: "", date: new Date() };
-    cachedFiles$.next([cachedFile]);
-    expect(component.coveredCachedFiles$.getValue().length).toBe(1);
-
+  it("stops reacting to getSyncError$() once destroyed, so the subscription does not leak", () => {
     component.ngOnDestroy();
-    cachedFiles$.next([cachedFile, cachedFile]);
+    syncError$.next(new Error("permission-denied"));
 
-    expect(component.coveredCachedFiles$.getValue().length).toBe(1);
-  });
-
-  describe("album cover lookup", () => {
-    it("logs rather than failing silently when the lookup fails, keeping the default cover", () => {
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-      mockChordproService.parseTitle.mockReturnValue("Hotel California");
-      mockHttpClient.get.mockReturnValue(throwError(() => new Error("network error")));
-
-      cachedFiles$.next([{ name: "Song", chordproContent: "", date: new Date() }]);
-
-      expect(consoleErrorSpy).toHaveBeenCalled();
-      expect(mockNotificationService.showError).not.toHaveBeenCalled();
-    });
+    expect(mockNotificationService.showError).not.toHaveBeenCalled();
   });
 
   describe("onButtonNewFileClicked", () => {
@@ -175,10 +163,6 @@ describe("BottomSheetManageFileComponent", () => {
   });
 
   describe("onButtonSaveFileClicked", () => {
-    beforeEach(() => {
-      component.isSaveExistingFileEnabled$.next(true);
-    });
-
     it("shows a success notification and dismisses once saved", async () => {
       await component.onButtonSaveFileClicked();
 
@@ -216,6 +200,33 @@ describe("BottomSheetManageFileComponent", () => {
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(error);
       expect(mockNotificationService.showError).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("onButtonSongLibraryClicked", () => {
+    it("dismisses the sheet and opens the song library dialog", () => {
+      component.onButtonSongLibraryClicked();
+
+      expect(mockBottomSheetRef.dismiss).toHaveBeenCalled();
+      expect(mockDialog.open).toHaveBeenCalledWith(DialogFileGalleryComponent, expect.any(Object));
+    });
+  });
+
+  describe("recent files cap", () => {
+    it("only shows the 5 most recent cached files, newest first", () => {
+      const cachedFiles: CachedFile[] = Array.from({ length: 8 }, (_, index) => ({
+        name: `Song ${index}`,
+        chordproContent: "",
+        date: new Date(2024, 0, index + 1),
+      }));
+      let shown: CachedFile[] = [];
+      component.cachedFiles$.subscribe((files) => (shown = files));
+
+      cachedFiles$.next(cachedFiles);
+
+      expect(shown.length).toBe(5);
+      expect(shown[0].name).toBe("Song 7");
+      expect(shown[4].name).toBe("Song 3");
     });
   });
 

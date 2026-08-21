@@ -16,8 +16,13 @@ export class BeforeUnloadService {
   private readonly localRepository = inject(LocalDraftRepository);
   private readonly firebaseRepository = inject(FirebaseDraftRepository);
 
-  private getActiveRepository(): IDraftRepository {
-    return this.authService.getUser() ? this.firebaseRepository : this.localRepository;
+  private async getActiveRepository(): Promise<IDraftRepository> {
+    // Waits for the first resolved auth state rather than reading getUser()
+    // synchronously — otherwise a draft saved right after startup can land in
+    // localStorage while findDraftUnsavedChordproContent() has already
+    // switched to Firebase, orphaning it. Same fix as CachedFilesService.
+    const user = await this.authService.getUserOnceReady();
+    return user ? this.firebaseRepository : this.localRepository;
   }
 
   constructor() {
@@ -28,15 +33,13 @@ export class BeforeUnloadService {
 
     window.addEventListener("beforeunload", (event) => {
       const hasUnsavedChanges = this.checkForUnsavedChanges(event);
-      const current = this.getActiveRepository().getDraft();
-      const newDraft: Draft = { ...current, hasUnsavedChanges };
       // The browser gives beforeunload no time budget for a component to react
       // to a rejection, so there is no catcher to rethrow to — this is the
       // "Errors are never swallowed" bootstrap-style exception, just at the
       // other end of the app's life instead of the start.
-      this.getActiveRepository()
-        .saveDraft(newDraft)
-        .catch((err: unknown) => console.error("[BeforeUnloadService] saveDraft error:", err));
+      this.persistDraftOnUnload(hasUnsavedChanges).catch((err: unknown) =>
+        console.error("[BeforeUnloadService] saveDraft error:", err),
+      );
     });
   }
 
@@ -46,23 +49,36 @@ export class BeforeUnloadService {
     // Since this is an Angular service, the constructor is called only once during the application's lifetime.
   }
 
-  findDraftUnsavedChordproContent(): string | null {
-    const draft = this.getActiveRepository().getDraft();
+  async findDraftUnsavedChordproContent(): Promise<string | null> {
+    const repository = await this.getActiveRepository();
+    const draft = repository.getDraft();
     return draft.hasUnsavedChanges ? draft.chordproContent : null;
   }
 
+  private async persistDraftOnUnload(hasUnsavedChanges: boolean): Promise<void> {
+    const repository = await this.getActiveRepository();
+    const current = repository.getDraft();
+    const newDraft: Draft = { ...current, hasUnsavedChanges };
+    await repository.saveDraft(newDraft);
+  }
+
   private onChordproContentChange(chordproContent: string): void {
-    const newDraft: Draft = {
-      chordproContent,
-      hasUnsavedChanges: this.chordproService.hasUnsavedChanges(),
-    };
     // Same exception as the beforeunload listener above: this fires from a
     // content-change subscription with no user gesture to attach a
     // notification to, and draft-saving is a background safety net, not
     // something the player asked for — logging is all there is to do.
-    this.getActiveRepository()
-      .saveDraft(newDraft)
-      .catch((err: unknown) => console.error("[BeforeUnloadService] saveDraft error:", err));
+    this.persistDraftOnContentChange(chordproContent).catch((err: unknown) =>
+      console.error("[BeforeUnloadService] saveDraft error:", err),
+    );
+  }
+
+  private async persistDraftOnContentChange(chordproContent: string): Promise<void> {
+    const newDraft: Draft = {
+      chordproContent,
+      hasUnsavedChanges: this.chordproService.hasUnsavedChanges(),
+    };
+    const repository = await this.getActiveRepository();
+    await repository.saveDraft(newDraft);
   }
 
   private checkForUnsavedChanges(event: BeforeUnloadEvent): boolean {

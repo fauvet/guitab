@@ -20,15 +20,18 @@ export class ChordproUtil {
     return /{artist:([^}]*)}/.exec(chordproContent)?.[1]?.trim() ?? null;
   }
 
-  static buildFileName(chordproContent: string): string {
-    const fileBaseName = this.buildFileBaseName(chordproContent);
+  static buildFileName(chordproContent: string, fallbackName?: string): string {
+    const fileBaseName = this.buildFileBaseName(chordproContent, fallbackName);
     return `${fileBaseName}${ChordproUtil.PREFERRED_EXTENSION}`;
   }
 
-  static buildFileBaseName(chordproContent: string): string {
+  static buildFileBaseName(chordproContent: string, fallbackName?: string): string {
     const title = ChordproUtil.findTitle(chordproContent);
     const artist = ChordproUtil.findArtist(chordproContent);
-    return `${title} (${artist})`;
+    if (title && artist) return `${title} (${artist})`;
+    if (title) return title;
+    if (artist) return artist;
+    return fallbackName ?? "Untitled";
   }
 
   static findCustomVariant(chordproContent: string, chordName: string): Variant | null {

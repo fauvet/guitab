@@ -45,6 +45,13 @@ first entry moves to `## [1.0.0]` when the first release is cut.
 
 ### Added
 
+- **A dedicated Song library dialog**, reachable from the file menu, lists every
+  song saved to the account (or device, when signed out) — not just the most
+  recent ones — with the same album cover Quick Access already shows. It can
+  import several ChordPro files at once, download any entry back to disk,
+  download everything as one `.zip`, or delete an entry — none of which was
+  possible before. Quick Access itself now shows only the 5 most recent songs,
+  as a fast shortcut rather than the only way to reach the rest.
 - **Hum a solo and get a tablature.** The solo tab editor can open the
   microphone, show the note being sung as it is sung — with its octave, so two
   A's an octave apart never read the same — and turn the phrase into tablature
@@ -63,6 +70,55 @@ first entry moves to `## [1.0.0]` when the first release is cut.
 
 ### Fixed
 
+- **Every confirmation the app asks for a native, browser-styled `confirm()`
+  popup** — deleting a song from the library, discarding unsaved changes,
+  verifying a downloaded file — now shows a Material dialog that matches the
+  rest of the app instead.
+- **A dialog meant to fill most of the screen — Song library, Solo tab
+  editor, the chords-over-lyrics import, the external tool embeds — was
+  capped at Material's default 560px regardless of the width it asked for.**
+  `MatDialog` only honours `width` if `maxWidth` is also set; none of these
+  passed one, so every one of them opened as a narrow box in the middle of a
+  much wider screen, with its "Close" button reading as centred rather than
+  right-aligned simply because the whole dialog was narrow.
+- **The album cover in the Song library and Quick Access could render on top
+  of the song title next to it.** The cover is a component, not a plain
+  `<img>`, and a custom element has no intrinsic size — without an explicit
+  size on its host, `matListItemIcon`'s CSS treated it like a 24px icon
+  glyph and let the 48px image overflow into the text beside it.
+- **Importing several ChordPro files with no `{title:}`/`{artist:}` of their
+  own only kept the last one.** The name given to a saved song fell back to
+  the literal string `"null (null)"` when both were missing, so every such
+  import collided on the same key and silently overwrote the previous one.
+  Untitled content now falls back to the imported file's own name instead, so
+  distinct files stay distinct; content with genuinely no title, artist, or
+  origin file falls back to "Untitled" rather than "null (null)".
+- **A song downloaded from the Song library got a bare or `.txt`-looking name
+  instead of `.cho`.** The download used the song's display name directly,
+  which never carried an extension.
+- **Opening or saving any file crashed outright on Firefox, Safari, and every
+  mobile browser.** The code told a real local-disk handle apart from
+  everything else with `instanceof FileSystemFileHandle`, but that global only
+  exists on Chromium's File System Access API — every other browser never
+  declares it at all, so the bare reference threw a `ReferenceError` instead
+  of the intended "no, it isn't one." Since this app is used one-handed on a
+  phone, that meant most real users. The check now goes through `typeof`
+  first, which is the one operator that never throws on an undeclared
+  identifier.
+- **Ctrl+S (and the file menu's "Save file") popped a local-disk save dialog,
+  or silently triggered a download, for any song opened from Quick Access, a
+  new file, the demo, or a restored draft** — leftover behaviour from before
+  cloud storage existed, since none of those ever held a real on-disk file
+  handle. Saving now upserts straight to the account (or device, when signed
+  out) with no dialog, the same as every other save path; the disk-oriented
+  flow is reserved for a file genuinely opened from local disk and for the
+  explicit "Save file as…".
+- **A draft saved right after startup could silently vanish from draft
+  recovery.** Like the Quick Access bug below, draft recovery read the
+  signed-in state synchronously, before the automatic anonymous sign-in on
+  launch had resolved — so an early draft save could land in `localStorage`
+  while recovery was already reading from Firebase. It now waits for the
+  first resolved auth state, the same fix already applied to Quick Access.
 - **Ctrl+Shift+S (Save As) and Ctrl+Shift+Z (redo) never worked.** Holding Shift
   makes the browser report an uppercase letter, which no shortcut matched, so
   both keystrokes did nothing at all.

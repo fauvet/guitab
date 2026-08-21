@@ -34,6 +34,7 @@ vi.mock("firebase/database", () => ({
   orderByChild: vi.fn(),
   get: vi.fn().mockResolvedValue({ exists: () => false }),
   set: vi.fn().mockResolvedValue(undefined),
+  remove: vi.fn().mockResolvedValue(undefined),
   serverTimestamp: vi.fn(),
   onValue: vi.fn((_query: unknown, onNext: (snapshot: unknown) => void, onError: (error: unknown) => void) => {
     snapshotCallbacks.onNext = onNext;
@@ -128,6 +129,24 @@ describe("FirebaseCachedFilesRepository", () => {
 
       const error = await firstValueFrom(repository.getSyncError$());
       expect(error).toBeNull();
+    });
+  });
+
+  describe("deleteFile()", () => {
+    it("removes the entry at the same path saveFile() would have written it to", async () => {
+      const { remove } = await import("firebase/database");
+
+      await repository.deleteFile("Test");
+
+      expect(ref).toHaveBeenCalledWith(database, `users/${uid}/cachedFiles/Test`);
+      expect(remove).toHaveBeenCalled();
+    });
+
+    it("rejects with a clear Error when the removal itself fails, instead of failing silently", async () => {
+      const { remove } = await import("firebase/database");
+      (remove as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("permission-denied"));
+
+      await expect(repository.deleteFile("Test")).rejects.toThrow(/Could not delete "Test"\./);
     });
   });
 });

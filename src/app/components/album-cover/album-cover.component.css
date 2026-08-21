@@ -1,0 +1,18 @@
+/**
+ * A custom element has no intrinsic size — matListItemIcon's own CSS sizes
+ * it for a 24px icon glyph at the same specificity as this rule, so without
+ * !important the 48px image inside overflowed its host box and spilled into
+ * the title text next to it. Same reasoning as the parent's own
+ * `margin: auto !important` on `[matListItemIcon]`: this is deliberately
+ * overriding a Material default, not fighting our own CSS.
+ */
+:host {
+  display: block !important;
+  height: 48px !important;
+  width: 48px !important;
+
+  .album-cover {
+    height: 48px;
+    width: 48px;
+  }
+}

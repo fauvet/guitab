@@ -94,6 +94,18 @@ mat-list-item {
   }
 }
 
+/**
+ * A MatDialog's surface defaults to Material's spec max-width of 560px,
+ * which silently wins over a `width` passed to MatDialog.open() unless
+ * `maxWidth` is also set. Every dialog meant to fill most of the viewport
+ * — Song library, Solo tab editor, the chords-over-lyrics import, the
+ * external tool embeds — opens with this panel class instead of repeating
+ * the override at each call site.
+ */
+.dialog-panel-fill {
+  max-width: 95vw !important;
+}
+
 .js-are-lyrics-hided {
   .word:not(:has(.chord)) {
     display: none;

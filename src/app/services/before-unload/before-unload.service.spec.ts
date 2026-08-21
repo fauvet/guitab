@@ -17,6 +17,7 @@ describe("BeforeUnloadService", () => {
   const mockAuthService = {
     getUser: vi.fn().mockReturnValue(null),
     getUser$: vi.fn().mockReturnValue(of(null)),
+    getUserOnceReady: vi.fn().mockResolvedValue(null),
   };
 
   const mockFirebaseDraftRepo = {
@@ -27,6 +28,7 @@ describe("BeforeUnloadService", () => {
 
   beforeEach(() => {
     localStorage.clear();
+    mockAuthService.getUserOnceReady.mockResolvedValue(null);
     contentSubject = new Subject<string>();
     mockChordproService = {
       getChordproContent$: vi.fn().mockReturnValue(contentSubject.asObservable()),
@@ -58,39 +60,54 @@ describe("BeforeUnloadService", () => {
   });
 
   describe("findDraftUnsavedChordproContent", () => {
-    it("should return null initially (no unsaved changes)", () => {
-      expect(service.findDraftUnsavedChordproContent()).toBeNull();
+    it("should return null initially (no unsaved changes)", async () => {
+      expect(await service.findDraftUnsavedChordproContent()).toBeNull();
     });
 
-    it("should return null after a content change when hasUnsavedChanges is false", () => {
+    it("should return null after a content change when hasUnsavedChanges is false", async () => {
       mockChordproService.hasUnsavedChanges.mockReturnValue(false);
       contentSubject.next("first"); // skipped by skip(1)
       contentSubject.next("some content");
-      expect(service.findDraftUnsavedChordproContent()).toBeNull();
+      await vi.waitFor(async () => expect(await service.findDraftUnsavedChordproContent()).toBeNull());
     });
 
-    it("should return the content after a content change when hasUnsavedChanges is true", () => {
+    it("should return the content after a content change when hasUnsavedChanges is true", async () => {
       mockChordproService.hasUnsavedChanges.mockReturnValue(true);
       contentSubject.next("first"); // skipped by skip(1)
       contentSubject.next("my unsaved content");
-      expect(service.findDraftUnsavedChordproContent()).toBe("my unsaved content");
+      await vi.waitFor(async () => expect(await service.findDraftUnsavedChordproContent()).toBe("my unsaved content"));
     });
 
-    it("should reflect the latest content after multiple changes", () => {
+    it("should reflect the latest content after multiple changes", async () => {
       mockChordproService.hasUnsavedChanges.mockReturnValue(true);
       contentSubject.next("first"); // skipped
       contentSubject.next("second");
       contentSubject.next("third");
-      expect(service.findDraftUnsavedChordproContent()).toBe("third");
+      await vi.waitFor(async () => expect(await service.findDraftUnsavedChordproContent()).toBe("third"));
     });
 
-    it("should return null if hasUnsavedChanges switches back to false", () => {
+    it("should return null if hasUnsavedChanges switches back to false", async () => {
       mockChordproService.hasUnsavedChanges.mockReturnValue(true);
       contentSubject.next("first"); // skipped
       contentSubject.next("unsaved content");
       mockChordproService.hasUnsavedChanges.mockReturnValue(false);
       contentSubject.next("saved content");
-      expect(service.findDraftUnsavedChordproContent()).toBeNull();
+      await vi.waitFor(async () => expect(await service.findDraftUnsavedChordproContent()).toBeNull());
+    });
+
+    it("should wait for the resolved auth state rather than racing it, so a draft saved before startup finishes still lands in the right repository", async () => {
+      let resolveReady: (user: unknown) => void = () => {};
+      mockAuthService.getUserOnceReady.mockReturnValue(
+        new Promise((resolve) => {
+          resolveReady = resolve;
+        }),
+      );
+      mockFirebaseDraftRepo.getDraft.mockReturnValue({ chordproContent: "cloud draft", hasUnsavedChanges: true });
+
+      const find = service.findDraftUnsavedChordproContent();
+      resolveReady({ uid: "uid-123" });
+
+      expect(await find).toBe("cloud draft");
     });
   });
 });

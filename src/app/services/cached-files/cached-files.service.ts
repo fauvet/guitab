@@ -41,8 +41,13 @@ export class CachedFilesService {
       );
   }
 
-  async saveFile(chordproContent: string): Promise<void> {
+  async saveFile(chordproContent: string, fallbackName?: string): Promise<void> {
     const repository = await this.getActiveRepository();
-    await repository.saveFile(chordproContent);
+    await repository.saveFile(chordproContent, fallbackName);
+  }
+
+  async deleteFile(name: string): Promise<void> {
+    const repository = await this.getActiveRepository();
+    await repository.deleteFile(name);
   }
 }

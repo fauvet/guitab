@@ -17,6 +17,7 @@ const mockAuthService = {
 const mockFirebaseRepo = {
   getCachedFiles$: vi.fn().mockReturnValue(of([])),
   saveFile: vi.fn().mockResolvedValue(undefined),
+  deleteFile: vi.fn().mockResolvedValue(undefined),
   getSyncError$: vi.fn().mockReturnValue(of(null)),
 };
 
@@ -77,6 +78,13 @@ describe("CachedFilesService", () => {
       expect(files[0].date).toBeInstanceOf(Date);
     });
 
+    it("should use the fallback name for content with no title or artist, so two untitled saves stay distinct", async () => {
+      await service.saveFile("no directives here", "song-one");
+      await service.saveFile("also no directives", "song-two");
+      const files = await firstValueFrom(service.getCachedFiles$());
+      expect(files.map((file) => file.name).sort()).toEqual(["song-one", "song-two"]);
+    });
+
     it("should accumulate entries for different songs", async () => {
       await service.saveFile(CONTENT_A);
       await service.saveFile(CONTENT_B);
@@ -122,7 +130,7 @@ describe("CachedFilesService", () => {
       resolveReady({ uid: "uid-123" });
       await save;
 
-      expect(mockFirebaseRepo.saveFile).toHaveBeenCalledWith(CONTENT_A);
+      expect(mockFirebaseRepo.saveFile).toHaveBeenCalledWith(CONTENT_A, undefined);
       const rawLocalFiles = localStorage.getItem(LS_KEY);
       expect(rawLocalFiles === null ? [] : JSON.parse(rawLocalFiles)).toEqual([]);
     });
@@ -133,6 +141,32 @@ describe("CachedFilesService", () => {
       mockFirebaseRepo.saveFile.mockRejectedValueOnce(writeError);
 
       await expect(service.saveFile(CONTENT_A)).rejects.toThrow(writeError);
+    });
+  });
+
+  describe("deleteFile", () => {
+    it("should remove the entry from localStorage when signed out", async () => {
+      await service.saveFile(CONTENT_A);
+      await service.deleteFile("Hotel California (Eagles)");
+
+      const files = await firstValueFrom(service.getCachedFiles$());
+      expect(files).toEqual([]);
+    });
+
+    it("should delegate to the Firebase repository once signed in", async () => {
+      mockAuthService.getUserOnceReady.mockResolvedValue({ uid: "uid-123" });
+
+      await service.deleteFile("Hotel California (Eagles)");
+
+      expect(mockFirebaseRepo.deleteFile).toHaveBeenCalledWith("Hotel California (Eagles)");
+    });
+
+    it("should propagate a rejection from the active repository instead of swallowing it", async () => {
+      mockAuthService.getUserOnceReady.mockResolvedValue({ uid: "uid-123" });
+      const deleteError = new Error("Could not delete.");
+      mockFirebaseRepo.deleteFile.mockRejectedValueOnce(deleteError);
+
+      await expect(service.deleteFile("Hotel California (Eagles)")).rejects.toThrow(deleteError);
     });
   });
 

@@ -89,6 +89,8 @@ Read the matching document **before** you start, not after:
 - Styling and layout: `.claude/rules/styling.instructions.md`
 - Anything a user can see, click or hear:
   `.claude/rules/accessibility.instructions.md`
+- Whether an interaction is the right one — confirmation vs. undo, feedback
+  wording, consistency: `.claude/rules/ux.instructions.md`
 - Adding a dependency: `.claude/rules/dependencies-licensing.instructions.md`
 - Committing, branching, reviewing: `.claude/rules/git-workflow.instructions.md`
 - Editing any `.md` in this repo: `.claude/rules/documentation.instructions.md`

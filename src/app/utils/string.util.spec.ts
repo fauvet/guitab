@@ -71,6 +71,20 @@ describe("StringUtil", () => {
     });
   });
 
+  describe("stripDiacritics", () => {
+    it("should remove accents from characters", () => {
+      expect(StringUtil.stripDiacritics("café")).toBe("cafe");
+    });
+
+    it("should leave strings with no accents unchanged", () => {
+      expect(StringUtil.stripDiacritics("hello world")).toBe("hello world");
+    });
+
+    it("should return an empty string unchanged", () => {
+      expect(StringUtil.stripDiacritics("")).toBe("");
+    });
+  });
+
   describe("insert", () => {
     it("should insert at the beginning (index 0)", () => {
       expect(StringUtil.insert("world", "hello ", 0)).toBe("hello world");

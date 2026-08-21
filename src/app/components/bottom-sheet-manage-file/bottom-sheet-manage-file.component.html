@@ -27,8 +27,17 @@
       (change)="onButtonOpenFileClicked($event)" />
   </mat-list-item>
   <mat-list-item
-    [attr.matRipple]="isSaveExistingFileEnabled$ | async"
-    [class.disabled]="(isSaveExistingFileEnabled$ | async) !== true"
+    matRipple
+    (click)="onButtonSongLibraryClicked()">
+    <mat-icon
+      matListItemIcon
+      fontSet="material-icons-outlined">
+      library_music
+    </mat-icon>
+    <div matListItemTitle>Song library…</div>
+  </mat-list-item>
+  <mat-list-item
+    matRipple
     (click)="onButtonSaveFileClicked()">
     <mat-icon
       matListItemIcon
@@ -47,20 +56,18 @@
     </mat-icon>
     <div matListItemTitle>Save file as... (Ctrl+Shift+S)</div>
   </mat-list-item>
-  @if (((coveredCachedFiles$ | async) ?? []).length > 0) {
+  @if (((cachedFiles$ | async) ?? []).length > 0) {
     <mat-divider />
     <div class="container-cached-files">
-      @for (coveredCachedFile of coveredCachedFiles$ | async; track coveredCachedFile.date) {
+      @for (cachedFile of cachedFiles$ | async; track cachedFile.name) {
         <mat-list-item
           matRipple
-          (click)="onButtonCachedFileClicked(coveredCachedFile)">
-          <img
-            class="album-cover"
+          (click)="onButtonCachedFileClicked(cachedFile)">
+          <app-album-cover
             matListItemIcon
-            alt="cover"
-            [src]="coveredCachedFile.cover" />
-          <span matListItemTitle>{{ coveredCachedFile.name }}</span>
-          <span matListItemLine>{{ BUILD_TIME_AGO(coveredCachedFile.date) }}</span>
+            [chordproContent]="cachedFile.chordproContent" />
+          <span matListItemTitle>{{ cachedFile.name }}</span>
+          <span matListItemLine>{{ BUILD_TIME_AGO(cachedFile.date) }}</span>
         </mat-list-item>
       }
     </div>
