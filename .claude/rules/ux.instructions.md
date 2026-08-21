@@ -26,7 +26,7 @@ The app is already consistent about this, and the consistency is worth protectin
   changes is one example. Nothing else interrupts the player first.
 - `FileUtil.loadEmptyFile()` loads a real, empty ChordPro file at boot and on "new
   file." There is no placeholder screen, no "nothing here yet" state to design
-  around, because a blank chart *is* the normal starting point, not an edge case.
+  around, because a blank chart _is_ the normal starting point, not an edge case.
 - Draft recovery (`BeforeUnloadService`) runs on every load and is silent. An
   "we restored your draft" dialog would fire constantly for an event the player
   never asked about â€” the interruption would cost more than the thing it protects
@@ -49,7 +49,7 @@ first. Reach for `confirm()` only when undo genuinely cannot cover the action â€
 its existing, sparse use in `KeyboardShortcutService` is the calibration, not a
 floor to build on. How a declined `confirm()` is treated as a quiet cancel rather
 than an error is already covered in "Errors are never swallowed" in
-`engineering-principles.instructions.md`; this section is about *when* to reach for
+`engineering-principles.instructions.md`; this section is about _when_ to reach for
 the prompt at all, not what to do once the player answers it.
 
 ## Say what happened, not that something happened

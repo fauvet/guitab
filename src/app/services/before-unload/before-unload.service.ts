@@ -1,6 +1,6 @@
-import { inject, Injectable } from "@angular/core";
+import { inject, Injectable, OnDestroy } from "@angular/core";
 import { ChordproService } from "../chordpro/chordpro.service";
-import { skip } from "rxjs";
+import { skip, Subject, takeUntil } from "rxjs";
 import { Draft } from "../../storage/repositories/draft.repository";
 import { LocalDraftRepository } from "../../storage/local/local-draft.repository";
 import { FirebaseDraftRepository } from "../../storage/firebase/firebase-draft.repository";
@@ -10,11 +10,29 @@ import { IDraftRepository } from "../../storage/repositories/draft.repository";
 @Injectable({
   providedIn: "root",
 })
-export class BeforeUnloadService {
+export class BeforeUnloadService implements OnDestroy {
   private readonly chordproService = inject(ChordproService);
   private readonly authService = inject(AuthService);
   private readonly localRepository = inject(LocalDraftRepository);
   private readonly firebaseRepository = inject(FirebaseDraftRepository);
+
+  private readonly unsubscribe$ = new Subject<void>();
+
+  // Named so it can be passed to removeEventListener in ngOnDestroy — a test
+  // injector is destroyed between tests, and a stale listener still attached
+  // to the shared window would fire and try to save a draft after jsdom has
+  // torn down localStorage for that environment. Same reasoning as
+  // WakeLockService's onVisibilityChangedListener.
+  private readonly onBeforeUnloadListener = (event: BeforeUnloadEvent): void => {
+    const hasUnsavedChanges = this.checkForUnsavedChanges(event);
+    // The browser gives beforeunload no time budget for a component to react
+    // to a rejection, so there is no catcher to rethrow to — this is the
+    // "Errors are never swallowed" bootstrap-style exception, just at the
+    // other end of the app's life instead of the start.
+    this.persistDraftOnUnload(hasUnsavedChanges).catch((err: unknown) =>
+      console.error("[BeforeUnloadService] saveDraft error:", err),
+    );
+  };
 
   private async getActiveRepository(): Promise<IDraftRepository> {
     // Waits for the first resolved auth state rather than reading getUser()
@@ -28,19 +46,19 @@ export class BeforeUnloadService {
   constructor() {
     this.chordproService
       .getChordproContent$()
-      .pipe(skip(1)) // Skip the initial value to avoid unnecessary updates; allowing the service to restore the draft content
+      .pipe(
+        skip(1), // Skip the initial value to avoid unnecessary updates; allowing the service to restore the draft content
+        takeUntil(this.unsubscribe$),
+      )
       .subscribe((chordproContent) => this.onChordproContentChange(chordproContent));
 
-    window.addEventListener("beforeunload", (event) => {
-      const hasUnsavedChanges = this.checkForUnsavedChanges(event);
-      // The browser gives beforeunload no time budget for a component to react
-      // to a rejection, so there is no catcher to rethrow to — this is the
-      // "Errors are never swallowed" bootstrap-style exception, just at the
-      // other end of the app's life instead of the start.
-      this.persistDraftOnUnload(hasUnsavedChanges).catch((err: unknown) =>
-        console.error("[BeforeUnloadService] saveDraft error:", err),
-      );
-    });
+    window.addEventListener("beforeunload", this.onBeforeUnloadListener);
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener("beforeunload", this.onBeforeUnloadListener);
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 
   initialize(): void {
