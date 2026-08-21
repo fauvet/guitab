@@ -1,5 +1,16 @@
 import { inject, Injectable } from "@angular/core";
-import { get, onValue, orderByChild, query, ref, remove, serverTimestamp, set, Unsubscribe } from "firebase/database";
+import {
+  get,
+  onValue,
+  orderByChild,
+  query,
+  ref,
+  remove,
+  serverTimestamp,
+  set,
+  update,
+  Unsubscribe,
+} from "firebase/database";
 import { BehaviorSubject, Observable } from "rxjs";
 import { ICachedFilesRepository } from "../repositories/cached-files.repository";
 import { FirebaseService } from "../../services/firebase/firebase.service";
@@ -86,13 +97,25 @@ export class FirebaseCachedFilesRepository implements ICachedFilesRepository {
 
     try {
       const existingSnapshot = await get(fileRef);
-      await set(fileRef, {
-        name: fileBaseName,
-        chordproContent,
-        ownerId: user.uid,
-        ...(existingSnapshot.exists() ? {} : { createdAt: serverTimestamp() }),
-        updatedAt: serverTimestamp(),
-      });
+      if (existingSnapshot.exists()) {
+        // update() merges, so createdAt survives untouched — set() would
+        // overwrite the whole node and wipe it, tripping the rules'
+        // hasChildren(['ownerId', 'updatedAt', 'createdAt']) validation.
+        await update(fileRef, {
+          name: fileBaseName,
+          chordproContent,
+          ownerId: user.uid,
+          updatedAt: serverTimestamp(),
+        });
+      } else {
+        await set(fileRef, {
+          name: fileBaseName,
+          chordproContent,
+          ownerId: user.uid,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+      }
     } catch (error: unknown) {
       throw new Error(`Could not save "${fileBaseName}" to your account.`, { cause: error });
     }

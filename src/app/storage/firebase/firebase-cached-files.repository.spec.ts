@@ -34,8 +34,9 @@ vi.mock("firebase/database", () => ({
   orderByChild: vi.fn(),
   get: vi.fn().mockResolvedValue({ exists: () => false }),
   set: vi.fn().mockResolvedValue(undefined),
+  update: vi.fn().mockResolvedValue(undefined),
   remove: vi.fn().mockResolvedValue(undefined),
-  serverTimestamp: vi.fn(),
+  serverTimestamp: vi.fn().mockReturnValue("mock-server-timestamp"),
   onValue: vi.fn((_query: unknown, onNext: (snapshot: unknown) => void, onError: (error: unknown) => void) => {
     snapshotCallbacks.onNext = onNext;
     snapshotCallbacks.onError = onError;
@@ -119,6 +120,34 @@ describe("FirebaseCachedFilesRepository", () => {
       (set as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("permission-denied"));
 
       await expect(repository.saveFile("{title: Test}")).rejects.toThrow(/Could not save ".*" to your account\./);
+    });
+
+    it("should set() a brand-new file with createdAt, and never update() it", async () => {
+      const { get, set, update } = await import("firebase/database");
+      (get as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ exists: () => false });
+
+      await repository.saveFile("{title: Test}");
+
+      expect(set).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ ownerId: uid, createdAt: "mock-server-timestamp" }),
+      );
+      expect(update).not.toHaveBeenCalled();
+    });
+
+    it("should update() an existing file instead of set()-ing it, so createdAt is preserved", async () => {
+      const { get, set, update } = await import("firebase/database");
+      (get as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ exists: () => true });
+
+      await repository.saveFile("{title: Test}");
+
+      const [, payload] = (update as ReturnType<typeof vi.fn>).mock.calls[0] as [unknown, Record<string, unknown>];
+      expect(payload).toMatchObject({ ownerId: uid });
+      // set() overwrites the whole node, so omitting createdAt here would delete
+      // it and trip the rules' hasChildren(['ownerId', 'updatedAt', 'createdAt'])
+      // validation — update() must be used instead, which merges and leaves it alone.
+      expect(Object.prototype.hasOwnProperty.call(payload, "createdAt")).toBe(false);
+      expect(set).not.toHaveBeenCalled();
     });
 
     it("does not touch getSyncError$() — that reflects only the live listener", async () => {

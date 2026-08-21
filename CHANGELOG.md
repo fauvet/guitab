@@ -70,6 +70,14 @@ first entry moves to `## [1.0.0]` when the first release is cut.
 
 ### Fixed
 
+- **Draft autosave and "save to your account" silently stopped persisting after
+  the first write to a given record.** Both wrote with Firebase's `set()`, which
+  replaces the whole node rather than merging — updates deliberately omitted
+  `createdAt` on the assumption it would be left alone, but `set()` deleted it
+  instead, and the security rules reject any record missing it. In practice this
+  meant only the very first save of a session (or of a song) ever reached the
+  cloud; every edit after that failed quietly in the background. Updates now go
+  through `update()`, which merges and leaves `createdAt` untouched.
 - **Every confirmation the app asks for a native, browser-styled `confirm()`
   popup** — deleting a song from the library, discarding unsaved changes,
   verifying a downloaded file — now shows a Material dialog that matches the

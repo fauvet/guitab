@@ -1,6 +1,6 @@
 import { TestBed } from "@angular/core/testing";
 import { of } from "rxjs";
-import { get, onValue, ref, set } from "firebase/database";
+import { get, onValue, ref, set, update } from "firebase/database";
 import { FirebaseDraftRepository } from "./firebase-draft.repository";
 import { FirebaseService } from "../../services/firebase/firebase.service";
 import { AuthService } from "../../services/auth/auth.service";
@@ -10,7 +10,8 @@ vi.mock("firebase/database", () => ({
   get: vi.fn().mockResolvedValue({ exists: () => false }),
   onValue: vi.fn().mockReturnValue(vi.fn()),
   set: vi.fn().mockResolvedValue(undefined),
-  serverTimestamp: vi.fn(),
+  update: vi.fn().mockResolvedValue(undefined),
+  serverTimestamp: vi.fn().mockReturnValue("mock-server-timestamp"),
 }));
 
 describe("FirebaseDraftRepository", () => {
@@ -49,6 +50,32 @@ describe("FirebaseDraftRepository", () => {
     expect(ref).toHaveBeenCalledWith(database, `users/${uid}/draft/current`);
     expect(get).toHaveBeenCalled();
     expect(set).toHaveBeenCalled();
+  });
+
+  it("should set() a brand-new draft with createdAt, and never update() it", async () => {
+    (get as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ exists: () => false });
+
+    await repository.saveDraft({ chordproContent: "test", hasUnsavedChanges: true });
+
+    expect(set).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ chordproContent: "test", ownerId: uid, createdAt: "mock-server-timestamp" }),
+    );
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it("should update() an existing draft instead of set()-ing it, so createdAt is preserved", async () => {
+    (get as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ exists: () => true });
+
+    await repository.saveDraft({ chordproContent: "test", hasUnsavedChanges: true });
+
+    const [, payload] = (update as ReturnType<typeof vi.fn>).mock.calls[0] as [unknown, Record<string, unknown>];
+    expect(payload).toMatchObject({ chordproContent: "test", ownerId: uid });
+    // set() overwrites the whole node, so omitting createdAt here would delete
+    // it and trip the rules' hasChildren(['ownerId', 'updatedAt', 'createdAt'])
+    // validation — update() must be used instead, which merges and leaves it alone.
+    expect(Object.prototype.hasOwnProperty.call(payload, "createdAt")).toBe(false);
+    expect(set).not.toHaveBeenCalled();
   });
 
   it("should reject with a clear Error when the write fails, instead of failing silently", async () => {

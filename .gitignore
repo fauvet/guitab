@@ -45,3 +45,7 @@ Thumbs.db
 
 # Firebase / environment secrets (created from environment.template.ts)
 src/environments/environment.ts
+
+# Firebase emulator logs (npm run test:rules:emulator)
+database-debug.log
+firebase-debug.log

@@ -1,5 +1,5 @@
 import { inject, Injectable } from "@angular/core";
-import { get, onValue, ref, serverTimestamp, set, Unsubscribe } from "firebase/database";
+import { get, onValue, ref, serverTimestamp, set, update, Unsubscribe } from "firebase/database";
 import { BehaviorSubject, Observable } from "rxjs";
 import { IDraftRepository, Draft, DEFAULT_DRAFT } from "../repositories/draft.repository";
 import { FirebaseService } from "../../services/firebase/firebase.service";
@@ -62,12 +62,23 @@ export class FirebaseDraftRepository implements IDraftRepository {
 
     try {
       const existingSnapshot = await get(draftRef);
-      await set(draftRef, {
-        ...draft,
-        ownerId: user.uid,
-        ...(existingSnapshot.exists() ? {} : { createdAt: serverTimestamp() }),
-        updatedAt: serverTimestamp(),
-      });
+      if (existingSnapshot.exists()) {
+        // update() merges, so createdAt survives untouched — set() would
+        // overwrite the whole node and wipe it, tripping the rules'
+        // hasChildren(['ownerId', 'updatedAt', 'createdAt']) validation.
+        await update(draftRef, {
+          ...draft,
+          ownerId: user.uid,
+          updatedAt: serverTimestamp(),
+        });
+      } else {
+        await set(draftRef, {
+          ...draft,
+          ownerId: user.uid,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+      }
     } catch (error: unknown) {
       throw new Error("Could not save your draft.", { cause: error });
     }

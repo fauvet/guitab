@@ -83,12 +83,19 @@ GuiTab stores in it mirrors what Firestore held:
 
 Every written record must carry `ownerId`, `updatedAt`, and `createdAt` **on
 creation only**. `FirebaseDraftRepository.saveDraft()` shows the shape: read the
-record first, add `createdAt: serverTimestamp()` only when it does not exist, and
-always refresh `updatedAt`.
+record first, then branch on whether it already exists. On creation, `set()` the
+whole node including `createdAt: serverTimestamp()`. On every write after that,
+`update()` — never `set()` — with `ownerId` and a refreshed `updatedAt`, and no
+`createdAt` at all. `update()` merges into the existing node, so leaving
+`createdAt` out of the payload leaves the stored value alone; `set()` would
+overwrite the whole node and delete it.
 
-Get this wrong and the write is rejected by the rules, not by a type error. The
-failure surfaces as a permission-denied at runtime, which is why the pattern is
-worth copying rather than reinventing.
+Get this wrong and the write is rejected by the rules, not by a type error. A
+`set()` used for an update silently drops `createdAt` from the node, which then
+fails the rules' `hasChildren(['ownerId', 'updatedAt', 'createdAt'])` check — the
+failure surfaces as a permission-denied at runtime, on every write after the
+first, which is why the create/update split is worth copying rather than
+reinventing.
 
 Reads use `onValue`, which pushes live updates into a `BehaviorSubject`. Its
 `Unsubscribe` handle must be kept and called when the user changes — a repository
