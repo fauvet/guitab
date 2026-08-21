@@ -7,6 +7,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![RxJS](https://img.shields.io/badge/RxJS-7.8-B7178C?logo=reactivex&logoColor=white)](https://rxjs.dev)
 [![Vitest](https://img.shields.io/badge/Vitest-4.1-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev)
+[![Firebase](https://img.shields.io/badge/Firebase-12-FFCA28?logo=firebase&logoColor=white)](https://firebase.google.com)
 [![License](https://img.shields.io/badge/License-GPL--3.0--or--later-blue)](LICENSE)
 [![PWA](https://img.shields.io/badge/PWA-enabled-5A0FC8?logoColor=white)](https://web.dev/progressive-web-apps/)
 
@@ -46,6 +47,7 @@
 | ChordPro parsing | [chordproject-parser](https://www.npmjs.com/package/chordproject-parser) |
 | ChordPro editor  | [chordproject-editor](https://www.npmjs.com/package/chordproject-editor) |
 | Chord diagrams   | [svguitar](https://github.com/omnibrain/svguitar)                        |
+| Auth & storage   | [Firebase](https://firebase.google.com) (Auth + Realtime Database)       |
 | Testing          | [Vitest 4](https://vitest.dev), in jsdom                                 |
 | PWA              | [Angular Service Worker](https://angular.dev/ecosystem/service-workers)  |
 
@@ -96,22 +98,7 @@ For the full spec, see [chordpro.org](https://www.chordpro.org/chordpro/chordpro
 
 ## License
 
-Copyright © 2024 Guillaume FAUVET.
-
-GuiTab is free software, licensed under the **GNU General Public License, version 3
-or later** — see [LICENSE](LICENSE). It was MIT-licensed until the pitch detection
-feature landed: that feature is built on [aubio](https://aubio.org), whose
-real-time onset detection has no permissively licensed equivalent, and embedding it
-requires the whole application to carry the same licence.
-
-The practical consequence, stated plainly: anyone may use, study, modify and
-redistribute GuiTab, but a derived work must also be released under the GPL. Code
-from this repository can no longer be reused in a permissively licensed or
-proprietary project.
-
-Any dependency added from now on must be GPL-3.0 compatible. Permissive licences
-(MIT, Apache-2.0, BSD) are compatible and remain preferable at equal quality;
-copyleft-stronger licences such as the AGPL are not.
+[GPL-3.0](LICENSE)
 
 ## Changelog
 
