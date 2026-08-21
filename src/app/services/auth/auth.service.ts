@@ -1,6 +1,7 @@
 import { inject, Injectable } from "@angular/core";
 import {
   Auth,
+  connectAuthEmulator,
   getAuth,
   GoogleAuthProvider,
   linkWithPopup,
@@ -12,6 +13,13 @@ import {
 } from "firebase/auth";
 import { BehaviorSubject, filter, firstValueFrom, Observable } from "rxjs";
 import { FirebaseService } from "../firebase/firebase.service";
+import { FIREBASE_EMULATOR_CONFIG } from "../../../environments/firebase-emulator";
+
+// getAuth() returns the same Auth singleton for a given Firebase app across
+// every AuthService construction (each spec file's TestBed builds a new one —
+// see FirebaseService's class doc for why that matters here too), but
+// connectAuthEmulator() throws if called more than once on that singleton.
+let authEmulatorConnected = false;
 
 @Injectable({
   providedIn: "root",
@@ -29,6 +37,12 @@ export class AuthService {
 
   constructor() {
     this.auth = getAuth(this.firebaseService.getApp());
+    if (FIREBASE_EMULATOR_CONFIG && !authEmulatorConnected) {
+      connectAuthEmulator(this.auth, `http://${FIREBASE_EMULATOR_CONFIG.host}:${FIREBASE_EMULATOR_CONFIG.authPort}`, {
+        disableWarnings: true,
+      });
+      authEmulatorConnected = true;
+    }
     onAuthStateChanged(this.auth, (user) => {
       if (user) {
         this.user$.next(user);

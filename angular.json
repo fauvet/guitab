@@ -54,6 +54,17 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "agent": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/firebase-emulator.ts",
+                  "with": "src/environments/firebase-emulator.agent.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -66,6 +77,10 @@
             },
             "development": {
               "buildTarget": "guitab:build:development"
+            },
+            "agent": {
+              "buildTarget": "guitab:build:agent",
+              "port": 4205
             }
           },
           "defaultConfiguration": "development"

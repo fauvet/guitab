@@ -70,10 +70,15 @@ npm run format         # Prettier (format:check in CI)
 npm run check:docs     # instruction-tree integrity
 npm run setup:env      # dummy src/environments/environment.ts, for CI and fresh clones
 npm run verify         # everything above, in the order CI runs it
+npm run start:agent    # dev server on localhost:4205 against the Firebase emulators, not npm start's port or the real project
+npm run emulators:agent  # the Firebase Auth + Database emulators start:agent talks to
 ```
 
 `src/environments/environment.ts` is git-ignored. A fresh clone has to run
 `npm run setup:env` — or copy the template by hand — before anything builds.
+`start:agent`/`emulators:agent` exist so an agent can run and click through the
+app without colliding with a developer's own `npm start` or touching the real
+Firebase project — see `.claude/skills/dev-server/SKILL.md`.
 
 ## Where the rules live
 

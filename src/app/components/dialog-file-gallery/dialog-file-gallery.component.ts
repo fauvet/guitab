@@ -11,6 +11,7 @@ import { MatListModule } from "@angular/material/list";
 import { MatIcon } from "@angular/material/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { MatRipple } from "@angular/material/core";
+import { FormsModule } from "@angular/forms";
 import { firstValueFrom, map, Observable } from "rxjs";
 import CachedFile from "../../types/cached-file.type";
 import { CachedFilesService } from "../../services/cached-files/cached-files.service";
@@ -19,6 +20,7 @@ import { NotificationService } from "../../services/notification/notification.se
 import { ConfirmService } from "../../services/confirm/confirm.service";
 import { ChordproUtil } from "../../utils/chordpro.util";
 import { FileUtil } from "../../utils/file.util";
+import { CachedFileUtil } from "../../utils/cached-file.util";
 import DateUtil from "../../utils/date.util";
 import { AlbumCoverComponent } from "../album-cover/album-cover.component";
 
@@ -34,6 +36,7 @@ import { AlbumCoverComponent } from "../album-cover/album-cover.component";
     MatIcon,
     MatButtonModule,
     MatRipple,
+    FormsModule,
     AlbumCoverComponent,
   ],
   templateUrl: "./dialog-file-gallery.component.html",
@@ -43,6 +46,9 @@ import { AlbumCoverComponent } from "../album-cover/album-cover.component";
 export class DialogFileGalleryComponent {
   readonly CHORDPRO_EXTENSIONS = ChordproUtil.EXTENSIONS;
   readonly BUILD_TIME_AGO = DateUtil.buildTimeAgo;
+  readonly FILTER_CACHED_FILES = CachedFileUtil.filterByQuery;
+
+  searchQuery = "";
 
   private readonly cachedFilesService = inject(CachedFilesService);
   private readonly appContextService = inject(AppContextService);

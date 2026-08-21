@@ -33,7 +33,9 @@ first entry moves to `## [1.0.0]` when the first release is cut.
 
 - **Song library dialog**, reachable from the header: lists every saved song,
   imports several ChordPro files at once, downloads an entry or the whole
-  library as one `.zip`, deletes an entry.
+  library as one `.zip`, deletes an entry, and filters the list by name
+  (accent- and case-insensitive) through a search field next to Import and
+  Download all.
 - **Solo tab editor**: hums a phrase into the microphone, shows the detected
   note with its octave, and turns it into tablature. The octave is
   transposed on the way to the tab, not on the display. Neck position is a
@@ -93,6 +95,11 @@ first entry moves to `## [1.0.0]` when the first release is cut.
   than the row itself — an overflow `overflow-x: auto` (which per the CSS
   spec forces `overflow-y` to compute as `auto` too) only revealed once
   something, like a click, made the browser paint the scrollbar.
+- The Song library dialog's Close button no longer scrolls out of view: its
+  root wasn't stretched to the dialog's fixed height, so a long enough song
+  list could grow the whole dialog past the bottom of the screen. Import,
+  Download all and the search field now stay pinned above the list too,
+  which is the only part that scrolls.
 
 ## Before this changelog
 

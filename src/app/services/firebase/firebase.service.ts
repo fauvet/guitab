@@ -1,7 +1,8 @@
 import { Injectable } from "@angular/core";
 import { FirebaseApp, getApp, getApps, initializeApp } from "firebase/app";
-import { Database, getDatabase } from "firebase/database";
+import { connectDatabaseEmulator, Database, getDatabase } from "firebase/database";
 import { environment } from "../../../environments/environment";
+import { FIREBASE_EMULATOR_CONFIG } from "../../../environments/firebase-emulator";
 
 /**
  * Firebase initialization is global to the JavaScript process, not to the
@@ -32,7 +33,14 @@ export class FirebaseService {
 
   constructor() {
     this.app = firebaseApp ??= getApps().length > 0 ? getApp() : initializeApp(environment.firebase);
+    // Guard on `database` being unset, not on FIREBASE_EMULATOR_CONFIG alone —
+    // connectDatabaseEmulator() throws if called more than once on the same
+    // instance, and getDatabase() itself only runs once (see the class doc).
+    const isFirstConstruction = database === undefined;
     this.database = database ??= getDatabase(this.app);
+    if (isFirstConstruction && FIREBASE_EMULATOR_CONFIG) {
+      connectDatabaseEmulator(this.database, FIREBASE_EMULATOR_CONFIG.host, FIREBASE_EMULATOR_CONFIG.databasePort);
+    }
   }
 
   getDatabase(): Database {
