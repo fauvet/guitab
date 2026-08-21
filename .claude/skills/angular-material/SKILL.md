@@ -15,8 +15,8 @@ reimplementing all three.
 
 This app opens a bottom sheet where a desktop app would open a menu, because a sheet
 is reachable with a thumb. `BottomSheetToolsComponent`,
-`BottomSheetSettingsComponent`, `BottomSheetManageFileComponent` and
-`BottomSheetInsertDirectiveComponent` are all the same shape:
+`BottomSheetSettingsComponent` and `BottomSheetInsertDirectiveComponent` are all
+the same shape:
 
 ```typescript
 private readonly bottomSheet = inject(MatBottomSheet);

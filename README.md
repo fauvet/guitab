@@ -27,11 +27,11 @@
 - SVG guitar chord diagram grid, with support for custom chord definitions
 - Solo tab editor
 - Import chords over lyrics
-- Open and save files via the [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API) (with a file input fallback)
-- Recent files history stored locally
+- Cloud-synced song library: import ChordPro files, download them back, or export the whole library as a `.zip`
+- Automatic, continuous cloud saving — no manual save step
 - YouTube video embed via `{meta: youtube <url>}`
 - Undo/redo history
-- Keyboard shortcuts (Ctrl+O, Ctrl+S, Ctrl+Z...)
+- Undo/redo and new-file keyboard shortcuts
 - Zoom control
 - Wake Lock and Bluetooth keep-alive for hands-free reading
 - Draft auto-recovery on page reload

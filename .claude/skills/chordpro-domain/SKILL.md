@@ -96,7 +96,9 @@ const chord: Chord = {
 };
 ```
 
-See `SvgGuitarUtil` for helpers that convert `Variant` objects to `Chord` objects and handle chord normalization.
+See `SvgGuitarUtil.buildChord()` for the lookup that normalizes a chord name and
+finds its `Variant`, and `SvgGuitarUtil.toChord()` for converting a `Variant`
+into a `Chord`.
 
 ## The `Variant` Type
 
@@ -120,12 +122,12 @@ When looking up chords, apply enharmonic equivalents:
 | Input | Normalized |
 | ----- | ---------- |
 | `Db`  | `C#`       |
-| `Eb`  | `D#`       |
 | `Gb`  | `F#`       |
-| `Ab`  | `G#`       |
-| `Bb`  | `A#`       |
+| `D#`  | `Eb`       |
+| `G#`  | `Ab`       |
+| `A#`  | `Bb`       |
 
-See `SvgGuitarUtil.normalizeChordName()` for the canonical implementation.
+Applied inline in `SvgGuitarUtil.buildChord()`.
 
 ## Custom Chord Parsing
 
@@ -135,12 +137,12 @@ Custom chords are defined inline via `{define:}` directives and take precedence 
 {define: <Name> base-fret <N> frets <f1> <f2> <f3> <f4> <f5> <f6> [fingers <n1>...<n6>]}
 ```
 
-Use `ChordproUtil.findCustomVariant(chordName, content)` to extract a custom variant from the current song content.
+Use `ChordproUtil.findCustomVariant(chordproContent, chordName)` to extract a custom variant from the current song content.
 
 ## Utility Classes
 
-| Class           | Key Methods                                                                                     |
-| --------------- | ----------------------------------------------------------------------------------------------- |
-| `ChordproUtil`  | `getTitle()`, `getArtist()`, `getChordsNames()`, `findCustomVariant()`, `isChordproExtension()` |
-| `SvgGuitarUtil` | `getChord()`, `normalizeChordName()`, `variantToSvgGuitarChord()`                               |
-| `FileUtil`      | `readFile()`, `loadSampleFile()`, `loadEmptyFile()`                                             |
+| Class           | Key Methods                                                    |
+| --------------- | --------------------------------------------------------------- |
+| `ChordproUtil`  | `findChordNames()`, `findCustomVariant()`, `buildFileName()`, `EXTENSIONS` |
+| `SvgGuitarUtil` | `buildChord()`, `toChord()`                                     |
+| `FileUtil`      | `readFile()`, `loadSampleFile()`, `loadEmptyFile()`             |

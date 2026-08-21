@@ -56,7 +56,7 @@ address bar, and the viewport is taller.
 
 `file_handlers` is the interesting part. It registers the app as a handler for
 `.cho`, `.crd`, `.chopro`, `.chord` and `.pro`, so opening one from the file manager
-launches GuiTab. This list must stay in step with `ChordproUtil.isChordproExtension()`
+launches GuiTab. This list must stay in step with `ChordproUtil.EXTENSIONS`
 and the file picker's accept types — three places, one fact, and nothing checks
 them against each other. Changing one means changing all three.
 
