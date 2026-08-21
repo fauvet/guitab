@@ -5,10 +5,8 @@ import { MatIconTestingModule } from "@angular/material/icon/testing";
 import { of, Subject } from "rxjs";
 import { AppComponent } from "./app.component";
 import { CachedFilesService } from "./services/cached-files/cached-files.service";
-import {
-  KeyboardShortcutService,
-  KeyboardFileActionOutcome,
-} from "./services/keyboard-shortcut/keyboard-shortcut.service";
+import { KeyboardShortcutService } from "./services/keyboard-shortcut/keyboard-shortcut.service";
+import { ChordproService } from "./services/chordpro/chordpro.service";
 import { NotificationService } from "./services/notification/notification.service";
 import { FileUtil } from "./utils/file.util";
 
@@ -48,7 +46,7 @@ describe("AppComponent", () => {
     });
 
     it("registers a file opened through the PWA file handler as a cached file", async () => {
-      const mockCachedFilesService = { saveFile: vi.fn() };
+      const mockCachedFilesService = { saveFile: vi.fn(), getSyncError$: vi.fn().mockReturnValue(of(null)) };
       let consumer: FakeLaunchConsumer | null = null;
       (window as { launchQueue?: unknown }).launchQueue = {
         setConsumer: (fn: FakeLaunchConsumer) => (consumer = fn),
@@ -74,7 +72,10 @@ describe("AppComponent", () => {
 
     it("logs and shows an error notification when syncing the opened file fails, instead of failing silently", async () => {
       const cacheError = new Error('Could not save "Test Song" to your account.');
-      const mockCachedFilesService = { saveFile: vi.fn().mockRejectedValue(cacheError) };
+      const mockCachedFilesService = {
+        saveFile: vi.fn().mockRejectedValue(cacheError),
+        getSyncError$: vi.fn().mockReturnValue(of(null)),
+      };
       const mockNotificationService = { showError: vi.fn(), showSuccess: vi.fn() };
       let consumer: FakeLaunchConsumer | null = null;
       (window as { launchQueue?: unknown }).launchQueue = {
@@ -131,43 +132,15 @@ describe("AppComponent", () => {
     });
   });
 
-  describe("keyboard file action outcomes", () => {
-    function configureWithKeyboardOutcome(outcome$: Subject<KeyboardFileActionOutcome>) {
-      const mockNotificationService = { showError: vi.fn(), showSuccess: vi.fn() };
+  describe("keyboard shortcut errors", () => {
+    it("logs and shows an error notification, instead of failing silently, when a keyboard-triggered action throws", async () => {
+      const error$ = new Subject<Error>();
       const mockKeyboardShortcutService = {
         initialize: vi.fn(),
-        getKeyboardFileActionOutcome$: () => outcome$.asObservable(),
+        getKeyboardShortcutError$: () => error$.asObservable(),
       };
-      return { mockNotificationService, mockKeyboardShortcutService };
-    }
-
-    it("shows a success notification once a keyboard-triggered save resolves", async () => {
-      const outcome$ = new Subject<KeyboardFileActionOutcome>();
-      const { mockNotificationService, mockKeyboardShortcutService } = configureWithKeyboardOutcome(outcome$);
-
-      await TestBed.resetTestingModule()
-        .configureTestingModule({
-          imports: [AppComponent, NoopAnimationsModule, MatIconTestingModule],
-          providers: [
-            provideRouter([]),
-            { provide: KeyboardShortcutService, useValue: mockKeyboardShortcutService },
-            { provide: NotificationService, useValue: mockNotificationService },
-          ],
-        })
-        .compileComponents();
-
-      const fixture = TestBed.createComponent(AppComponent);
-      fixture.detectChanges();
-
-      outcome$.next({ type: "saved", fileName: "song.cho" });
-
-      expect(mockNotificationService.showSuccess).toHaveBeenCalledWith("song.cho saved");
-    });
-
-    it("logs and shows an error notification, instead of failing silently, when a keyboard-triggered action throws", async () => {
-      const outcome$ = new Subject<KeyboardFileActionOutcome>();
-      const { mockNotificationService, mockKeyboardShortcutService } = configureWithKeyboardOutcome(outcome$);
-      const error = new Error("Could not save.");
+      const mockNotificationService = { showError: vi.fn(), showSuccess: vi.fn() };
+      const error = new Error("Could not create a new file.");
 
       await TestBed.resetTestingModule()
         .configureTestingModule({
@@ -184,10 +157,75 @@ describe("AppComponent", () => {
       fixture.detectChanges();
       const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-      outcome$.next({ type: "error", error });
+      error$.next(error);
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(error);
-      expect(mockNotificationService.showError).toHaveBeenCalledTimes(1);
+      expect(mockNotificationService.showError).toHaveBeenCalledWith(
+        "Could not complete the keyboard shortcut. Please try again.",
+      );
+    });
+  });
+
+  describe("sync error", () => {
+    it("logs and shows an error notification, instead of failing silently, when the library fails to sync", async () => {
+      const syncError$ = new Subject<Error | null>();
+      const mockCachedFilesService = { getSyncError$: () => syncError$.asObservable() };
+      const mockNotificationService = { showError: vi.fn(), showSuccess: vi.fn() };
+      const error = new Error("Could not sync.");
+
+      await TestBed.resetTestingModule()
+        .configureTestingModule({
+          imports: [AppComponent, NoopAnimationsModule, MatIconTestingModule],
+          providers: [
+            provideRouter([]),
+            { provide: CachedFilesService, useValue: mockCachedFilesService },
+            { provide: NotificationService, useValue: mockNotificationService },
+          ],
+        })
+        .compileComponents();
+
+      const fixture = TestBed.createComponent(AppComponent);
+      fixture.detectChanges();
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      syncError$.next(error);
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(error);
+      expect(mockNotificationService.showError).toHaveBeenCalledWith(
+        "Couldn't sync your recent files. Check your connection and try again later.",
+      );
+    });
+  });
+
+  describe("autosave error", () => {
+    it("logs and shows an error notification, instead of failing silently, when autosave fails", async () => {
+      // Spies on the real ChordproService rather than replacing it — a full
+      // mock would also have to stand in for every other component in the
+      // tree that reads from it (undo/redo state, editor content, ...).
+      const autosaveError$ = new Subject<Error | null>();
+      const mockNotificationService = { showError: vi.fn(), showSuccess: vi.fn() };
+      const error = new Error('Could not save "song.cho" to your account.');
+
+      await TestBed.resetTestingModule()
+        .configureTestingModule({
+          imports: [AppComponent, NoopAnimationsModule, MatIconTestingModule],
+          providers: [provideRouter([]), { provide: NotificationService, useValue: mockNotificationService }],
+        })
+        .compileComponents();
+
+      const chordproService = TestBed.inject(ChordproService);
+      vi.spyOn(chordproService, "getAutosaveError$").mockReturnValue(autosaveError$.asObservable());
+
+      const fixture = TestBed.createComponent(AppComponent);
+      fixture.detectChanges();
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+      autosaveError$.next(error);
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(error);
+      expect(mockNotificationService.showError).toHaveBeenCalledWith(
+        "Couldn't save your changes. Check your connection and try again later.",
+      );
     });
   });
 });

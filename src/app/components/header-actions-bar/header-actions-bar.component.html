@@ -15,11 +15,18 @@
   <mat-icon svgIcon="redo"></mat-icon>
 </button>
 <button
-  aria-label="File..."
-  title="Open file menu..."
+  aria-label="New file"
+  title="New file (Ctrl+Alt+N)"
   mat-icon-button
-  (click)="onButtonManageFileClicked()">
-  <mat-icon svgIcon="folder_open"></mat-icon>
+  (click)="onButtonNewFileClicked()">
+  <mat-icon fontSet="material-icons-outlined">description</mat-icon>
+</button>
+<button
+  aria-label="Song library..."
+  title="Open song library..."
+  mat-icon-button
+  (click)="onButtonSongLibraryClicked()">
+  <mat-icon fontSet="material-icons-outlined">library_music</mat-icon>
 </button>
 <button
   aria-label="Tools..."

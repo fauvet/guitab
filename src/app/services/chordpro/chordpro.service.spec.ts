@@ -2,6 +2,7 @@ import { TestBed } from "@angular/core/testing";
 import { EMPTY } from "rxjs";
 import { ChordproService } from "./chordpro.service";
 import { AppContextService } from "../app-context/app-context.service";
+import { CachedFilesService } from "../cached-files/cached-files.service";
 
 describe("ChordproService", () => {
   let service: ChordproService;
@@ -9,6 +10,7 @@ describe("ChordproService", () => {
     getFileHandleWithContent$: ReturnType<typeof vi.fn>;
     getFileHandleWithContent: ReturnType<typeof vi.fn>;
   };
+  let mockCachedFilesService: { saveFile: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
     mockAppContextService = {
@@ -16,8 +18,15 @@ describe("ChordproService", () => {
       getFileHandleWithContent: vi.fn().mockReturnValue(null),
     };
 
+    mockCachedFilesService = {
+      saveFile: vi.fn().mockResolvedValue(undefined),
+    };
+
     TestBed.configureTestingModule({
-      providers: [{ provide: AppContextService, useValue: mockAppContextService }],
+      providers: [
+        { provide: AppContextService, useValue: mockAppContextService },
+        { provide: CachedFilesService, useValue: mockCachedFilesService },
+      ],
     });
     service = TestBed.inject(ChordproService);
 
@@ -133,6 +142,53 @@ describe("ChordproService", () => {
       service.setChordproContent("something new");
       service.updateChordproSaveState();
       expect(service.hasUnsavedChanges()).toBe(false);
+    });
+  });
+
+  describe("saveNow", () => {
+    it("does nothing when there are no unsaved changes", async () => {
+      await service.saveNow();
+      expect(mockCachedFilesService.saveFile).not.toHaveBeenCalled();
+    });
+
+    it("saves the current content and syncs the save state when there are unsaved changes", async () => {
+      service.setChordproContent("something new");
+
+      await service.saveNow();
+
+      expect(mockCachedFilesService.saveFile).toHaveBeenCalledWith("something new");
+      expect(service.hasUnsavedChanges()).toBe(false);
+    });
+
+    it("propagates a rejection instead of swallowing it", async () => {
+      const error = new Error('Could not save "song.cho" to your account.');
+      mockCachedFilesService.saveFile.mockRejectedValueOnce(error);
+      service.setChordproContent("something new");
+
+      await expect(service.saveNow()).rejects.toThrow(error);
+    });
+  });
+
+  describe("autosave", () => {
+    it("persists content to the active repository once the player stops typing", async () => {
+      service.setChordproContent("humming along");
+
+      await vi.waitFor(() => expect(mockCachedFilesService.saveFile).toHaveBeenCalledWith("humming along"), {
+        timeout: 3000,
+      });
+    });
+
+    it("logs and exposes the error, instead of throwing, when the debounced save fails", async () => {
+      const error = new Error('Could not save "song.cho" to your account.');
+      mockCachedFilesService.saveFile.mockRejectedValueOnce(error);
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const errors: (Error | null)[] = [];
+      service.getAutosaveError$().subscribe((autosaveError) => errors.push(autosaveError));
+
+      service.setChordproContent("humming along");
+
+      await vi.waitFor(() => expect(errors).toContainEqual(error), { timeout: 3000 });
+      expect(consoleErrorSpy).toHaveBeenCalledWith(error);
     });
   });
 });

@@ -13,6 +13,10 @@ export class FileUtil {
     return error instanceof DOMException && error.name === "AbortError";
   }
 
+  static canOpenFilePicker(): boolean {
+    return "showOpenFilePicker" in window;
+  }
+
   // The File System Access API is Chromium-only — Firefox, Safari and every
   // mobile browser never declare FileSystemFileHandle as a global at all, so
   // a bare `instanceof FileSystemFileHandle` throws a ReferenceError there

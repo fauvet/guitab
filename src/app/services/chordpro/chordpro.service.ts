@@ -1,5 +1,6 @@
 import { inject, Injectable } from "@angular/core";
 import { BehaviorSubject, Observable } from "rxjs";
+import { debounceTime } from "rxjs/operators";
 import { AppContextService, FileHandleWithContent } from "../app-context/app-context.service";
 // chordproject-editor ships no types. @ts-expect-error rather than @ts-ignore
 // so this line starts failing the build the day the package adds them, instead
@@ -9,6 +10,7 @@ import * as ChordProjectEditor from "chordproject-editor";
 import { StringUtil } from "../../utils/string.util";
 import ChordproSaveState, { areChordproSaveStatesEquals } from "../../types/chordpro-save-state.type";
 import { ChordproUtil } from "../../utils/chordpro.util";
+import { CachedFilesService } from "../cached-files/cached-files.service";
 
 type RemovableChordPosition = {
   openSquareBracketIndex: number;
@@ -20,8 +22,13 @@ type RemovableChordPosition = {
 })
 export class ChordproService {
   static readonly NB_CHARS_LOOK_ARROUND = 10;
+  // Long enough to not fire on every keystroke — this debounce costs a
+  // Realtime Database write, unlike the 200ms UI-recompute debounces
+  // elsewhere in the app.
+  private static readonly AUTOSAVE_DEBOUNCE_MS = 2000;
 
   private readonly appContextService = inject(AppContextService);
+  private readonly cachedFilesService = inject(CachedFilesService);
 
   private readonly chordproContent$ = new BehaviorSubject<string>("");
   private readonly youTubeUrl$ = new BehaviorSubject<string>("");
@@ -31,6 +38,7 @@ export class ChordproService {
   private readonly hasEditorUndo$ = new BehaviorSubject<boolean>(false);
   private readonly hasEditorRedo$ = new BehaviorSubject<boolean>(false);
   private readonly isRemovableChordEnabled$ = new BehaviorSubject<boolean>(false);
+  private readonly autosaveError$ = new BehaviorSubject<Error | null>(null);
 
   constructor() {
     this.appContextService
@@ -38,6 +46,10 @@ export class ChordproService {
       .subscribe(async (fileHandleWithContent) => await this.onFileHandleWithContentChanged(fileHandleWithContent));
     this.chordproContent$.subscribe((chordproContent) => this.onChordproContentChanged(chordproContent));
     this.areLyricsDisplayed$.subscribe((areLyricsDisplayed) => this.onAreLyricsDisplayed(areLyricsDisplayed));
+    // updateChordproSaveState() runs before setChordproContent() in
+    // onFileHandleWithContentChanged(), so a file load never looks like an
+    // unsaved change here — only content the player actually typed does.
+    this.chordproContent$.pipe(debounceTime(ChordproService.AUTOSAVE_DEBOUNCE_MS)).subscribe(() => this.autosave());
   }
 
   private get editor() {
@@ -258,6 +270,33 @@ export class ChordproService {
   updateChordproSaveState(chordproContent = this.getChordproContent()): void {
     const chordproSaveState = this.buildChordproSaveState(chordproContent);
     this.setChordproSaveState(chordproSaveState);
+  }
+
+  getAutosaveError$(): Observable<Error | null> {
+    return this.autosaveError$.asObservable();
+  }
+
+  // No awaiting caller — nothing is checking the return value on the
+  // debounced path, so a failure here has nowhere to reject to. It is
+  // logged and exposed as state instead, per "Errors are never swallowed"'s
+  // continuous-state carve-out.
+  private async autosave(): Promise<void> {
+    try {
+      await this.saveNow();
+    } catch (error: unknown) {
+      const normalizedError = error instanceof Error ? error : new Error(String(error));
+      console.error(normalizedError);
+      this.autosaveError$.next(normalizedError);
+    }
+  }
+
+  async saveNow(): Promise<void> {
+    if (!this.hasUnsavedChanges()) return;
+
+    const chordproContent = this.getChordproContent();
+    await this.cachedFilesService.saveFile(chordproContent);
+    this.updateChordproSaveState(chordproContent);
+    this.autosaveError$.next(null);
   }
 
   undoContent(): void {

@@ -5,10 +5,12 @@ import { MatButtonModule } from "@angular/material/button";
 import { ZoomService } from "../../services/zoom/zoom.service";
 import { BehaviorSubject, Subject, takeUntil } from "rxjs";
 import { MatBottomSheet, MatBottomSheetModule } from "@angular/material/bottom-sheet";
+import { MatDialog } from "@angular/material/dialog";
 import { ChordproService } from "../../services/chordpro/chordpro.service";
 import { BottomSheetToolsComponent } from "../bottom-sheet-tools/bottom-sheet-tools.component";
-import { BottomSheetManageFileComponent } from "../bottom-sheet-manage-file/bottom-sheet-manage-file.component";
+import { DialogFileGalleryComponent } from "../dialog-file-gallery/dialog-file-gallery.component";
 import { KeyboardShortcutService } from "../../services/keyboard-shortcut/keyboard-shortcut.service";
+import { NotificationService } from "../../services/notification/notification.service";
 import { AsyncPipe } from "@angular/common";
 import { BottomSheetSettingsComponent } from "../bottom-sheet-settings/bottom-sheet-settings.component";
 import { ComponentType } from "@angular/cdk/portal";
@@ -25,8 +27,10 @@ export class HeaderActionsBarComponent implements OnInit, OnDestroy {
   private readonly appContextService = inject(AppContextService);
   private readonly chordproService = inject(ChordproService);
   private readonly keyboardShortcutService = inject(KeyboardShortcutService);
+  private readonly notificationService = inject(NotificationService);
   private readonly zoomService = inject(ZoomService);
   private readonly bottomSheet = inject(MatBottomSheet);
+  private readonly dialog = inject(MatDialog);
 
   isEditing$ = new BehaviorSubject(false);
   hasEditorUndo$ = new BehaviorSubject(false);
@@ -66,8 +70,22 @@ export class HeaderActionsBarComponent implements OnInit, OnDestroy {
     this.chordproService.requestEditorFocus();
   }
 
-  onButtonManageFileClicked(): void {
-    this.openBottomSheetComponent(BottomSheetManageFileComponent);
+  async onButtonNewFileClicked(): Promise<void> {
+    try {
+      await this.keyboardShortcutService.newFile();
+      this.chordproService.requestEditorFocus();
+    } catch (error: unknown) {
+      console.error(error);
+      this.notificationService.showError("Could not create a new file.");
+    }
+  }
+
+  onButtonSongLibraryClicked(): void {
+    this.dialog.open(DialogFileGalleryComponent, {
+      height: "95%",
+      width: "95%",
+      panelClass: "dialog-panel-fill",
+    });
   }
 
   onButtonToolsClicked(): void {

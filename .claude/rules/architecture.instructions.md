@@ -44,33 +44,24 @@ User types in editor
 
 **Key guard**: `setChordproContent()` returns early if content is unchanged (avoids infinite loops between editor widget and service).
 
-## File Open Flow
+## Autosave Flow
+
+No manual save exists — `ChordproService` debounces its own `chordproContent$` and persists it to
+Firebase once the player stops typing:
 
 ```
-BottomSheetManageFileComponent / KeyboardShortcutService.openFile()
-  └─> chordproService.hasUnsavedChanges() → ConfirmService.confirm() if needed
-        └─> window.showOpenFilePicker() or <input type="file"> fallback
-              └─> appContextService.setFileHandle(file)
-                    └─> FileUtil.getFileContent(file) → fileHandleWithContent$.next()
-                          └─> ChordproService.onFileHandleWithContentChanged()
-                                ├─> resetHistoryState()
-                                ├─> updateChordproSaveState(content)
-                                └─> setChordproContent(content) ──> triggers full pipeline above
+chordproContent$ → debounceTime(2000) → saveNow()
+  └─> hasUnsavedChanges()? → yes: cachedFilesService.saveFile(content) → updateChordproSaveState(content)
 ```
 
-Side-effects after open: `appContextService.setEditing(false)` (preview mode), `cachedFilesService.saveFile(content)`.
-
-## File Save Flow
-
-```
-KeyboardShortcutService.saveFile()
-  ├─> a real FileSystemFileHandle exists → write through it, then cachedFilesService.saveFile(content)
-  └─> otherwise (Quick Access, new file, demo, draft) → cachedFilesService.saveFile(content) directly
-```
-
-saveFileAs() (Ctrl+Shift+S) is the separate, explicit "get a local copy" action — showSaveFilePicker(),
-or a FileSaver blob download — and never runs as a side effect of a plain save. The filename comes from
-the content itself — `ChordproUtil.buildFileName()` reads `{title:}` and `{artist:}`.
+`updateChordproSaveState()` already runs before `setChordproContent()` inside
+`onFileHandleWithContentChanged()`, so loading content (new file, library, demo, draft) never looks
+like an unsaved change — only content the player typed reaches the debounce. A failed autosave is
+logged and exposed through `getAutosaveError$()` rather than thrown, per the "continuous state"
+carve-out in `engineering-principles.instructions.md`'s "Errors are never swallowed".
+`KeyboardShortcutService.newFile()` calls `saveNow()` directly, bypassing the debounce, before loading
+the empty file. Import and Download live entirely inside `DialogFileGalleryComponent`, via
+`cachedFilesService.saveFile()` and `FileUtil.downloadAsFile()` — neither touches this pipeline.
 
 ## App Bootstrap & Draft Recovery
 
@@ -87,13 +78,14 @@ WakeLockService           ← holds the screen wake lock, re-takes it on tab ret
      ↓ injected by
 AppContextService        ← holds file handle, editing mode, wake lock, Bluetooth
      ↓ injected by
-ChordproService          ← subscribes to fileHandleWithContent$ in constructor
+ChordproService          ← subscribes to fileHandleWithContent$ in constructor;
+                            also injects CachedFilesService to debounce-autosave
+                            chordproContent$ into the active repository
      ↓ injected by
-KeyboardShortcutService  ← file operations (open/save/undo/redo)
+KeyboardShortcutService  ← undo/redo/new file
 BeforeUnloadService      ← hasUnsavedChanges() + draft via IDraftRepository
 HeaderActionsBarComponent
 FooterActionsBarComponent
-BottomSheetManageFileComponent
 BottomSheetSettingsComponent
 NotificationService ← the only service allowed to touch MatSnackBar
 ConfirmService      ← the only service allowed to open DialogConfirmComponent
@@ -130,10 +122,10 @@ IDraftRepository (interface)
 
 | State                                  | Owner                           | Changed by                                          | Consumed by                                                   |
 | -------------------------------------- | ------------------------------- | --------------------------------------------------- | ------------------------------------------------------------- |
-| `chordproContent$`                     | `ChordproService`               | editor mutations, file open, undo/redo              | ViewerComponent, ChordsViewer, FooterBar                      |
-| `fileHandleWithContent$`               | `AppContextService`             | open file, new file                                 | ChordproService, BottomSheet, KeyboardShortcut                |
+| `chordproContent$`                     | `ChordproService`               | editor mutations, file open, undo/redo              | ViewerComponent, ChordsViewer, FooterBar, debounced autosave  |
+| `fileHandleWithContent$`               | `AppContextService`             | open file, new file                                 | ChordproService, KeyboardShortcut                             |
 | `isEditing$`                           | `AppContextService`             | UI buttons, file open/new                           | Header, Footer, AppComponent (CSS class), ChordsViewer        |
-| `chordproSaveState$`                   | `ChordproService`               | file open, file save                                | `hasUnsavedChanges()`, BeforeUnloadService                    |
+| `chordproSaveState$`                   | `ChordproService`               | file open, autosave                                 | `hasUnsavedChanges()`, BeforeUnloadService                    |
 | `youTubeUrl$`                          | `ChordproService`               | auto-parsed from `{meta:youtube}` on content change | FooterActionsBarComponent                                     |
 | `hasEditorUndo$` / `hasEditorRedo$`    | `ChordproService`               | content change → Ace UndoManager                    | HeaderActionsBarComponent                                     |
 | `isRemovableChordEnabled$`             | `ChordproService`               | Ace cursor position listener                        | FooterActionsBarComponent                                     |
@@ -142,7 +134,7 @@ IDraftRepository (interface)
 | `isKeptAwake$` (the reality)           | `WakeLockService`               | lock granted, released, or taken back by the system | BottomSheetSettings — the two diverge, hence both             |
 | `isBluetoothKeptAlive$`                | `AppContextService`             | BottomSheetSettings toggle                          | `BluetoothKeepAliveService` (constructor subscription)        |
 | `user$`                                | `AuthService`                   | Firebase `onAuthStateChanged`                       | `CachedFilesService`, `BeforeUnloadService`, `LoginComponent` |
-| `cachedFiles$`                         | active `ICachedFilesRepository` | after every open/save                               | `CachedFilesService` → `BottomSheetManageFileComponent`       |
+| `cachedFiles$`                         | active `ICachedFilesRepository` | after every open/autosave                           | `CachedFilesService` → `DialogFileGalleryComponent`           |
 | `zoomStep$`                            | `ZoomService`                   | +/- buttons in Header                               | `font-size` on the `<html>` element, which scales every `rem` |
 | `status$` / `currentNote$` / `frames$` | `PitchDetectionService`         | microphone blocks, or a decoded audio file          | `PitchMonitorComponent`                                       |
 
@@ -150,7 +142,7 @@ IDraftRepository (interface)
 
 | Opened by                             | Component                               | Data in                 | On dismiss / result                                                        |
 | ------------------------------------- | --------------------------------------- | ----------------------- | -------------------------------------------------------------------------- |
-| HeaderActionsBarComponent             | `BottomSheetManageFileComponent`        | —                       | file ops; calls `requestEditorFocus()`                                     |
+| HeaderActionsBarComponent             | `DialogFileGalleryComponent`            | —                       | full song library: open, download, delete, import via `CachedFilesService` |
 | HeaderActionsBarComponent             | `BottomSheetToolsComponent`             | —                       | opens external tool dialogs                                                |
 | HeaderActionsBarComponent             | `BottomSheetSettingsComponent`          | —                       | settings toggles                                                           |
 | FooterActionsBarComponent             | `BottomSheetInsertDirectiveComponent`   | —                       | inserts `{directive:}` via ChordproService                                 |
@@ -160,7 +152,6 @@ IDraftRepository (interface)
 | BottomSheetToolsComponent             | `DialogSoloTabEditorComponent`          | —                       | standalone tab grid generator                                              |
 | BottomSheetToolsComponent             | `DialogImportChordsOverLyricsComponent` | —                       | result inserted at the caret                                               |
 | DialogSoloTabEditorComponent          | `PitchMonitorComponent` (inline)        | —                       | emits `transcribed`, appended to the editor                                |
-| BottomSheetManageFileComponent        | `DialogFileGalleryComponent`            | —                       | full song library: open, download, delete, import via `CachedFilesService` |
 
 All bottom sheets call `chordproService.requestEditorFocus()` on dismiss to restore Ace editor focus.
 
@@ -203,11 +194,13 @@ correctly. How the detection works: the `web-audio-pitch` skill.
 
 ## Unsaved Changes Guard
 
-`chordproService.hasUnsavedChanges()` compares `chordproSaveState$` (snapshot at last open/save) against the current `{ fileHandle, chordproContent }`.
+`chordproService.hasUnsavedChanges()` compares `chordproSaveState$` (snapshot at last open/autosave) against the current `{ fileHandle, chordproContent }`.
 
-Used in two places: `window.beforeunload` (`BeforeUnloadService` triggers the browser's
-native warning and saves a draft to localStorage) and before `openFile()` or
-`newFile()` (a `ConfirmService` dialog).
+Two consumers: `window.beforeunload` (`BeforeUnloadService` triggers the browser's native warning
+and saves a draft to localStorage, covering the sub-debounce window before autosave would have
+caught up) and the debounced autosave itself, which only writes to the store when this returns
+true (see "Autosave Flow" above). Nothing asks the player to confirm discarding changes —
+`KeyboardShortcutService.newFile()` flushes an immediate save instead.
 
 Draft structure stored under the `DRAFT` localStorage key: `{ chordproContent: string, hasUnsavedChanges: boolean }`.
 

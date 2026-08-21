@@ -53,4 +53,19 @@ describe("FileUtil", () => {
       expect(saveAsSpy).toHaveBeenCalledWith(expect.any(Blob), "song.cho");
     });
   });
+
+  describe("canOpenFilePicker", () => {
+    afterEach(() => {
+      delete (window as any).showOpenFilePicker;
+    });
+
+    it("should return false when showOpenFilePicker is not available in window", () => {
+      expect(FileUtil.canOpenFilePicker()).toBe(false);
+    });
+
+    it("should return true when showOpenFilePicker is available in window", () => {
+      (window as any).showOpenFilePicker = vi.fn();
+      expect(FileUtil.canOpenFilePicker()).toBe(true);
+    });
+  });
 });

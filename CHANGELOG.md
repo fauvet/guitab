@@ -13,6 +13,13 @@ first entry moves to `## [1.0.0]` when the first release is cut.
 
 ### Changed
 
+- **Saving is automatic, and New file / Song library moved into the header.**
+  Now that Firebase is the real store, there is no more manual Open, Save or
+  Save As: the app persists your song to your account a couple of seconds
+  after you stop typing, with no button to remember. "Open" survives as
+  Import inside the Song library dialog, and "Save As" as Download — both
+  already there. New file and Song library, previously behind a "File..."
+  bottom sheet, are now direct buttons in the header.
 - **The project is now licensed under the GNU General Public License, version 3
   or later.** It was MIT-licensed until real-time pitch detection landed: that
   feature is built on aubio, whose onset detection has no permissively licensed
@@ -45,13 +52,11 @@ first entry moves to `## [1.0.0]` when the first release is cut.
 
 ### Added
 
-- **A dedicated Song library dialog**, reachable from the file menu, lists every
-  song saved to the account (or device, when signed out) — not just the most
-  recent ones — with the same album cover Quick Access already shows. It can
-  import several ChordPro files at once, download any entry back to disk,
-  download everything as one `.zip`, or delete an entry — none of which was
-  possible before. Quick Access itself now shows only the 5 most recent songs,
-  as a fast shortcut rather than the only way to reach the rest.
+- **A dedicated Song library dialog**, reachable directly from the header, lists
+  every song saved to the account (or device, when signed out) — not just the
+  most recent ones. It can import several ChordPro files at once, download any
+  entry back to disk, download everything as one `.zip`, or delete an entry —
+  none of which was possible before.
 - **Hum a solo and get a tablature.** The solo tab editor can open the
   microphone, show the note being sung as it is sung — with its octave, so two
   A's an octave apart never read the same — and turn the phrase into tablature

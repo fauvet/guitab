@@ -15,7 +15,6 @@ import { firstValueFrom, map, Observable } from "rxjs";
 import CachedFile from "../../types/cached-file.type";
 import { CachedFilesService } from "../../services/cached-files/cached-files.service";
 import { AppContextService } from "../../services/app-context/app-context.service";
-import { KeyboardShortcutService } from "../../services/keyboard-shortcut/keyboard-shortcut.service";
 import { NotificationService } from "../../services/notification/notification.service";
 import { ConfirmService } from "../../services/confirm/confirm.service";
 import { ChordproUtil } from "../../utils/chordpro.util";
@@ -47,7 +46,6 @@ export class DialogFileGalleryComponent {
 
   private readonly cachedFilesService = inject(CachedFilesService);
   private readonly appContextService = inject(AppContextService);
-  private readonly keyboardShortcutService = inject(KeyboardShortcutService);
   private readonly notificationService = inject(NotificationService);
   private readonly confirmService = inject(ConfirmService);
   private readonly dialogRef = inject(MatDialogRef<DialogFileGalleryComponent>);
@@ -126,7 +124,7 @@ export class DialogFileGalleryComponent {
   }
 
   canOpenFilePicker(): boolean {
-    return this.keyboardShortcutService.canOpenFilePicker();
+    return FileUtil.canOpenFilePicker();
   }
 
   async onButtonImportClicked(event: Event): Promise<void> {

@@ -86,9 +86,9 @@ export class MyService {
 A service that can fail rejects instead of swallowing or returning a sentinel; see
 "Errors are never swallowed" in `engineering-principles.instructions.md`. A
 one-shot event a service raises for itself — `KeyboardShortcutService`'s
-keyboard-triggered save, which has no awaiting caller to reject to — is exposed as
-a plain `Subject` instead of the `BehaviorSubject` pair above: there is no
-meaningful last value to read back, only "this just happened."
+keyboard-triggered shortcut errors, which have no awaiting caller to reject to — is
+exposed as a plain `Subject` instead of the `BehaviorSubject` pair above: there is
+no meaningful last value to read back, only "this just happened."
 
 ## File Structure
 

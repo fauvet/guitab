@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, HostBinding, inject, OnInit, ViewChild } from "@angular/core";
 import { ActivatedRoute, RouterOutlet } from "@angular/router";
+import { filter } from "rxjs";
 import { ChordproEditorComponent } from "./components/chordpro-editor/chordpro-editor.component";
 import { ChordproViewerComponent } from "./components/chordpro-viewer/chordpro-viewer.component";
 import { AppContextService } from "./services/app-context/app-context.service";
@@ -72,16 +73,30 @@ export class AppComponent implements OnInit {
     this.appContextService.getIsEditing$().subscribe((isEditing) => (this.isEditing = isEditing));
 
     // This root component is never destroyed, so — like the two subscriptions
-    // above — this one is not torn down either; see AppContextService for the
+    // above — these are not torn down either; see AppContextService for the
     // same reasoning applied to its own constructor subscriptions.
-    this.keyboardShortcutService.getKeyboardFileActionOutcome$().subscribe((outcome) => {
-      if (outcome.type === "saved") {
-        this.notificationService.showSuccess(`${outcome.fileName} saved`);
-        return;
-      }
-      console.error(outcome.error);
+    this.keyboardShortcutService.getKeyboardShortcutError$().subscribe((error) => {
+      console.error(error);
       this.notificationService.showError("Could not complete the keyboard shortcut. Please try again.");
     });
+
+    this.cachedFilesService
+      .getSyncError$()
+      .pipe(filter((error): error is Error => error !== null))
+      .subscribe((error) => {
+        console.error(error);
+        this.notificationService.showError(
+          "Couldn't sync your recent files. Check your connection and try again later.",
+        );
+      });
+
+    this.chordproService
+      .getAutosaveError$()
+      .pipe(filter((error): error is Error => error !== null))
+      .subscribe((error) => {
+        console.error(error);
+        this.notificationService.showError("Couldn't save your changes. Check your connection and try again later.");
+      });
 
     this.activatedRoute.queryParamMap.subscribe(async (params) => {
       const loadValue = params.get("load");

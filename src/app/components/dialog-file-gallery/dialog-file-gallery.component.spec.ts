@@ -6,7 +6,6 @@ import { BehaviorSubject, of } from "rxjs";
 import { DialogFileGalleryComponent } from "./dialog-file-gallery.component";
 import { CachedFilesService } from "../../services/cached-files/cached-files.service";
 import { AppContextService } from "../../services/app-context/app-context.service";
-import { KeyboardShortcutService } from "../../services/keyboard-shortcut/keyboard-shortcut.service";
 import { NotificationService } from "../../services/notification/notification.service";
 import { ChordproService } from "../../services/chordpro/chordpro.service";
 import { ConfirmService } from "../../services/confirm/confirm.service";
@@ -29,7 +28,6 @@ describe("DialogFileGalleryComponent", () => {
     deleteFile: ReturnType<typeof vi.fn>;
   };
   let mockAppContextService: { setFileHandle: ReturnType<typeof vi.fn>; setEditing: ReturnType<typeof vi.fn> };
-  let mockKeyboardShortcutService: { canOpenFilePicker: ReturnType<typeof vi.fn> };
   let mockNotificationService: { showSuccess: ReturnType<typeof vi.fn>; showError: ReturnType<typeof vi.fn> };
   let mockConfirmService: { confirm: ReturnType<typeof vi.fn> };
 
@@ -50,7 +48,7 @@ describe("DialogFileGalleryComponent", () => {
       setEditing: vi.fn(),
     };
 
-    mockKeyboardShortcutService = { canOpenFilePicker: vi.fn().mockReturnValue(false) };
+    vi.spyOn(FileUtil, "canOpenFilePicker").mockReturnValue(false);
 
     mockNotificationService = { showSuccess: vi.fn(), showError: vi.fn() };
     mockConfirmService = { confirm: vi.fn().mockResolvedValue(true) };
@@ -61,7 +59,6 @@ describe("DialogFileGalleryComponent", () => {
         { provide: MatDialogRef, useValue: mockDialogRef },
         { provide: CachedFilesService, useValue: mockCachedFilesService },
         { provide: AppContextService, useValue: mockAppContextService },
-        { provide: KeyboardShortcutService, useValue: mockKeyboardShortcutService },
         { provide: NotificationService, useValue: mockNotificationService },
         { provide: ConfirmService, useValue: mockConfirmService },
         { provide: HttpClient, useValue: { get: vi.fn().mockReturnValue(of({})) } },
@@ -168,7 +165,7 @@ describe("DialogFileGalleryComponent", () => {
     });
 
     it("imports every selected file through the native picker", async () => {
-      mockKeyboardShortcutService.canOpenFilePicker.mockReturnValue(true);
+      vi.spyOn(FileUtil, "canOpenFilePicker").mockReturnValue(true);
       const fileHandle = { name: "imported.cho" } as unknown as FileSystemFileHandle;
       (window as any).showOpenFilePicker = vi.fn().mockResolvedValue([fileHandle, fileHandle]);
       vi.spyOn(FileUtil, "getFileContent").mockResolvedValue("{title: Imported}");
@@ -181,7 +178,7 @@ describe("DialogFileGalleryComponent", () => {
     });
 
     it("imports every selected file through the input fallback", async () => {
-      mockKeyboardShortcutService.canOpenFilePicker.mockReturnValue(false);
+      vi.spyOn(FileUtil, "canOpenFilePicker").mockReturnValue(false);
       vi.spyOn(FileUtil, "getFileContent").mockResolvedValue("{title: Imported}");
       const input = document.createElement("input");
       input.type = "file";
@@ -197,7 +194,7 @@ describe("DialogFileGalleryComponent", () => {
     });
 
     it("uses each file's own name as the fallback, so two untitled files stay distinct instead of colliding", async () => {
-      mockKeyboardShortcutService.canOpenFilePicker.mockReturnValue(false);
+      vi.spyOn(FileUtil, "canOpenFilePicker").mockReturnValue(false);
       vi.spyOn(FileUtil, "getFileContent").mockResolvedValue("no directives here");
       const input = document.createElement("input");
       input.type = "file";
@@ -213,7 +210,7 @@ describe("DialogFileGalleryComponent", () => {
     });
 
     it("returns quietly without notifying when the user cancels the picker", async () => {
-      mockKeyboardShortcutService.canOpenFilePicker.mockReturnValue(true);
+      vi.spyOn(FileUtil, "canOpenFilePicker").mockReturnValue(true);
       (window as any).showOpenFilePicker = vi.fn().mockRejectedValue(new DOMException("cancelled", "AbortError"));
 
       await component.onButtonImportClicked(new Event("change"));
@@ -224,7 +221,7 @@ describe("DialogFileGalleryComponent", () => {
     });
 
     it("shows a notification and logs, instead of failing silently, when the picker fails for another reason", async () => {
-      mockKeyboardShortcutService.canOpenFilePicker.mockReturnValue(true);
+      vi.spyOn(FileUtil, "canOpenFilePicker").mockReturnValue(true);
       const error = new Error("disk error");
       (window as any).showOpenFilePicker = vi.fn().mockRejectedValue(error);
       const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
