@@ -4,6 +4,42 @@ import { ChordproService } from "./chordpro.service";
 import { AppContextService } from "../app-context/app-context.service";
 import { CachedFilesService } from "../cached-files/cached-files.service";
 
+// vi.hoisted() ensures these are accessible inside the vi.mock() factory,
+// which is statically hoisted to the top of the file before any imports.
+const { mockEditor } = vi.hoisted(() => {
+  const undoManager = {
+    hasUndo: vi.fn().mockReturnValue(false),
+    hasRedo: vi.fn().mockReturnValue(false),
+    undo: vi.fn(),
+    redo: vi.fn(),
+    reset: vi.fn(),
+  };
+  const editor = {
+    container: { offsetWidth: 500 },
+    session: { selection: { on: vi.fn() } },
+    focus: vi.fn(),
+    getValue: vi.fn().mockReturnValue(""),
+    setValue: vi.fn(),
+    clearSelection: vi.fn(),
+    getCursorPosition: vi.fn().mockReturnValue({ row: 0, column: 0 }),
+    moveCursorToPosition: vi.fn(),
+    getSession: vi.fn(() => ({ getUndoManager: () => undoManager })),
+    getSelectionRange: vi.fn().mockReturnValue({
+      isEmpty: () => true,
+      start: { row: 0, column: 0 },
+      end: { row: 0, column: 0 },
+    }),
+  };
+  return { mockEditor: editor };
+});
+
+vi.mock("chordproject-editor", () => ({
+  Main: {
+    init: vi.fn(),
+    getEditor: () => mockEditor,
+  },
+}));
+
 describe("ChordproService", () => {
   let service: ChordproService;
   let mockAppContextService: {
@@ -36,6 +72,9 @@ describe("ChordproService", () => {
 
     // Reset body class between tests
     document.body.classList.remove("js-are-lyrics-hided");
+
+    mockEditor.container.offsetWidth = 500;
+    mockEditor.focus.mockClear();
   });
 
   afterEach(() => {
@@ -208,6 +247,24 @@ describe("ChordproService", () => {
 
       await vi.waitFor(() => expect(errors).toContainEqual(error), { timeout: 3000 });
       expect(consoleErrorSpy).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe("requestEditorFocus", () => {
+    it("focuses the editor when its container is rendered at a visible width", () => {
+      mockEditor.container.offsetWidth = 500;
+
+      service.requestEditorFocus();
+
+      expect(mockEditor.focus).toHaveBeenCalled();
+    });
+
+    it("does not focus the editor when its container is squeezed away by the mobile preview layout", () => {
+      mockEditor.container.offsetWidth = 1;
+
+      service.requestEditorFocus();
+
+      expect(mockEditor.focus).not.toHaveBeenCalled();
     });
   });
 });

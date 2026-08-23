@@ -26,6 +26,7 @@ export class ChordproService {
   // Realtime Database write, unlike the 200ms UI-recompute debounces
   // elsewhere in the app.
   private static readonly AUTOSAVE_DEBOUNCE_MS = 2000;
+  private static readonly MIN_VISIBLE_EDITOR_WIDTH_PX = 10;
 
   private readonly appContextService = inject(AppContextService);
   private readonly cachedFilesService = inject(CachedFilesService);
@@ -463,6 +464,17 @@ export class ChordproService {
   }
 
   requestEditorFocus(): void {
+    if (!this.isEditorVisible()) return;
     this.editor.focus();
+  }
+
+  // On narrow screens the mobile layout keeps the editor mounted but shrinks
+  // it to a 1px flex-basis instead of removing it (app.component.css), so a
+  // naive .focus() would still summon the on-screen keyboard over the
+  // viewer. Checking the container's actual rendered width — the same
+  // signal Ace's own renderer uses — answers "is the editor actually the
+  // visible pane?" without duplicating the CSS breakpoint here.
+  private isEditorVisible(): boolean {
+    return this.editor.container.offsetWidth > ChordproService.MIN_VISIBLE_EDITOR_WIDTH_PX;
   }
 }
