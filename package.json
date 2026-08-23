@@ -29,7 +29,8 @@
     "check:docs": "node scripts/check-docs.mjs",
     "typecheck": "tsc -p tsconfig.app.json --noEmit",
     "test:coverage": "ng test --no-watch --coverage",
-    "verify": "npm run lint && npm run format:check && npm run check:docs && npm run typecheck && npm run test:coverage"
+    "verify": "npm run lint && npm run format:check && npm run check:docs && npm run typecheck && npm run test:coverage",
+    "prepare": "husky"
   },
   "dependencies": {
     "@angular/animations": "^22.0.2",
@@ -72,11 +73,22 @@
     "eslint": "^10.8.1",
     "firebase-tools": "^15.27.0",
     "gh-pages": "^6.1.1",
+    "husky": "^9.1.7",
     "jsdom": "^29.1.1",
+    "lint-staged": "^17.3.0",
     "prettier": "^3.2.5",
     "prettier-plugin-organize-attributes": "^1.0.0",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.67.0",
     "vitest": "^4.1.9"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{html,scss,css,json,webmanifest,md}": [
+      "prettier --write"
+    ]
   }
 }

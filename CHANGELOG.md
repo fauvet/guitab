@@ -57,6 +57,9 @@ first entry moves to `## [1.0.0]` when the first release is cut.
 - `npm run setup:env`, writing a placeholder Firebase configuration.
 - ESLint, coverage thresholds, an instruction-tree integrity check, and a CI
   workflow running all of them on every push and pull request.
+- A pre-commit hook (Husky + lint-staged) running ESLint and Prettier on
+  staged files, so a formatting regression is caught before it is committed
+  instead of after it reaches CI.
 
 ### Fixed
 

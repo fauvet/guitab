@@ -4,6 +4,23 @@ description: "Use before committing, branching, opening a pull request or review
 
 # Git, review and definition of done
 
+## The pre-commit hook is the floor, not the ceiling
+
+Husky runs `lint-staged` on every commit (`.husky/pre-commit`, config in
+`package.json`'s `lint-staged` key): staged `.ts` files get `eslint --fix` then
+`prettier --write`; staged `.html`/`.scss`/`.css`/`.json`/`.webmanifest`/`.md`
+files get `prettier --write`. A commit whose staged files fail ESLint after the
+autofix pass is rejected outright — lint-staged reverts to the pre-commit state, nothing lands half-fixed.
+
+This exists because a formatting regression once reached `main` unnoticed and
+only surfaced when CI ran on an unrelated later change — the hook catches it at
+commit time instead, on whichever files are actually staged, without waiting for
+a push. It does not run `check:docs`, `typecheck` or the test suite — those stay
+in `npm run verify` and CI, because a pre-commit hook has to stay fast enough
+that nobody is tempted to reach for `--no-verify`. Reaching for `--no-verify` is
+still covered by the Git Safety Protocol regardless: skipping hooks needs an
+explicit ask, this hook included.
+
 ## Never commit or push unless asked
 
 Staging, committing, pushing and opening a pull request are the author's calls, not
