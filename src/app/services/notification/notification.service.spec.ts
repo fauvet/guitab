@@ -18,15 +18,21 @@ describe("NotificationService", () => {
     expect(service).toBeTruthy();
   });
 
-  it("should show an error with a dismiss action and a longer duration", () => {
+  it("should show an error with a dismiss action, a longer duration and the error panel class", () => {
     service.showError("Could not save the file.");
 
-    expect(snackBarOpen).toHaveBeenCalledWith("Could not save the file.", "Dismiss", { duration: 5000 });
+    expect(snackBarOpen).toHaveBeenCalledWith("Could not save the file.", "Dismiss", {
+      duration: 5000,
+      panelClass: "snackbar-error",
+    });
   });
 
-  it("should show a success message with no action and a shorter duration", () => {
+  it("should show a success message with no action, a shorter duration and the success panel class", () => {
     service.showSuccess("song.cho saved");
 
-    expect(snackBarOpen).toHaveBeenCalledWith("song.cho saved", undefined, { duration: 3000 });
+    expect(snackBarOpen).toHaveBeenCalledWith("song.cho saved", undefined, {
+      duration: 3000,
+      panelClass: "snackbar-success",
+    });
   });
 });

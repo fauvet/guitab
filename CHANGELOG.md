@@ -13,6 +13,16 @@ first entry moves to `## [1.0.0]` when the first release is cut.
 
 ### Changed
 
+- **Theme colors now come from the logo's own red-orange and wood tones**
+  instead of an unrelated indigo/blue, fixing a washed-out pale-pink surface
+  color and bringing the PWA install screen's colors in line with the app
+  icon.
+- **Body text now renders in Atkinson Hyperlegible**, a typeface designed by
+  the Braille Institute of America to disambiguate commonly-confused
+  characters (1/l/I, 0/O) — chosen for legibility of chord and fret numbers,
+  not just a modern look. Self-hosted, no network dependency.
+- **Success and error snackbars are now visually distinct** — errors use the
+  theme's error color, successes a new green — instead of looking identical.
 - **Saving is automatic** — content persists to the account a few seconds
   after typing stops, with no manual Open, Save or Save As. Open is Import in
   the Song library dialog; Save As is Download. New file and Song library are

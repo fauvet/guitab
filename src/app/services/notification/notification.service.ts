@@ -17,10 +17,10 @@ export class NotificationService {
   private readonly snackBar = inject(MatSnackBar);
 
   showError(message: string): void {
-    this.snackBar.open(message, "Dismiss", { duration: 5000 });
+    this.snackBar.open(message, "Dismiss", { duration: 5000, panelClass: "snackbar-error" });
   }
 
   showSuccess(message: string): void {
-    this.snackBar.open(message, undefined, { duration: 3000 });
+    this.snackBar.open(message, undefined, { duration: 3000, panelClass: "snackbar-success" });
   }
 }

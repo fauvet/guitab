@@ -141,8 +141,8 @@ Use `ChordproUtil.findCustomVariant(chordproContent, chordName)` to extract a cu
 
 ## Utility Classes
 
-| Class           | Key Methods                                                    |
-| --------------- | --------------------------------------------------------------- |
+| Class           | Key Methods                                                                |
+| --------------- | -------------------------------------------------------------------------- |
 | `ChordproUtil`  | `findChordNames()`, `findCustomVariant()`, `buildFileName()`, `EXTENSIONS` |
-| `SvgGuitarUtil` | `buildChord()`, `toChord()`                                     |
-| `FileUtil`      | `readFile()`, `loadSampleFile()`, `loadEmptyFile()`             |
+| `SvgGuitarUtil` | `buildChord()`, `toChord()`                                                |
+| `FileUtil`      | `readFile()`, `loadSampleFile()`, `loadEmptyFile()`                        |

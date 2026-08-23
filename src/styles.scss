@@ -1,5 +1,9 @@
 @use "@angular/material" as mat;
 @use "material-icons/iconfont/material-icons.css";
+@use "@fontsource/atkinson-hyperlegible/latin-400.css";
+@use "@fontsource/atkinson-hyperlegible/latin-ext-400.css";
+@use "@fontsource/atkinson-hyperlegible/latin-700.css";
+@use "@fontsource/atkinson-hyperlegible/latin-ext-700.css";
 @use "./theme-colors" as brand;
 
 /**
@@ -9,10 +13,17 @@
  * them was silently resolving to its hardcoded fallback. Those fallbacks are
  * gone now, and the tokens resolve.
  *
- * The palettes are generated from the brand indigo — the same `#4343BE` that
- * `src/manifest.webmanifest` declares as `theme_color` — rather than picked
- * from the prebuilt set, none of which lands near it. Regenerate with
- * `ng generate @angular/material:m3-theme --primary-color="#4343BE"`.
+ * The palettes are generated from the logo's own brand red-orange, `#FF3B00`
+ * (`src/assets/icons/logo.svg`), with a tertiary pulled from the logo's wood
+ * grain, `#C58B3C` — replacing the earlier cool indigo seed, whose M3 neutral
+ * tones read as washed-out pink at light surfaces. Regenerate with
+ * `ng generate @angular/material:theme-color --primary-color="#FF3B00" --tertiary-color="#C58B3C" --directory="src" --is-scss=true`
+ * (this Material version has no `m3-theme` schematic — `theme-color` is the
+ * one that exists).
+ *
+ * Atkinson Hyperlegible ships only weights 400/700, so `medium-weight` is
+ * pinned to 400 rather than left at the M3 default of 500, which the font
+ * does not have.
  *
  * `theme-type: light` is deliberate: the M2 theme this replaces was light-only,
  * and M3 otherwise defaults to following `prefers-color-scheme`. Honouring dark
@@ -32,7 +43,11 @@ html {
         tertiary: brand.$tertiary-palette,
         theme-type: light,
       ),
-      typography: Roboto,
+      typography: (
+        plain-family: '"Atkinson Hyperlegible", "Helvetica Neue", Arial, sans-serif',
+        brand-family: '"Atkinson Hyperlegible", "Helvetica Neue", Arial, sans-serif',
+        medium-weight: 400,
+      ),
       density: 0,
     )
   );
@@ -52,8 +67,20 @@ html {
   --bridge-background: #0000000f;
 }
 
+/**
+ * M3 has no built-in "success" role — error, and only error, is a first-class
+ * semantic color in the generated scheme. This pair fills that gap the same
+ * way the chord-sheet block above fills its own: a role Material has no
+ * opinion on gets a named token here rather than a hardcoded hex repeated at
+ * each call site.
+ */
+:root {
+  --status-success-color: #2e7d32;
+  --status-success-on-color: #ffffff;
+}
+
 body {
-  font-family: sans-serif;
+  font-family: var(--mat-sys-body-large-font);
   font-size: 1rem;
   background: var(--mat-sys-surface);
   color: var(--mat-sys-on-surface);
@@ -140,4 +167,24 @@ mat-list-item {
   .opposite-of-mobile-only {
     display: none !important;
   }
+}
+
+/**
+ * MatSnackBar defaults both success and error to the same dark inverse-surface
+ * regardless of the app's theme — by M3 design, snackbars are always
+ * "inverted" for contrast against the page. NotificationService passes these
+ * panelClasses so the two are visually distinct. `--mat-snack-bar-*` are the
+ * component's own tokens (not `--mat-sys-*`) and inherit from the panel class
+ * down to the nested surface element for free — no `::ng-deep` needed.
+ */
+.snackbar-error {
+  --mat-snack-bar-container-color: var(--mat-sys-error);
+  --mat-snack-bar-supporting-text-color: var(--mat-sys-on-error);
+  --mat-snack-bar-button-color: var(--mat-sys-on-error);
+}
+
+.snackbar-success {
+  --mat-snack-bar-container-color: var(--status-success-color);
+  --mat-snack-bar-supporting-text-color: var(--status-success-on-color);
+  --mat-snack-bar-button-color: var(--status-success-on-color);
 }

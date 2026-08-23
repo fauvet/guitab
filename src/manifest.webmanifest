@@ -1,8 +1,8 @@
 {
   "name": "GuiTab",
   "short_name": "GuiTab",
-  "theme_color": "#4343BE",
-  "background_color": "#3ABCF8",
+  "theme_color": "#b52700",
+  "background_color": "#fff8f6",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",
