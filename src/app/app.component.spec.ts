@@ -11,6 +11,24 @@ import { ChordproService } from "./services/chordpro/chordpro.service";
 import { NotificationService } from "./services/notification/notification.service";
 import { FileUtil } from "./utils/file.util";
 
+// AppComponent transitively constructs the real AuthService, which otherwise
+// calls the genuine signInAnonymously() against the CI job's dummy Firebase
+// config and logs a bootstrap-exception console.error on every test here —
+// see auth.service.spec.ts for the same mock shape.
+vi.mock("firebase/auth", () => ({
+  getAuth: vi.fn(() => ({ currentUser: null })),
+  onAuthStateChanged: vi.fn((_auth: unknown, callback: (user: unknown) => void) => {
+    callback(null);
+    return vi.fn();
+  }),
+  signInAnonymously: vi.fn().mockResolvedValue({}),
+  signInWithPopup: vi.fn().mockResolvedValue({}),
+  linkWithPopup: vi.fn().mockResolvedValue({}),
+  signOut: vi.fn().mockResolvedValue(undefined),
+  GoogleAuthProvider: vi.fn(),
+  connectAuthEmulator: vi.fn(),
+}));
+
 type FakeLaunchConsumer = (launchParams: { files: FileSystemFileHandle[] }) => Promise<void>;
 
 describe("AppComponent", () => {
