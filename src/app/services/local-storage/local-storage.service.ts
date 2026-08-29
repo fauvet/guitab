@@ -40,12 +40,21 @@ export class LocalStorageService {
       }
     }
     const behaviorSubject$ = new BehaviorSubject<T>(initialValue);
+    // This subscription lives as long as the app does, by design — nothing ever
+    // unsubscribes it. Guard it the same way the read above guards JSON.parse:
+    // Safari private browsing and a full storage quota both throw synchronously
+    // from setItem, and this is a continuous background effect with no awaiting
+    // caller to reject to (see "Errors are never swallowed").
     behaviorSubject$.subscribe((newValue: T) => {
-      if (newValue === null || newValue === undefined) {
-        localStorage.removeItem(key);
-        return;
+      try {
+        if (newValue === null || newValue === undefined) {
+          localStorage.removeItem(key);
+          return;
+        }
+        localStorage.setItem(key, JSON.stringify(newValue));
+      } catch (error: unknown) {
+        console.error(`[LocalStorageService] Could not persist "${key}":`, error);
       }
-      localStorage.setItem(key, JSON.stringify(newValue));
     });
     return behaviorSubject$;
   }

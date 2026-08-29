@@ -115,6 +115,20 @@ describe("LocalStorageService", () => {
       expect(subject.getValue().date.getFullYear()).toBe(2024);
     });
 
+    it("should log instead of throwing when the underlying setItem fails", () => {
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const setItemSpy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+        throw new Error("QuotaExceededError");
+      });
+
+      const subject = service.buildBehaviorSubject("test-key", 0);
+
+      expect(() => subject.next(7)).not.toThrow();
+      expect(consoleErrorSpy).toHaveBeenCalled();
+
+      setItemSpy.mockRestore();
+    });
+
     it("should persist object values as JSON strings", () => {
       const subject = service.buildBehaviorSubject("test-key", { name: "test", value: 1 });
       subject.next({ name: "updated", value: 2 });

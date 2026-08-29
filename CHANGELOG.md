@@ -60,6 +60,9 @@ first entry moves to `## [1.0.0]` when the first release is cut.
 
 - The Bluetooth keep-alive icon in Settings now swaps between its dedicated
   on/off glyphs, instead of reusing the "on" glyph regardless of state.
+- Zoom, drafts and the recent-files list no longer risk an uncaught error if
+  `localStorage` rejects a write (Safari private browsing, a full quota) —
+  the failure is now logged instead.
 - Each saved song keeps a stable id independent of its display name; autosave
   updates that one record even when the derived `{title:}`/`{artist:}` name
   changes.
