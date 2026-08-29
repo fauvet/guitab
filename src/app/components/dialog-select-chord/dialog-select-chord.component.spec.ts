@@ -13,7 +13,16 @@ describe("DialogSelectChordComponent", () => {
 
     fixture = TestBed.createComponent(DialogSelectChordComponent);
     component = fixture.componentInstance;
+    // The nested DiagramChordComponent resolves its host element by id
+    // against the connected document once view init settles — without this
+    // it stays a detached node and svguitar throws trying to render into it.
+    document.body.appendChild(fixture.nativeElement);
     fixture.detectChanges();
+    await fixture.whenStable();
+  });
+
+  afterEach(() => {
+    fixture.nativeElement.remove();
   });
 
   it("should create", () => {
