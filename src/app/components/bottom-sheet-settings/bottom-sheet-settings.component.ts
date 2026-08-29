@@ -5,6 +5,7 @@ import { MatListModule } from "@angular/material/list";
 import { ChordproService } from "../../services/chordpro/chordpro.service";
 import { AsyncPipe } from "@angular/common";
 import { AppContextService } from "../../services/app-context/app-context.service";
+import { NotificationService } from "../../services/notification/notification.service";
 import { WakeLockService } from "../../services/wake-lock/wake-lock.service";
 import { MatBottomSheetRef } from "@angular/material/bottom-sheet";
 import { combineLatest, map, Observable } from "rxjs";
@@ -30,6 +31,7 @@ export class BottomSheetSettingsComponent implements OnInit {
   public readonly chordproService = inject(ChordproService);
   public readonly wakeLockService = inject(WakeLockService);
   private readonly bottomSheetRef = inject(MatBottomSheetRef<BottomSheetSettingsComponent>);
+  private readonly notificationService = inject(NotificationService);
 
   // Read through the async pipe, so there is no subscription to tear down.
   public readonly wakeLockDisplay$: Observable<WakeLockDisplay> = combineLatest([
@@ -51,15 +53,20 @@ export class BottomSheetSettingsComponent implements OnInit {
   onItemShowLyricsClicked(): void {
     const areLyricsDisplayed = this.chordproService.areLyricsDisplayed();
     this.chordproService.setLyricsDisplayed(!areLyricsDisplayed);
+    this.notificationService.showSuccess(areLyricsDisplayed ? "Lyrics hidden." : "Lyrics shown.");
   }
 
   onItemWakeLockClicked(): void {
     const isWakeLock = this.appContextService.isWakeLock();
     this.appContextService.setWakeLock(!isWakeLock);
+    this.notificationService.showSuccess(isWakeLock ? "Wake lock disabled." : "Wake lock enabled.");
   }
 
   onItemKeepBluetoothAliveClicked(): void {
     const isBluetoothKeptAlive = this.appContextService.isBluetoothKeptAlive();
     this.appContextService.setBluetoothKeptAlive(!isBluetoothKeptAlive);
+    this.notificationService.showSuccess(
+      isBluetoothKeptAlive ? "Bluetooth keep-alive disabled." : "Bluetooth keep-alive enabled.",
+    );
   }
 }

@@ -4,6 +4,7 @@ import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { BehaviorSubject, of } from "rxjs";
 import { AppContextService } from "../../services/app-context/app-context.service";
 import { ChordproService } from "../../services/chordpro/chordpro.service";
+import { NotificationService } from "../../services/notification/notification.service";
 import { WakeLockService } from "../../services/wake-lock/wake-lock.service";
 import { BottomSheetSettingsComponent } from "./bottom-sheet-settings.component";
 
@@ -23,17 +24,29 @@ describe("BottomSheetSettingsComponent", () => {
   let isWakeLock$: BehaviorSubject<boolean>;
   let isKeptAwake$: BehaviorSubject<boolean>;
   let lastErrorMessage$: BehaviorSubject<string | null>;
+  let isBluetoothKeptAlive$: BehaviorSubject<boolean>;
   let setWakeLock: ReturnType<typeof vi.fn>;
+  let setBluetoothKeptAlive: ReturnType<typeof vi.fn>;
+  let setLyricsDisplayed: ReturnType<typeof vi.fn>;
+  let showSuccess: ReturnType<typeof vi.fn>;
 
   function renderedText(): string {
     return fixture.nativeElement.textContent as string;
+  }
+
+  function bluetoothIconText(): string {
+    return (fixture.nativeElement.querySelectorAll("mat-icon")[2].textContent as string).trim();
   }
 
   beforeEach(async () => {
     isWakeLock$ = new BehaviorSubject<boolean>(false);
     isKeptAwake$ = new BehaviorSubject<boolean>(false);
     lastErrorMessage$ = new BehaviorSubject<string | null>(null);
+    isBluetoothKeptAlive$ = new BehaviorSubject<boolean>(false);
     setWakeLock = vi.fn();
+    setBluetoothKeptAlive = vi.fn();
+    setLyricsDisplayed = vi.fn();
+    showSuccess = vi.fn();
 
     await TestBed.configureTestingModule({
       imports: [BottomSheetSettingsComponent, NoopAnimationsModule],
@@ -45,9 +58,9 @@ describe("BottomSheetSettingsComponent", () => {
             getIsWakeLock$: () => isWakeLock$.asObservable(),
             isWakeLock: () => isWakeLock$.getValue(),
             setWakeLock,
-            getIsBluetoothKeptAlive$: () => of(false),
-            isBluetoothKeptAlive: () => false,
-            setBluetoothKeptAlive: vi.fn(),
+            getIsBluetoothKeptAlive$: () => isBluetoothKeptAlive$.asObservable(),
+            isBluetoothKeptAlive: () => isBluetoothKeptAlive$.getValue(),
+            setBluetoothKeptAlive,
           },
         },
         {
@@ -62,9 +75,13 @@ describe("BottomSheetSettingsComponent", () => {
           useValue: {
             getAreLyricsDisplayed$: () => of(true),
             areLyricsDisplayed: () => true,
-            setLyricsDisplayed: vi.fn(),
+            setLyricsDisplayed,
             requestEditorFocus: vi.fn(),
           },
+        },
+        {
+          provide: NotificationService,
+          useValue: { showSuccess, showError: vi.fn() },
         },
       ],
     }).compileComponents();
@@ -133,6 +150,55 @@ describe("BottomSheetSettingsComponent", () => {
       fixture.detectChanges();
 
       expect(renderedText()).not.toContain("Could not keep the screen awake.");
+    });
+  });
+
+  describe("the bluetooth item", () => {
+    it("should show the off icon while the setting is switched off", () => {
+      expect(bluetoothIconText()).toBe("media_bluetooth_off");
+    });
+
+    it("should show the on icon once the setting is switched on", () => {
+      isBluetoothKeptAlive$.next(true);
+      fixture.detectChanges();
+
+      expect(bluetoothIconText()).toBe("media_bluetooth_on");
+    });
+  });
+
+  describe("toggle notifications", () => {
+    it("should notify when lyrics are shown", () => {
+      component.onItemShowLyricsClicked();
+
+      expect(showSuccess).toHaveBeenCalledWith("Lyrics hidden.");
+    });
+
+    it("should notify when wake lock is enabled", () => {
+      component.onItemWakeLockClicked();
+
+      expect(showSuccess).toHaveBeenCalledWith("Wake lock enabled.");
+    });
+
+    it("should notify when wake lock is disabled", () => {
+      isWakeLock$.next(true);
+
+      component.onItemWakeLockClicked();
+
+      expect(showSuccess).toHaveBeenCalledWith("Wake lock disabled.");
+    });
+
+    it("should notify when bluetooth keep-alive is enabled", () => {
+      component.onItemKeepBluetoothAliveClicked();
+
+      expect(showSuccess).toHaveBeenCalledWith("Bluetooth keep-alive enabled.");
+    });
+
+    it("should notify when bluetooth keep-alive is disabled", () => {
+      isBluetoothKeptAlive$.next(true);
+
+      component.onItemKeepBluetoothAliveClicked();
+
+      expect(showSuccess).toHaveBeenCalledWith("Bluetooth keep-alive disabled.");
     });
   });
 });

@@ -47,7 +47,7 @@
       matListItemIcon
       [color]="(appContextService.getIsBluetoothKeptAlive$() | async) ? 'primary' : ''"
       [fontSet]="(appContextService.getIsBluetoothKeptAlive$() | async) ? '' : 'material-icons-outlined'">
-      media_bluetooth_on
+      {{ (appContextService.getIsBluetoothKeptAlive$() | async) ? "media_bluetooth_on" : "media_bluetooth_off" }}
     </mat-icon>
     <div matListItemTitle>{{ "Keep Bluetooth alive" }}</div>
     <div matListItemLine>{{ "Plays a permanent inaudible sound" }}</div>

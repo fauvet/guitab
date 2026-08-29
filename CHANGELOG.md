@@ -53,9 +53,13 @@ first entry moves to `## [1.0.0]` when the first release is cut.
 - A pre-commit hook (Husky + lint-staged) running ESLint and Prettier on
   staged files, so a formatting regression is caught before it is committed
   instead of after it reaches CI.
+- Toggling show lyrics, wake lock or Bluetooth keep-alive in Settings shows a
+  confirmation snackbar stating which state it switched to.
 
 ### Fixed
 
+- The Bluetooth keep-alive icon in Settings now swaps between its dedicated
+  on/off glyphs, instead of reusing the "on" glyph regardless of state.
 - Each saved song keeps a stable id independent of its display name; autosave
   updates that one record even when the derived `{title:}`/`{artist:}` name
   changes.
