@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { MatBottomSheet } from "@angular/material/bottom-sheet";
 import { MatDialog } from "@angular/material/dialog";
+import { MatIconTestingModule } from "@angular/material/icon/testing";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { BehaviorSubject, of } from "rxjs";
 import { AppContextService } from "../../services/app-context/app-context.service";
@@ -39,7 +40,7 @@ describe("FooterActionsBarComponent", () => {
     dialog.open.mockReturnValue({ afterClosed: () => of(undefined) });
 
     TestBed.configureTestingModule({
-      imports: [FooterActionsBarComponent, NoopAnimationsModule],
+      imports: [FooterActionsBarComponent, NoopAnimationsModule, MatIconTestingModule],
       providers: [
         { provide: MatDialog, useValue: dialog },
         { provide: ChordproService, useValue: chordproService },
