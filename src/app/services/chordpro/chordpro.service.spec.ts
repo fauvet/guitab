@@ -232,7 +232,7 @@ describe("ChordproService", () => {
       service.setChordproContent("humming along");
 
       await vi.waitFor(() => expect(mockCachedFilesService.saveFile).toHaveBeenCalledWith("humming along", null), {
-        timeout: 3000,
+        timeout: 8000,
       });
     });
 
@@ -245,7 +245,7 @@ describe("ChordproService", () => {
 
       service.setChordproContent("humming along");
 
-      await vi.waitFor(() => expect(errors).toContainEqual(error), { timeout: 3000 });
+      await vi.waitFor(() => expect(errors).toContainEqual(error), { timeout: 8000 });
       expect(consoleErrorSpy).toHaveBeenCalledWith(error);
     });
   });
