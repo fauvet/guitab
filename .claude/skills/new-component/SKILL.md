@@ -14,7 +14,7 @@ src/app/components/<name>/<name>.component.ts
 ```
 
 `<name>` is kebab-case and the class is its PascalCase form with a `Component`
-suffix: `pitch-monitor` → `PitchMonitorComponent`, selector `app-pitch-monitor`.
+suffix: `login` → `LoginComponent`, selector `app-login`.
 
 ## 1. The spec
 
@@ -24,24 +24,24 @@ for the intended reason — a failed expectation, not a missing import.
 ```typescript
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
-import { PitchMonitorComponent } from "./pitch-monitor.component";
+import { LoginComponent } from "./login.component";
 
-describe("PitchMonitorComponent", () => {
-  let component: PitchMonitorComponent;
-  let fixture: ComponentFixture<PitchMonitorComponent>;
+describe("LoginComponent", () => {
+  let component: LoginComponent;
+  let fixture: ComponentFixture<LoginComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PitchMonitorComponent, NoopAnimationsModule],
+      imports: [LoginComponent, NoopAnimationsModule],
       providers: [{ provide: SomeService, useValue: { getFoo$: vi.fn() } }],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(PitchMonitorComponent);
+    fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it("should show the detected note name", () => {
+  it("should show the signed-in user's name", () => {
     // …
   });
 });

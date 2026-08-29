@@ -19,16 +19,7 @@
             "browser": "src/main.ts",
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
-            "assets": [
-              "src/logo.svg",
-              "src/assets",
-              "src/manifest.webmanifest",
-              {
-                "glob": "aubio.esm.js",
-                "input": "node_modules/aubiojs/build",
-                "output": "assets/aubio"
-              }
-            ],
+            "assets": ["src/logo.svg", "src/assets", "src/manifest.webmanifest"],
             "styles": ["src/styles.scss"],
             "scripts": [],
             "allowedCommonJsDependencies": ["chordproject-parser", "lodash", "file-saver", "chordproject-editor"]

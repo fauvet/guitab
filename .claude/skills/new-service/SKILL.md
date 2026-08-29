@@ -26,19 +26,19 @@ src/app/services/<name>/<name>.service.ts
 
 ```typescript
 import { TestBed } from "@angular/core/testing";
-import { PitchDetectionService } from "./pitch-detection.service";
+import { ZoomService } from "./zoom.service";
 
-describe("PitchDetectionService", () => {
-  let service: PitchDetectionService;
+describe("ZoomService", () => {
+  let service: ZoomService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [{ provide: OtherService, useValue: { getFoo: vi.fn() } }],
     });
-    service = TestBed.inject(PitchDetectionService);
+    service = TestBed.inject(ZoomService);
   });
 
-  it("should expose the last detected note", () => {
+  it("should expose the current zoom step", () => {
     // …
   });
 });
@@ -83,11 +83,11 @@ loop forever. Any state a view can both read and write wants the same guard.
 
 A service that wraps an external API is the **only** place that API may appear:
 Firebase lives in `services/` and `storage/`, Web Audio in
-`services/pitch-detection/` and `services/bluetooth-keep-alive/`. ESLint enforces
-both — Firebase on its imports, Web Audio on the globals, since an `AudioContext`
-is never imported. That boundary is what lets the
-rest of the app be tested without a network or a microphone, so keep the surface
-narrow — expose what callers need, not what the library offers.
+`services/bluetooth-keep-alive/`. ESLint enforces both — Firebase on its imports,
+Web Audio on the globals, since an `AudioContext` is never imported. That boundary
+is what lets the rest of the app be tested without a network or a live audio
+context, so keep the surface narrow — expose what callers need, not what the
+library offers.
 
 If the service subscribes to another service in its constructor, it owns that
 subscription for the lifetime of the app. That is acceptable for a root singleton,

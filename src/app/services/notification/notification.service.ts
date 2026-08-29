@@ -3,8 +3,8 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 
 /**
  * The only place `MatSnackBar` is allowed to appear — the same boundary
- * `FirebaseService` holds for Firebase and `PitchDetectionService` holds for Web
- * Audio, for the same reason: one narrow surface over an external API, kept
+ * `FirebaseService` holds for Firebase and `BluetoothKeepAliveService` holds for
+ * Web Audio, for the same reason: one narrow surface over an external API, kept
  * consistent (duration, dismiss action) so every caller does not have to get it
  * right on its own. Only components inject this; `services/` and `storage/`
  * never do, per "Errors are never swallowed" in

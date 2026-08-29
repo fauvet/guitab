@@ -99,14 +99,6 @@ AuthService     ← anonymous sign-in on startup, Google link/sign-in, isAnonymo
 
 LocalStorageService ← used by ZoomService, LocalCachedFilesRepository, LocalDraftRepository
 
-AubioLoaderService  ← fetches aubio's WebAssembly from assets/ at runtime; it sits
-                      inside services/pitch-detection/, being a detail of that boundary
-     ↓ injected by
-PitchDetectionService ← the Web Audio boundary that matters: microphone,
-                        AudioContext, pitch + onset detection
-     ↓ injected by
-PitchMonitorComponent ← opened inside DialogSoloTabEditorComponent
-
 ICachedFilesRepository (interface)
   ├── LocalCachedFilesRepository   ← localStorage key CACHED_FILES
   └── FirebaseCachedFilesRepository ← Realtime Database /users/{uid}/cachedFiles/
@@ -120,23 +112,22 @@ IDraftRepository (interface)
 
 ## State Ownership
 
-| State                                  | Owner                           | Changed by                                          | Consumed by                                                   |
-| -------------------------------------- | ------------------------------- | --------------------------------------------------- | ------------------------------------------------------------- |
-| `chordproContent$`                     | `ChordproService`               | editor mutations, file open, undo/redo              | ViewerComponent, ChordsViewer, FooterBar, debounced autosave  |
-| `fileHandleWithContent$`               | `AppContextService`             | open file, new file                                 | ChordproService, KeyboardShortcut                             |
-| `isEditing$`                           | `AppContextService`             | UI buttons, file open/new                           | Header, Footer, AppComponent (CSS class), ChordsViewer        |
-| `chordproSaveState$`                   | `ChordproService`               | file open, autosave                                 | `hasUnsavedChanges()`, BeforeUnloadService                    |
-| `youTubeUrl$`                          | `ChordproService`               | auto-parsed from `{meta:youtube}` on content change | FooterActionsBarComponent                                     |
-| `hasEditorUndo$` / `hasEditorRedo$`    | `ChordproService`               | content change → Ace UndoManager                    | HeaderActionsBarComponent                                     |
-| `isRemovableChordEnabled$`             | `ChordproService`               | Ace cursor position listener                        | FooterActionsBarComponent                                     |
-| `areLyricsDisplayed$`                  | `ChordproService`               | BottomSheetSettings toggle                          | CSS class `js-are-lyrics-hided` on `document.body`            |
-| `isWakeLock$` (the intention)          | `AppContextService`             | BottomSheetSettings toggle                          | `WakeLockService` (constructor subscription)                  |
-| `isKeptAwake$` (the reality)           | `WakeLockService`               | lock granted, released, or taken back by the system | BottomSheetSettings — the two diverge, hence both             |
-| `isBluetoothKeptAlive$`                | `AppContextService`             | BottomSheetSettings toggle                          | `BluetoothKeepAliveService` (constructor subscription)        |
-| `user$`                                | `AuthService`                   | Firebase `onAuthStateChanged`                       | `CachedFilesService`, `BeforeUnloadService`, `LoginComponent` |
-| `cachedFiles$`                         | active `ICachedFilesRepository` | after every open/autosave                           | `CachedFilesService` → `DialogFileGalleryComponent`           |
-| `zoomStep$`                            | `ZoomService`                   | +/- buttons in Header                               | `font-size` on the `<html>` element, which scales every `rem` |
-| `status$` / `currentNote$` / `frames$` | `PitchDetectionService`         | microphone blocks, or a decoded audio file          | `PitchMonitorComponent`                                       |
+| State                               | Owner                           | Changed by                                          | Consumed by                                                   |
+| ----------------------------------- | ------------------------------- | --------------------------------------------------- | ------------------------------------------------------------- |
+| `chordproContent$`                  | `ChordproService`               | editor mutations, file open, undo/redo              | ViewerComponent, ChordsViewer, FooterBar, debounced autosave  |
+| `fileHandleWithContent$`            | `AppContextService`             | open file, new file                                 | ChordproService, KeyboardShortcut                             |
+| `isEditing$`                        | `AppContextService`             | UI buttons, file open/new                           | Header, Footer, AppComponent (CSS class), ChordsViewer        |
+| `chordproSaveState$`                | `ChordproService`               | file open, autosave                                 | `hasUnsavedChanges()`, BeforeUnloadService                    |
+| `youTubeUrl$`                       | `ChordproService`               | auto-parsed from `{meta:youtube}` on content change | FooterActionsBarComponent                                     |
+| `hasEditorUndo$` / `hasEditorRedo$` | `ChordproService`               | content change → Ace UndoManager                    | HeaderActionsBarComponent                                     |
+| `isRemovableChordEnabled$`          | `ChordproService`               | Ace cursor position listener                        | FooterActionsBarComponent                                     |
+| `areLyricsDisplayed$`               | `ChordproService`               | BottomSheetSettings toggle                          | CSS class `js-are-lyrics-hided` on `document.body`            |
+| `isWakeLock$` (the intention)       | `AppContextService`             | BottomSheetSettings toggle                          | `WakeLockService` (constructor subscription)                  |
+| `isKeptAwake$` (the reality)        | `WakeLockService`               | lock granted, released, or taken back by the system | BottomSheetSettings — the two diverge, hence both             |
+| `isBluetoothKeptAlive$`             | `AppContextService`             | BottomSheetSettings toggle                          | `BluetoothKeepAliveService` (constructor subscription)        |
+| `user$`                             | `AuthService`                   | Firebase `onAuthStateChanged`                       | `CachedFilesService`, `BeforeUnloadService`, `LoginComponent` |
+| `cachedFiles$`                      | active `ICachedFilesRepository` | after every open/autosave                           | `CachedFilesService` → `DialogFileGalleryComponent`           |
+| `zoomStep$`                         | `ZoomService`                   | +/- buttons in Header                               | `font-size` on the `<html>` element, which scales every `rem` |
 
 ## Dialog & Bottom Sheet Wiring
 
@@ -151,7 +142,6 @@ IDraftRepository (interface)
 | BottomSheetToolsComponent             | `DialogExternalToolComponent`           | `{ src: string }`       | iframe embed (lyrics.ovh, songbpm.com, etc.)                               |
 | BottomSheetToolsComponent             | `DialogSoloTabEditorComponent`          | —                       | standalone tab grid generator                                              |
 | BottomSheetToolsComponent             | `DialogImportChordsOverLyricsComponent` | —                       | result inserted at the caret                                               |
-| DialogSoloTabEditorComponent          | `PitchMonitorComponent` (inline)        | —                       | emits `transcribed`, appended to the editor                                |
 
 All bottom sheets call `chordproService.requestEditorFocus()` on dismiss to restore Ace editor focus.
 
@@ -162,26 +152,6 @@ Material overlay is open (`.cdk-overlay-backdrop-showing`). The bindings
 themselves are one chain in that service and are not copied here — the copy that
 used to be got them wrong, listing Ctrl+Shift+S as working for months after it
 had stopped.
-
-## Humming a Solo
-
-A separate chain from the ChordPro pipeline, meeting it only at the solo tab
-editor's textarea:
-
-```
-microphone / audio file → PitchDetectionService (AubioLoaderService → aubio)
-  → PitchFrame { timeMs, frequency, isOnset } → frames$
-    → PitchTraceUtil (trace) · PitchUtil (read-out)
-    → NoteSegmentationUtil → FretboardUtil → SoloTabInputUtil
-      → appended to the textarea → SoloTabUtil → the ASCII tab
-```
-
-Everything from `PitchFrame` rightwards is pure and lives in `src/app/utils/`.
-`PitchDetectionService` is the only place that touches Web Audio and
-`AubioLoaderService` the only one that touches aubio — the same boundary
-Firebase has, for the same reason. **The octave shift is applied on the way to
-the tab, never to the display**, so the player can see the tool heard them
-correctly. How the detection works: the `web-audio-pitch` skill.
 
 ## isEditing Mode
 

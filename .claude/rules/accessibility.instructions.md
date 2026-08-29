@@ -35,17 +35,16 @@ disappears on focus and is not announced by every screen reader.
 
 ## Live regions for real-time changes
 
-The pitch monitor is the sharpest case in the app: the detected note changes
-continuously with no user action at all. A sighted user watches it; anyone else is
-told nothing unless you say so.
+A display that updates with no user action at all tells a sighted user something;
+anyone else is told nothing unless you say so.
 
 - Status text that updates in place gets `role="status"` — a polite live region.
 - A validation error that appears after an action gets `role="alert"`.
-- **Do not put a live region on the note read-out itself.** It changes several times
-  a second, and a screen reader would announce nothing but noise. Announce the
-  meaningful, settled events instead — recording started, recording stopped, the
-  segmented notes once they exist. The continuous trace is a visual aid, and its
-  container is marked `aria-hidden` with the note list as its accessible equivalent.
+- **Do not put a live region on a value that changes continuously** — several
+  times a second, driven by something outside the user's control. A screen reader
+  would announce nothing but noise. Announce the meaningful, settled events
+  instead, and mark the continuously-updating element `aria-hidden` with a
+  settled equivalent as its accessible substitute.
 
 That distinction — announce what settles, hide what streams — is the rule to carry
 to any future real-time display.

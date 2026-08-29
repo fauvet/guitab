@@ -41,20 +41,20 @@ the diff is right there.
 ```
 
 Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `perf`, `build`, `ci`.
-Scopes are the area touched: `chordpro`, `pitch`, `editor`, `storage`, `auth`,
-`pwa`, `docs`.
+Scopes are the area touched: `chordpro`, `editor`, `storage`, `auth`, `pwa`,
+`docs`.
 
 - One logical change per commit. A commit that both fixes a bug and reformats four
   files can be neither reviewed nor reverted.
 - **No drive-by reformatting.** Prettier already runs on everything; if formatting
   noise appears in a diff you did not touch, something is misconfigured.
-- The message explains _why_. "Fix bug" tells a future reader nothing. "Onset
-  detection must open a new note even at identical pitch, otherwise two hummed
-  notes merge into one held note" tells them everything.
+- The message explains _why_. "Fix bug" tells a future reader nothing. "Autosave
+  must skip while a file is loading, otherwise opening a song overwrites it with
+  its own content before the player types anything" tells them everything.
 
 ## Branches
 
-`<type>/<short-slug>`, e.g. `feat/pitch-monitor`. Work goes on a branch; nothing
+`<type>/<short-slug>`, e.g. `feat/zoom-controls`. Work goes on a branch; nothing
 lands directly on `main`, which is deployed on every push.
 
 ## Definition of done
@@ -65,7 +65,7 @@ Before calling a change finished, all of it:
 - [ ] The behaviour is covered by a test that would fail without the change.
 - [ ] No new `any`, no new NgModule, no component without `OnPush`.
 - [ ] No Firebase import outside `services/` and `storage/`; no Web Audio outside
-      `services/pitch-detection/`.
+      `services/bluetooth-keep-alive/`.
 - [ ] Every new subscription has a matching `takeUntil(this.unsubscribe$)`.
 - [ ] A new dependency was checked against
       `dependencies-licensing.instructions.md` and lands lazily if it is heavy.

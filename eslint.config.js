@@ -11,12 +11,7 @@ const angular = require("angular-eslint");
  * .claude/rules/ or CLAUDE.md.
  */
 const AUDIO_BOUNDARY_MESSAGE =
-  "Web Audio belongs to src/app/services/pitch-detection/ and " +
-  "src/app/services/bluetooth-keep-alive/. Call a service instead — see CLAUDE.md hard rule 3.";
-
-const MICROPHONE_BOUNDARY_MESSAGE =
-  "The microphone belongs to src/app/services/pitch-detection/. Call the service instead — " +
-  "see CLAUDE.md hard rule 3.";
+  "Web Audio belongs to src/app/services/bluetooth-keep-alive/. Call a service instead — see CLAUDE.md hard rule 3.";
 
 const SNACK_BAR_BOUNDARY_MESSAGE =
   "MatSnackBar belongs to src/app/services/notification/ and src/app/components/. " +
@@ -98,8 +93,8 @@ module.exports = tseslint.config(
     // src/app/utils/, where a "pure in, pure out" util was holding a live
     // handle on the sound card.
     //
-    // Denied everywhere, then granted back to the two services that own it, so
-    // a new folder is closed by default rather than by remembering to add it.
+    // Denied everywhere, then granted back to the service that owns it, so a
+    // new folder is closed by default rather than by remembering to add it.
     files: ["src/**/*.ts"],
     rules: {
       "no-restricted-globals": [
@@ -118,8 +113,8 @@ module.exports = tseslint.config(
         },
       ],
 
-      // `window.AudioContext` and `navigator.mediaDevices` slip past
-      // no-restricted-globals, which only ever sees a bare identifier.
+      // `window.AudioContext` slips past no-restricted-globals, which only
+      // ever sees a bare identifier.
       "no-restricted-syntax": [
         "error",
         {
@@ -127,15 +122,11 @@ module.exports = tseslint.config(
             "MemberExpression[object.name='window'][property.name=/^(AudioContext|webkitAudioContext|OfflineAudioContext)$/]",
           message: AUDIO_BOUNDARY_MESSAGE,
         },
-        {
-          selector: "MemberExpression[object.name='navigator'][property.name='mediaDevices']",
-          message: MICROPHONE_BOUNDARY_MESSAGE,
-        },
       ],
     },
   },
   {
-    files: ["src/app/services/pitch-detection/**/*.ts", "src/app/services/bluetooth-keep-alive/**/*.ts"],
+    files: ["src/app/services/bluetooth-keep-alive/**/*.ts"],
     rules: {
       "no-restricted-globals": "off",
       "no-restricted-syntax": "off",

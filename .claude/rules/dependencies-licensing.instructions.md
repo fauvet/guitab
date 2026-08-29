@@ -8,10 +8,9 @@ applyTo: "package.json"
 ## GuiTab is GPL-3.0-or-later
 
 This is not an incidental fact about the repo — it constrains every dependency
-added from now on, and it was a deliberate trade. The full rationale is in
-`README.md`; the short version is that real-time **onset detection** has no
-permissively licensed implementation in the browser, aubio has one, and aubio is
-GPL.
+added from now on. The project stays on GPL-3.0-or-later; the compatibility
+table below is a live constraint regardless of which dependencies currently
+require it.
 
 ### The compatibility table
 
@@ -26,8 +25,7 @@ GPL.
 
 Being compatible is not being welcome. A permissive dependency keeps the door open
 for the parts of this codebase that could one day be extracted; a copyleft one
-closes it further. Reach for GPL only when it buys a capability nothing else has —
-which has happened exactly once.
+closes it further. Reach for GPL only when it buys a capability nothing else has.
 
 ### Check it, do not assume it
 
@@ -40,10 +38,11 @@ verdict. Two traps have already bitten this repo:
 
 - **The field can be missing** while the code is plainly licensed — read the
   bundled `LICENSE` file.
-- **The wrapper and the payload can disagree.** `aubiojs` ships an MIT notice for
-  its JavaScript glue, but the WebAssembly it embeds is compiled aubio, which is
-  GPL-3.0. The licence of the artifact you ship is the strictest one inside it, not
-  the one on the wrapper. Always look at what the package actually contains.
+- **The wrapper and the payload can disagree.** A package can ship an MIT notice
+  for its JavaScript glue while embedding a compiled WebAssembly payload under a
+  stricter licence. The licence of the artifact you ship is the strictest one
+  inside it, not the one on the wrapper. Always look at what the package
+  actually contains.
 
 ## Before adding anything at all
 
@@ -66,10 +65,9 @@ The production budgets are in `angular.json` and CI fails on them — do not res
 the numbers here, they move.
 
 What matters is _where_ the weight lands. A heavy dependency behind a dynamic
-`import()` costs nothing until the user opens the feature that needs it, and that is
-how both audio engines are loaded: the app shell must never pay for a microphone the
-user has not switched on. If a package cannot be loaded lazily and does not fit the
-initial budget, it is not an option.
+`import()` costs nothing until the user opens the feature that needs it. If a
+package cannot be loaded lazily and does not fit the initial budget, it is not
+an option.
 
 ## Recording the decision
 

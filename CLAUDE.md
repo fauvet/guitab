@@ -2,8 +2,7 @@
 
 A ChordPro chord-chart editor and viewer, shipped as an installable PWA. Everything
 runs in the browser; Firebase provides sign-in and per-user cloud storage, nothing
-else. It also captures a hummed melody through the microphone and turns it into an
-ASCII tab.
+else.
 
 ## Hard rules
 
@@ -13,10 +12,9 @@ ASCII tab.
 2. **Never touch Firebase outside `src/app/services/` and `src/app/storage/`.**
    Components call a service; persistence goes through a repository interface.
    ESLint enforces this.
-3. **Never touch Web Audio outside the two services that own it** — pitch
-   detection and the Bluetooth keep-alive. Same boundary, same reason: it is
-   what keeps the musical logic testable without a microphone. ESLint enforces
-   this too, on the globals rather than on imports.
+3. **Never touch Web Audio outside the service that owns it** — the Bluetooth
+   keep-alive. ESLint enforces this too, on the globals rather than on
+   imports.
 4. **State lives in a private `BehaviorSubject`**, exposed as `getFoo$()` and
    `getFoo()`. Components subscribe with `takeUntil(this.unsubscribe$)` and fire
    `unsubscribe$.next()` in `ngOnDestroy`. A leaked subscription is a bug.
@@ -40,8 +38,7 @@ ASCII tab.
 ## Tech stack
 
 Angular 22 (standalone, OnPush) · TypeScript strict · Angular Material 22 · RxJS 7 ·
-Firebase Auth + Realtime Database · Vitest 4 · aubio (WebAssembly) for pitch and
-onset detection. Exact versions: `package.json`.
+Firebase Auth + Realtime Database · Vitest 4. Exact versions: `package.json`.
 
 ## Project structure
 

@@ -13,9 +13,7 @@ testable with plain input/output assertions and no mocks at all.
 
 `SoloTabUtil.convert()` is the model: a string goes in, a tab and a list of
 suggestions come out, and its test file covers every branch without ever
-constructing a component. The pitch-detection feature is built the same way — all
-the musical reasoning is in `utils/`, and the service is a thin shell around Web
-Audio that exists only because microphones cannot be pure functions.
+constructing a component.
 
 When a component or a service grows a block of reasoning that does not touch the
 framework, it belongs one layer down.
@@ -77,7 +75,7 @@ A component past budget is almost always hiding a util inside itself.
   never resolves through a `.catch(err => console.error(err))` that lets the
   caller believe nothing went wrong, and never returns a sentinel the caller has
   to remember to check.
-- A continuous state — pitch-detection status, the wake lock, a live Firebase
+- A continuous state — the wake lock, the Bluetooth keep-alive, a live Firebase
   listener — is different: nothing is awaiting a promise that could reject, so
   the existing `BehaviorSubject` status pattern stays, and the owning service may
   `console.error` the failure itself at the point it happens, the same way

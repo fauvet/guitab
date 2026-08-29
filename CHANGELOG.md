@@ -29,8 +29,7 @@ first entry moves to `## [1.0.0]` when the first release is cut.
   direct buttons in the header.
 - **Licensed under the GNU General Public License, version 3 or later.**
 - **Material 3 theme**, applied across every button, dialog and bottom sheet,
-  including the chords-over-lyrics import preview and the pitch monitor's
-  error text.
+  including the chords-over-lyrics import preview.
 - **Wake lock reports failure** when the API is unavailable or the request is
   refused, and shows whether the screen is actually being held awake.
 - **Wake lock is re-acquired on returning to the tab** after switching apps.
@@ -46,12 +45,6 @@ first entry moves to `## [1.0.0]` when the first release is cut.
   library as one `.zip`, deletes an entry, and filters the list by name
   (accent- and case-insensitive) through a search field next to Import and
   Download all.
-- **Solo tab editor**: hums a phrase into the microphone, shows the detected
-  note with its octave, and turns it into tablature. The octave is
-  transposed on the way to the tab, not on the display. Neck position is a
-  setting, defaulting to around the twelfth fret.
-- **Audio file analysis** as an alternative to the microphone, for a track
-  holding a single melody line.
 - An in-app footer linking the source, the licence and the issue tracker, and
   showing the running version.
 - `npm run setup:env`, writing a placeholder Firebase configuration.

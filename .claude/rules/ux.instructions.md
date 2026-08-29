@@ -75,13 +75,10 @@ message says once it is on screen.
 
 The app's established idiom for "this will take a moment" is: disable the controls
 that would re-trigger the same work, and show a short `role="status"` caption next
-to them. `PitchMonitorComponent`'s `isBusy()` state is the model — Record and
-"Audio file" disable themselves and a "Loading the pitch detector…" caption
-appears while `AubioLoaderService` fetches the WebAssembly module. There is no
-`mat-progress-spinner` anywhere in the app, and introducing one would be a second
-idiom for the same problem. A new feature with a genuine load delay (a Firebase
-round trip, another WASM module) should disable-and-caption rather than invent a
-new loading pattern.
+to them. There is no `mat-progress-spinner` anywhere in the app, and introducing
+one would be a second idiom for the same problem. A new feature with a genuine
+load delay (a Firebase round trip, a large module fetched lazily) should
+disable-and-caption rather than invent a new loading pattern.
 
 ## One name for one action, everywhere
 

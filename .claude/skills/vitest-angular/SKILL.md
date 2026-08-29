@@ -115,9 +115,9 @@ vi.stubGlobal(
 ```
 
 Canvas is the other trap: jsdom does not implement `getContext`, so anything drawing
-to a canvas cannot be asserted on. That is why the pitch trace is an SVG
-`<polyline>` and its geometry lives in a util — the util is tested directly, and the
-component only has to be shown to pass it through.
+to a canvas cannot be asserted on. That is why the chord diagrams are SVG built by
+`SvgGuitarUtil` rather than drawn on a canvas — the util is tested directly, and the
+component only has to be shown to pass its output through.
 
 ## Isolation
 

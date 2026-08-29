@@ -34,7 +34,7 @@ export class WakeLockService implements OnDestroy {
   // not requested yet. Not shown as a snackbar: coming back to the app after a
   // background reacquire is not a user action to interrupt, so this is a status
   // for BottomSheetSettingsComponent to display inline, the same shape as
-  // PitchDetectionService's errorMessage$.
+  // ChordproService's autosaveError$.
   private readonly lastErrorMessage$ = new BehaviorSubject<string | null>(null);
 
   private sentinel: null | WakeLockSentinel = null;
