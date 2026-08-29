@@ -97,6 +97,10 @@ first entry moves to `## [1.0.0]` when the first release is cut.
 - Signing out clears the previous session's user immediately.
 - On mobile, closing a dialog or bottom sheet no longer opens the on-screen
   keyboard while the viewer (not the editor) is the visible pane.
+- The Tools and Settings bottom sheets, anchored to the top of the screen on
+  desktop instead of the bottom, now round their bottom corners instead of
+  their top corners, mirroring a normal bottom-anchored sheet instead of
+  looking upside down. Mobile is unaffected.
 - The login button's tooltip falls back to the account email, then a generic
   label, when a Google account has no display name.
 - A failed cloud sync for Quick Access is surfaced with a message instead of

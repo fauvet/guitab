@@ -119,6 +119,26 @@ mat-list-item {
   .cdk-overlay-backdrop:not(.cdk-overlay-backdrop-showing) + .cdk-global-overlay-wrapper mat-bottom-sheet-container {
     display: none !important;
   }
+
+  /*
+   * Same selector list Material's own stylesheet uses to round these corners
+   * in the first place (`mat-bottom-sheet-container-medium/-large/-xlarge`,
+   * toggled by its BreakpointObserver against CDK's Breakpoints.Medium/
+   * Large/XLarge) — below that breakpoint the sheet is full-width and
+   * square, so there is nothing to flip. Material always rounds the corners
+   * facing into the page, assuming a bottom-anchored sheet (square edge
+   * against the screen's bottom). Anchored to the top instead, that's
+   * backwards — flip it so the top-anchored sheet mirrors the normal
+   * bottom-anchored one.
+   */
+  .mat-bottom-sheet-container-xlarge,
+  .mat-bottom-sheet-container-large,
+  .mat-bottom-sheet-container-medium {
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-left-radius: var(--mat-bottom-sheet-container-shape, 28px) !important;
+    border-bottom-right-radius: var(--mat-bottom-sheet-container-shape, 28px) !important;
+  }
 }
 
 /**
