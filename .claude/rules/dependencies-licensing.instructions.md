@@ -71,6 +71,7 @@ an option.
 
 ## Recording the decision
 
-A dependency taken on for a non-obvious reason gets one line in `CHANGELOG.md` and,
-if it changed the shape of the app, a paragraph in the skill that covers it. The
+A dependency taken on for a non-obvious reason gets a line in the skill that covers
+it — or in `README.md` when no skill does — and, if it changed the shape of the
+app, a paragraph there. The
 next person to wonder "why is this here?" should not have to read git history.
