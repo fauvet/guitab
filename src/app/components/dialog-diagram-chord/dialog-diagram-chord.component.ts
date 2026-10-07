@@ -8,6 +8,7 @@ import { SvgGuitarUtil } from "../../utils/svg-guitar.util";
 import { ChordproService } from "../../services/chordpro/chordpro.service";
 import { BehaviorSubject } from "rxjs";
 import { AsyncPipe } from "@angular/common";
+import { InstrumentService } from "../../services/instrument/instrument.service";
 
 @Component({
   selector: "app-dialog-diagram-chord",
@@ -19,6 +20,10 @@ import { AsyncPipe } from "@angular/common";
 export class DialogDiagramChordComponent implements OnInit {
   private readonly chordproService = inject(ChordproService);
   private readonly data = inject(MAT_DIALOG_DATA);
+  private readonly instrumentService = inject(InstrumentService);
+
+  // Read once: the dialog is modal, so the setting cannot change while it is open.
+  readonly instrument = this.instrumentService.getInstrument();
 
   chord$ = new BehaviorSubject<Chord>({
     barres: [],
@@ -36,7 +41,7 @@ export class DialogDiagramChordComponent implements OnInit {
     if (!chordName) return;
 
     const chordproContent = this.chordproService.getChordproContent();
-    const newChord = SvgGuitarUtil.buildChord(chordproContent, chordName);
+    const newChord = SvgGuitarUtil.buildChord(chordproContent, chordName, this.instrument);
     if (!newChord) return;
 
     this.chord$.next(newChord);

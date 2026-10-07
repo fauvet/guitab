@@ -71,7 +71,95 @@ describe("SvgGuitarUtil", () => {
     });
   });
 
+  describe("buildChord for the ukulele", () => {
+    it("should draw 'C' from the ukulele database on four strings", () => {
+      const chord = SvgGuitarUtil.buildChord("", "C", "ukulele");
+      expect(chord?.title).toBe("C");
+      // G C E A open, third fret on the A string — the only fretted note.
+      expect(chord?.fingers).toEqual([[1, "3", "3"]]);
+    });
+
+    it("should find a minor chord under the guitar database's suffix", () => {
+      expect(SvgGuitarUtil.buildChord("", "Am", "ukulele")?.fingers).toEqual([[4, "2", "2"]]);
+    });
+
+    it("should apply the same enharmonic normalization", () => {
+      expect(SvgGuitarUtil.buildChord("", "Db", "ukulele")).not.toBeNull();
+      expect(SvgGuitarUtil.buildChord("", "G#m", "ukulele")).not.toBeNull();
+    });
+
+    it("should ignore a six-string {define:}, which is a guitar fingering", () => {
+      const content = "{define: C base-fret 5 frets x 3 2 0 1 0}";
+      expect(SvgGuitarUtil.buildChord(content, "C", "ukulele")?.position).toBe(1);
+    });
+
+    it("should use a four-string {define:}", () => {
+      const content = "{define: C base-fret 5 frets 0 0 0 3}";
+      expect(SvgGuitarUtil.buildChord(content, "C", "ukulele")?.position).toBe(5);
+    });
+
+    it("should ignore a four-string {define:} on the guitar", () => {
+      const content = "{define: C base-fret 5 frets 0 0 0 3}";
+      expect(SvgGuitarUtil.buildChord(content, "C", "guitar")?.position).toBe(1);
+    });
+
+    it("should stand in the chord above the bass for a slash chord the database lacks", () => {
+      const chord = SvgGuitarUtil.buildChord("", "C/G", "ukulele");
+      expect(chord?.title).toBe("C/G");
+      expect(chord?.fingers).toEqual(SvgGuitarUtil.buildChord("", "C", "ukulele")?.fingers);
+    });
+
+    it("should still return null for a slash chord whose upper chord is unknown", () => {
+      expect(SvgGuitarUtil.buildChord("", "ZZZ/G", "ukulele")).toBeNull();
+    });
+  });
+
+  describe("getChordEntries", () => {
+    it("should list the twelve keys of each instrument", () => {
+      expect(SvgGuitarUtil.getChordEntries("guitar").map(([key]) => key)).toHaveLength(12);
+      expect(SvgGuitarUtil.getChordEntries("ukulele").map(([key]) => key)).toEqual(
+        SvgGuitarUtil.getChordEntries("guitar").map(([key]) => key),
+      );
+    });
+
+    it("should only hold four-string fingerings for the ukulele", () => {
+      const stringCounts = SvgGuitarUtil.getChordEntries("ukulele")
+        .flatMap(([, chordObjects]) => chordObjects)
+        .flatMap((chordObject) => chordObject.variants)
+        .map((variant) => variant.frets.length);
+      expect(new Set(stringCounts)).toEqual(new Set([4]));
+    });
+  });
+
   describe("toChord", () => {
+    it("should number four strings from the A string down to the G string", () => {
+      // Ukulele G7: 0 2 1 2, with no barre.
+      const chord = SvgGuitarUtil.toChord("G7", {
+        frets: ["0", "2", "1", "2"],
+        fingers: ["x", "2", "1", "3"],
+        barres: [],
+        baseFret: 1,
+        midi: [],
+      });
+      expect(chord.fingers).toEqual([
+        [3, "2", "2"],
+        [2, "1", "1"],
+        [1, "2", "3"],
+      ]);
+    });
+
+    it("should place a four-string barre between the right strings", () => {
+      // Ukulele C at the third fret: 3 2 1 1, finger 1 barring the E and A strings.
+      const chord = SvgGuitarUtil.toChord("C", {
+        frets: ["3", "2", "1", "1"],
+        fingers: ["3", "2", "1", "1"],
+        barres: [1],
+        baseFret: 3,
+        midi: [],
+      });
+      expect(chord.barres).toEqual([{ fromString: 2, toString: 1, fret: 1, text: "1" }]);
+    });
+
     describe("title and position", () => {
       it("should set the chord title to the provided chord name", () => {
         const chord = SvgGuitarUtil.toChord("Am", AM_VARIANT);

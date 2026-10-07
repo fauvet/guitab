@@ -8,6 +8,8 @@ import {
   SimpleChanges,
 } from "@angular/core";
 import { Chord, ChordStyle, FretLabelPosition, Orientation, Shape, SVGuitarChord } from "svguitar";
+import Instrument from "../../types/instrument.type";
+import { SvgGuitarUtil } from "../../utils/svg-guitar.util";
 
 @Component({
   selector: "app-diagram-chord",
@@ -24,6 +26,8 @@ export class DiagramChordComponent implements AfterViewInit, OnChanges {
   chord: Chord | null = null;
   @Input()
   size: "s" | "m" | "l" = "l";
+  @Input()
+  instrument: Instrument = "guitar";
 
   ngAfterViewInit(): void {
     this.buildSvg();
@@ -78,7 +82,7 @@ export class DiagramChordComponent implements AfterViewInit, OnChanges {
       .configure({
         orientation: Orientation.vertical,
         style: ChordStyle.normal,
-        strings: 6,
+        strings: SvgGuitarUtil.getStringCount(this.instrument),
         frets: 4,
         position: 1,
         tuning: [],
@@ -115,7 +119,7 @@ export class DiagramChordComponent implements AfterViewInit, OnChanges {
         watermarkFontSize: 12,
         watermarkColor: "#000000",
         watermarkFontFamily: "sans-serif",
-        svgTitle: "Guitar chord diagram",
+        svgTitle: this.instrument === "ukulele" ? "Ukulele chord diagram" : "Guitar chord diagram",
         fretMarkers: [
           2,
           4,

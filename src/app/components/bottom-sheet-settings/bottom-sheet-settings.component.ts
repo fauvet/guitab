@@ -7,6 +7,7 @@ import { AsyncPipe } from "@angular/common";
 import { AppContextService } from "../../services/app-context/app-context.service";
 import { NotificationService } from "../../services/notification/notification.service";
 import { WakeLockService } from "../../services/wake-lock/wake-lock.service";
+import { InstrumentService } from "../../services/instrument/instrument.service";
 import { MatBottomSheetRef } from "@angular/material/bottom-sheet";
 import { combineLatest, map, Observable } from "rxjs";
 
@@ -30,6 +31,7 @@ export class BottomSheetSettingsComponent implements OnInit {
   public readonly appContextService = inject(AppContextService);
   public readonly chordproService = inject(ChordproService);
   public readonly wakeLockService = inject(WakeLockService);
+  public readonly instrumentService = inject(InstrumentService);
   private readonly bottomSheetRef = inject(MatBottomSheetRef<BottomSheetSettingsComponent>);
   private readonly notificationService = inject(NotificationService);
 
@@ -68,5 +70,11 @@ export class BottomSheetSettingsComponent implements OnInit {
     this.notificationService.showSuccess(
       isBluetoothKeptAlive ? "Bluetooth keep-alive disabled." : "Bluetooth keep-alive enabled.",
     );
+  }
+
+  onItemUkuleleChordsClicked(): void {
+    const isUkulele = this.instrumentService.getInstrument() === "ukulele";
+    this.instrumentService.setInstrument(isUkulele ? "guitar" : "ukulele");
+    this.notificationService.showSuccess(isUkulele ? "Guitar chords shown." : "Ukulele chords shown.");
   }
 }

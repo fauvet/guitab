@@ -97,7 +97,7 @@ AuthService     ← anonymous sign-in on startup, Google link/sign-in, isAnonymo
 ├── BeforeUnloadService  ← delegates to IDraftRepository
 └── LoginComponent
 
-LocalStorageService ← used by ZoomService, LocalCachedFilesRepository, LocalDraftRepository
+LocalStorageService ← used by ZoomService, InstrumentService, LocalCachedFilesRepository, LocalDraftRepository
 
 ICachedFilesRepository (interface)
   ├── LocalCachedFilesRepository   ← localStorage key CACHED_FILES
@@ -128,6 +128,7 @@ IDraftRepository (interface)
 | `user$`                             | `AuthService`                   | Firebase `onAuthStateChanged`                       | `CachedFilesService`, `BeforeUnloadService`, `LoginComponent` |
 | `cachedFiles$`                      | active `ICachedFilesRepository` | after every open/autosave                           | `CachedFilesService` → `DialogFileGalleryComponent`           |
 | `zoomStep$`                         | `ZoomService`                   | +/- buttons in Header                               | `font-size` on the `<html>` element, which scales every `rem` |
+| `instrument$`                       | `InstrumentService`             | BottomSheetSettings toggle                          | ChordsViewer, DialogDiagramChord, DialogSelectChord           |
 
 ## Dialog & Bottom Sheet Wiring
 
@@ -176,7 +177,8 @@ Draft structure stored under the `DRAFT` localStorage key: `{ chordproContent: s
 
 ## LocalStorage Keys
 
-Three keys, each owned by one service and declared as a constant in it:
-`BeforeUnloadService` (the draft), `CachedFilesService` (recent files) and
-`ZoomService` (the zoom step). The names and the stored shapes live in those
+Each key is owned by one service and declared as a constant in it:
+`BeforeUnloadService` (the draft), `CachedFilesService` (recent files),
+`ZoomService` (the zoom step) and `InstrumentService` (the chord diagram
+instrument). The names and the stored shapes live in those
 files rather than being copied here, where they would go stale unnoticed.

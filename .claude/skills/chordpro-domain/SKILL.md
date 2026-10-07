@@ -100,9 +100,26 @@ See `SvgGuitarUtil.buildChord()` for the lookup that normalizes a chord name and
 finds its `Variant`, and `SvgGuitarUtil.toChord()` for converting a `Variant`
 into a `Chord`.
 
+## Instruments
+
+Chord diagrams are drawn for one `Instrument` at a time (`src/app/types/instrument.type.ts`),
+picked in the settings sheet and held by `InstrumentService`. Each instrument has its
+own fingering database, both in the same shape:
+
+- `src/assets/guitar.json` — six strings, standard tuning.
+- `src/assets/ukulele.json` — four strings, G C E A. Taken from
+  [chords-db](https://github.com/tombatossals/chords-db)'s `lib/ukulele.json` (MIT,
+  noted in the file's `main` block) and converted once to the guitar file's shape:
+  `positions` → `variants`, numeric frets → strings with `-1` → `"x"`, finger `0` →
+  `"x"`, suffix `major`/`minor` → `""`/`m`, keys `Db`/`Gb` → `C#`/`F#`. It has no slash
+  chords, so `SvgGuitarUtil.buildChord()` falls back to the chord above the bass.
+
+The number of strings is never hardcoded: `SvgGuitarUtil.toChord()` reads it from
+`variant.frets.length`.
+
 ## The `Variant` Type
 
-A chord variant is one specific fingering stored in `src/assets/guitar.json`:
+A chord variant is one specific fingering stored in a fingering database:
 
 ```typescript
 interface Variant {
@@ -127,11 +144,11 @@ When looking up chords, apply enharmonic equivalents:
 | `G#`  | `Ab`       |
 | `A#`  | `Bb`       |
 
-Applied inline in `SvgGuitarUtil.buildChord()`.
+Applied in `SvgGuitarUtil.buildChord()`, for every instrument.
 
 ## Custom Chord Parsing
 
-Custom chords are defined inline via `{define:}` directives and take precedence over `guitar.json` variants. The regex pattern in `ChordproUtil` extracts them:
+Custom chords are defined inline via `{define:}` directives and take precedence over the database variants — but only for the instrument they were written for. A `{define:}` with exactly four frets is a ukulele fingering; anything else is read as a guitar one, padded to six strings. The other instrument ignores it. The regex pattern in `ChordproUtil` extracts them:
 
 ```
 {define: <Name> base-fret <N> frets <f1> <f2> <f3> <f4> <f5> <f6> [fingers <n1>...<n6>]}
@@ -144,5 +161,5 @@ Use `ChordproUtil.findCustomVariant(chordproContent, chordName)` to extract a cu
 | Class           | Key Methods                                                                |
 | --------------- | -------------------------------------------------------------------------- |
 | `ChordproUtil`  | `findChordNames()`, `findCustomVariant()`, `buildFileName()`, `EXTENSIONS` |
-| `SvgGuitarUtil` | `buildChord()`, `toChord()`                                                |
+| `SvgGuitarUtil` | `buildChord()`, `toChord()`, `getChordEntries()`, `getStringCount()`       |
 | `FileUtil`      | `readFile()`, `loadSampleFile()`, `loadEmptyFile()`                        |

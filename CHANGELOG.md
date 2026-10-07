@@ -40,6 +40,13 @@ first entry moves to `## [1.0.0]` when the first release is cut.
 
 ### Added
 
+- **Ukulele chord diagrams.** A "Ukulele chords" setting redraws every chord
+  diagram — the chord panel, the diagram opened from a chord, and the Insert a
+  chord dialog — for a GCEA ukulele, without touching the song. A guitar
+  `{define:}` is skipped in that mode; one with exactly four frets is used. A
+  slash chord with no fingering of its own shows the chord above the bass. The
+  fingerings come from [chords-db](https://github.com/tombatossals/chords-db)
+  (MIT), converted to the same shape as the guitar data.
 - **Song library dialog**, reachable from the header: lists every saved song,
   imports several ChordPro files at once, downloads an entry or the whole
   library as one `.zip`, deletes an entry, and filters the list by name
