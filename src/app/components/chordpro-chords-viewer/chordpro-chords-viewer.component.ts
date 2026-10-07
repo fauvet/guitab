@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit } from "@angular/core";
 import { ChordproUtil } from "../../utils/chordpro.util";
 import { AppContextService } from "../../services/app-context/app-context.service";
-import { BehaviorSubject, Subject, takeUntil } from "rxjs";
+import { BehaviorSubject, combineLatest, Subject, takeUntil } from "rxjs";
 import { Chord } from "svguitar";
 import { DiagramChordComponent } from "../diagram-chord/diagram-chord.component";
 import { SvgGuitarUtil } from "../../utils/svg-guitar.util";
@@ -10,6 +10,8 @@ import { MatButtonModule } from "@angular/material/button";
 import { ChordproService } from "../../services/chordpro/chordpro.service";
 import { AsyncPipe } from "@angular/common";
 import _ from "lodash";
+import { InstrumentService } from "../../services/instrument/instrument.service";
+import Instrument from "../../types/instrument.type";
 
 @Component({
   selector: "app-chordpro-chords-viewer",
@@ -21,16 +23,17 @@ import _ from "lodash";
 export class ChordproChordsViewerComponent implements OnInit, OnDestroy {
   private readonly appContextService = inject(AppContextService);
   private readonly chordproService = inject(ChordproService);
+  private readonly instrumentService = inject(InstrumentService);
 
   chords$ = new BehaviorSubject<Chord[]>([]);
+  readonly instrument$ = this.instrumentService.getInstrument$();
 
   private readonly unsubscribe$ = new Subject<void>();
 
   ngOnInit(): void {
-    this.chordproService
-      .getChordproContent$()
+    combineLatest([this.chordproService.getChordproContent$(), this.instrumentService.getInstrument$()])
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((chordproContent) => this.onChordproContentChanged(chordproContent));
+      .subscribe(([chordproContent, instrument]) => this.onChordproContentChanged(chordproContent, instrument));
   }
 
   private setChords(chords: Chord[]): void {
@@ -42,10 +45,10 @@ export class ChordproChordsViewerComponent implements OnInit, OnDestroy {
     this.unsubscribe$.next();
   }
 
-  onChordproContentChanged(chordproContent: string): void {
+  onChordproContentChanged(chordproContent: string, instrument: Instrument): void {
     const chordNames = ChordproUtil.findChordNames(chordproContent).flatMap(ArrayUtil.unique);
     const newChords = chordNames
-      .map((chordName) => SvgGuitarUtil.buildChord(chordproContent, chordName))
+      .map((chordName) => SvgGuitarUtil.buildChord(chordproContent, chordName, instrument))
       .filter((chord) => chord) as Chord[];
     this.setChords(newChords);
   }

@@ -111,6 +111,18 @@ describe("ChordproUtil", () => {
       expect(variant?.baseFret).toBe(2);
     });
 
+    it("should read exactly four frets as a four-string ukulele fingering", () => {
+      const variant = ChordproUtil.findCustomVariant("{define: C base-fret 1 frets 0 0 0 3 fingers 0 0 0 3}", "C");
+      expect(variant?.frets).toEqual(["0", "0", "0", "3"]);
+      expect(variant?.fingers).toHaveLength(4);
+    });
+
+    it("should keep padding any other short fingering to six guitar strings", () => {
+      const variant = ChordproUtil.findCustomVariant("{define: C base-fret 1 frets x 3 2}", "C");
+      expect(variant?.frets).toHaveLength(6);
+      expect(variant?.frets.slice(0, 3)).toEqual(["x", "3", "2"]);
+    });
+
     it("should work with chord names containing special regex characters like D#", () => {
       const content = "{define: D# base-fret 1 frets x x 1 3 3 2}";
       const variant = ChordproUtil.findCustomVariant(content, "D#");

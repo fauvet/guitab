@@ -35,6 +35,7 @@
           color="primary"
           [class.selected]="(selectedChordVariant$ | async) === chordVariant"
           [chord]="toChord(buildChordName(selectedChordObject$ | async), chordVariant)"
+          [instrument]="instrument"
           [size]="'m'"
           (click)="onDiagramChordClicked(chordVariant)"></app-diagram-chord>
       }

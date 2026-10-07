@@ -40,4 +40,28 @@ describe("DiagramChordComponent", () => {
 
     await vi.waitFor(() => expect(consoleErrorSpy).toHaveBeenCalled());
   });
+
+  describe("string count", () => {
+    async function drawnConfiguration(): Promise<{ strings?: number; svgTitle?: string }> {
+      const configureSpy = vi.spyOn(SVGuitarChord.prototype, "configure");
+      vi.spyOn(SVGuitarChord.prototype, "draw").mockReturnValue({ width: 0, height: 0 });
+      component.chord = { fingers: [], barres: [], title: "C" } as Chord;
+      component.ngOnChanges({});
+      await vi.waitFor(() => expect(configureSpy).toHaveBeenCalled());
+      return configureSpy.mock.calls[0][0];
+    }
+
+    it("should draw six strings for the guitar", async () => {
+      const configuration = await drawnConfiguration();
+      expect(configuration.strings).toBe(6);
+      expect(configuration.svgTitle).toBe("Guitar chord diagram");
+    });
+
+    it("should draw four strings for the ukulele", async () => {
+      component.instrument = "ukulele";
+      const configuration = await drawnConfiguration();
+      expect(configuration.strings).toBe(4);
+      expect(configuration.svgTitle).toBe("Ukulele chord diagram");
+    });
+  });
 });

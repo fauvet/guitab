@@ -52,4 +52,17 @@
     <div matListItemTitle>{{ "Keep Bluetooth alive" }}</div>
     <div matListItemLine>{{ "Plays a permanent inaudible sound" }}</div>
   </mat-list-item>
+  @let isUkulele = (instrumentService.getInstrument$() | async) === "ukulele";
+  <mat-list-item
+    matRipple
+    (click)="onItemUkuleleChordsClicked()">
+    <mat-icon
+      matListItemIcon
+      [color]="isUkulele ? 'primary' : ''"
+      [fontSet]="isUkulele ? '' : 'material-icons-outlined'">
+      music_note
+    </mat-icon>
+    <div matListItemTitle>{{ "Ukulele chords" }}</div>
+    <div matListItemLine>{{ "Shows chord diagrams for a GCEA ukulele instead of a guitar" }}</div>
+  </mat-list-item>
 </mat-list>

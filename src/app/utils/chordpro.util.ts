@@ -43,13 +43,19 @@ export class ChordproUtil {
     if (!match) return null;
 
     const baseFret = Number(match[1]);
-    const frets = Object.assign(Array(6), match[2].split(" ").slice(0, 6)).map((fret) =>
+    const fretValues = match[2].split(" ");
+    // Exactly four values is a ukulele fingering; anything else keeps being read
+    // as a guitar one, padded to six strings as it always was.
+    const stringCount = fretValues.length === 4 ? 4 : 6;
+    const frets = Object.assign(Array(stringCount), fretValues.slice(0, stringCount)).map((fret) =>
       NumberUtil.isNaN(fret) || fret < 0 ? "x" : fret,
     );
-    const fingers = Object.assign(Array(6), (match[4]?.split(" ") ?? []).slice(0, 6)).map((finger) => {
-      if (NumberUtil.isNaN(finger)) return finger[0];
-      return finger < 0 ? "x" : finger;
-    });
+    const fingers = Object.assign(Array(stringCount), (match[4]?.split(" ") ?? []).slice(0, stringCount)).map(
+      (finger) => {
+        if (NumberUtil.isNaN(finger)) return finger[0];
+        return finger < 0 ? "x" : finger;
+      },
+    );
 
     return {
       frets,

@@ -1,3 +1,4 @@
+@let instrument = (instrument$ | async) ?? "guitar";
 @for (chord of chords$ | async; track chord.title) {
   <button
     class="mobile-only"
@@ -5,6 +6,7 @@
     (click)="onDiagramChordClicked(chord, true)">
     <app-diagram-chord
       [chord]="chord"
+      [instrument]="instrument"
       [size]="'s'"></app-diagram-chord>
   </button>
   <button
@@ -13,6 +15,7 @@
     (click)="onDiagramChordClicked(chord, false)">
     <app-diagram-chord
       [chord]="chord"
+      [instrument]="instrument"
       [size]="'s'"></app-diagram-chord>
   </button>
 }

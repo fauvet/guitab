@@ -6,6 +6,8 @@ import { AppContextService } from "../../services/app-context/app-context.servic
 import { ChordproService } from "../../services/chordpro/chordpro.service";
 import { NotificationService } from "../../services/notification/notification.service";
 import { WakeLockService } from "../../services/wake-lock/wake-lock.service";
+import { InstrumentService } from "../../services/instrument/instrument.service";
+import Instrument from "../../types/instrument.type";
 import { BottomSheetSettingsComponent } from "./bottom-sheet-settings.component";
 
 const KEPT_AWAKE_TEXT = "Prevents device screens from dimming or locking";
@@ -25,6 +27,8 @@ describe("BottomSheetSettingsComponent", () => {
   let isKeptAwake$: BehaviorSubject<boolean>;
   let lastErrorMessage$: BehaviorSubject<string | null>;
   let isBluetoothKeptAlive$: BehaviorSubject<boolean>;
+  let instrument$: BehaviorSubject<Instrument>;
+  let setInstrument: ReturnType<typeof vi.fn>;
   let setWakeLock: ReturnType<typeof vi.fn>;
   let setBluetoothKeptAlive: ReturnType<typeof vi.fn>;
   let setLyricsDisplayed: ReturnType<typeof vi.fn>;
@@ -43,6 +47,8 @@ describe("BottomSheetSettingsComponent", () => {
     isKeptAwake$ = new BehaviorSubject<boolean>(false);
     lastErrorMessage$ = new BehaviorSubject<string | null>(null);
     isBluetoothKeptAlive$ = new BehaviorSubject<boolean>(false);
+    instrument$ = new BehaviorSubject<Instrument>("guitar");
+    setInstrument = vi.fn();
     setWakeLock = vi.fn();
     setBluetoothKeptAlive = vi.fn();
     setLyricsDisplayed = vi.fn();
@@ -77,6 +83,14 @@ describe("BottomSheetSettingsComponent", () => {
             areLyricsDisplayed: () => true,
             setLyricsDisplayed,
             requestEditorFocus: vi.fn(),
+          },
+        },
+        {
+          provide: InstrumentService,
+          useValue: {
+            getInstrument$: () => instrument$.asObservable(),
+            getInstrument: () => instrument$.getValue(),
+            setInstrument,
           },
         },
         {
@@ -163,6 +177,24 @@ describe("BottomSheetSettingsComponent", () => {
       fixture.detectChanges();
 
       expect(bluetoothIconText()).toBe("media_bluetooth_on");
+    });
+  });
+
+  describe("the ukulele chords item", () => {
+    it("should switch the chord diagrams to the ukulele and say so", () => {
+      component.onItemUkuleleChordsClicked();
+
+      expect(setInstrument).toHaveBeenCalledWith("ukulele");
+      expect(showSuccess).toHaveBeenCalledWith("Ukulele chords shown.");
+    });
+
+    it("should switch back to the guitar and say so", () => {
+      instrument$.next("ukulele");
+
+      component.onItemUkuleleChordsClicked();
+
+      expect(setInstrument).toHaveBeenCalledWith("guitar");
+      expect(showSuccess).toHaveBeenCalledWith("Guitar chords shown.");
     });
   });
 
