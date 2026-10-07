@@ -1,0 +1,354 @@
+<!doctype html>
+<!--
+  Throwaway sign-in diagnostic, outside the Angular build. Deployed alone to
+  Firebase Hosting so that authDomain is this page's own origin, then opened on
+  the device that fails to sign in. Each button tries one method and logs the
+  raw outcome; the log survives a redirect through localStorage.
+-->
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1" />
+    <title>GuiTab — test de connexion</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 0 auto;
+        max-width: 720px;
+        padding: 16px;
+        color: #000;
+        background: #fff;
+      }
+      h1 {
+        font-size: 1.4rem;
+      }
+      h2 {
+        font-size: 1.1rem;
+        margin-top: 24px;
+      }
+      label {
+        display: block;
+        margin-top: 8px;
+        font-weight: 600;
+      }
+      textarea,
+      input {
+        box-sizing: border-box;
+        width: 100%;
+        font: inherit;
+        font-size: 0.9rem;
+      }
+      button {
+        display: block;
+        width: 100%;
+        min-height: 48px;
+        margin-top: 8px;
+        font: inherit;
+        border: 2px solid #000;
+        background: #fff;
+      }
+      pre {
+        white-space: pre-wrap;
+        word-break: break-word;
+        border: 1px solid #000;
+        padding: 8px;
+        font-size: 0.85rem;
+      }
+      #gis-button {
+        margin-top: 8px;
+        min-height: 48px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Test de connexion Google</h1>
+
+    <h2>1. Configuration</h2>
+    <label for="firebase-config">Config Firebase (objet copié depuis la console Firebase)</label>
+    <textarea
+      id="firebase-config"
+      rows="8"
+      placeholder='{ apiKey: "…", projectId: "…", appId: "…", … }'></textarea>
+    <label for="client-id">ID client OAuth « Web » (pour les tests GIS)</label>
+    <input
+      id="client-id"
+      placeholder="123-abc.apps.googleusercontent.com" />
+    <button
+      id="save-config"
+      type="button">
+      Enregistrer et recharger
+    </button>
+
+    <h2>2. Environnement</h2>
+    <pre id="environment"></pre>
+
+    <h2>3. Tests</h2>
+    <button
+      id="test-popup"
+      type="button">
+      A — Firebase popup (méthode actuelle)
+    </button>
+    <button
+      id="test-redirect"
+      type="button">
+      B — Firebase redirection
+    </button>
+    <button
+      id="test-link-redirect"
+      type="button">
+      C — Anonyme puis linkWithRedirect (uid conservé ?)
+    </button>
+    <button
+      id="test-one-tap"
+      type="button">
+      D — GIS One Tap / FedCM
+    </button>
+    <p>E — Bouton GIS (popup Google) :</p>
+    <div id="gis-button"></div>
+    <button
+      id="sign-out"
+      type="button">
+      Se déconnecter
+    </button>
+
+    <h2>4. Résultats</h2>
+    <button
+      id="copy-log"
+      type="button">
+      Copier les résultats
+    </button>
+    <button
+      id="clear-log"
+      type="button">
+      Effacer les résultats
+    </button>
+    <pre
+      id="log"
+      role="status"></pre>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+      import {
+        getAuth,
+        GoogleAuthProvider,
+        signInWithPopup,
+        signInWithRedirect,
+        linkWithRedirect,
+        getRedirectResult,
+        signInAnonymously,
+        signInWithCredential,
+        signOut,
+      } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+      const CONFIG_KEY = "authTest.firebaseConfig";
+      const CLIENT_ID_KEY = "authTest.clientId";
+      const LOG_KEY = "authTest.log";
+      const PENDING_KEY = "authTest.pending";
+
+      const logElement = document.getElementById("log");
+
+      function readLog() {
+        return localStorage.getItem(LOG_KEY) ?? "";
+      }
+
+      function log(message) {
+        const line = `[${new Date().toLocaleTimeString()}] ${message}`;
+        localStorage.setItem(LOG_KEY, `${readLog()}${line}\n`);
+        logElement.textContent = readLog();
+      }
+
+      function describeError(error) {
+        return `${error?.code ?? "sans code"} — ${error?.message ?? String(error)}`;
+      }
+
+      function describeUser(user) {
+        return user ? `uid=${user.uid} anonyme=${user.isAnonymous} email=${user.email ?? "—"}` : "aucun utilisateur";
+      }
+
+      // The console shows the config as a JS object literal, not JSON, so
+      // accept either: pick out every key: "value" pair.
+      function parseConfig(text) {
+        try {
+          return JSON.parse(text);
+        } catch {
+          const config = {};
+          for (const match of text.matchAll(/(\w+)\s*:\s*["']([^"']*)["']/g)) {
+            config[match[1]] = match[2];
+          }
+          return config;
+        }
+      }
+
+      function describeEnvironment() {
+        const userAgent = navigator.userAgent;
+        const chromeVersion = userAgent.match(/Chrome\/([\d.]+)/)?.[1] ?? "non détecté";
+        return [
+          `URL : ${location.href}`,
+          `User-Agent : ${userAgent}`,
+          `Version Chrome : ${chromeVersion}`,
+          `WebView Android (« ; wv) » dans l'UA) : ${/; wv\)/.test(userAgent) ? "OUI" : "non"}`,
+          `FedCM (IdentityCredential) : ${"IdentityCredential" in window ? "disponible" : "absent"}`,
+          `Cookies activés : ${navigator.cookieEnabled}`,
+          `Storage Access API : ${"hasStorageAccess" in document ? "présente" : "absente"}`,
+          `Pointeur grossier (tactile) : ${matchMedia("(pointer: coarse)").matches}`,
+        ].join("\n");
+      }
+
+      document.getElementById("environment").textContent = describeEnvironment();
+      logElement.textContent = readLog();
+
+      const storedConfig = localStorage.getItem(CONFIG_KEY) ?? "";
+      const storedClientId = localStorage.getItem(CLIENT_ID_KEY) ?? "";
+      document.getElementById("firebase-config").value = storedConfig;
+      document.getElementById("client-id").value = storedClientId;
+
+      document.getElementById("save-config").addEventListener("click", () => {
+        localStorage.setItem(CONFIG_KEY, document.getElementById("firebase-config").value);
+        localStorage.setItem(CLIENT_ID_KEY, document.getElementById("client-id").value.trim());
+        location.reload();
+      });
+
+      document.getElementById("copy-log").addEventListener("click", async () => {
+        const text = `${describeEnvironment()}\n\n${readLog()}`;
+        try {
+          await navigator.clipboard.writeText(text);
+          log("Résultats copiés dans le presse-papiers.");
+        } catch (error) {
+          log(`Copie impossible (${describeError(error)}) — sélectionne le texte à la main.`);
+        }
+      });
+
+      document.getElementById("clear-log").addEventListener("click", () => {
+        localStorage.removeItem(LOG_KEY);
+        logElement.textContent = "";
+      });
+
+      const config = parseConfig(storedConfig);
+      if (!config.apiKey) {
+        log("Aucune config Firebase : colle-la dans la section 1.");
+      } else {
+        // The point of the test: authDomain is this page's own origin, so
+        // /__/auth/handler is first-party and the redirect result is not lost
+        // to storage partitioning.
+        config.authDomain = location.host;
+        const auth = getAuth(initializeApp(config));
+        const provider = new GoogleAuthProvider();
+
+        const pending = localStorage.getItem(PENDING_KEY);
+        localStorage.removeItem(PENDING_KEY);
+        getRedirectResult(auth)
+          .then((result) => {
+            if (!pending) return;
+            if (!result) {
+              log(`${pending} : retour de redirection SANS résultat (échec silencieux).`);
+              return;
+            }
+            log(`${pending} : SUCCÈS — ${describeUser(result.user)}`);
+            const previousUid = localStorage.getItem("authTest.anonymousUid");
+            if (pending.startsWith("C") && previousUid) {
+              log(`C : uid conservé ? ${previousUid === result.user.uid ? "OUI" : `NON (avant ${previousUid})`}`);
+              localStorage.removeItem("authTest.anonymousUid");
+            }
+          })
+          .catch((error) => log(`${pending ?? "Retour de redirection"} : ÉCHEC — ${describeError(error)}`));
+
+        auth.onAuthStateChanged((user) => log(`État : ${describeUser(user)}`));
+
+        document.getElementById("test-popup").addEventListener("click", () => {
+          log("A : ouverture du popup…");
+          signInWithPopup(auth, provider)
+            .then((result) => log(`A : SUCCÈS — ${describeUser(result.user)}`))
+            .catch((error) => log(`A : ÉCHEC — ${describeError(error)}`));
+        });
+
+        document.getElementById("test-redirect").addEventListener("click", () => {
+          log("B : départ vers Google…");
+          localStorage.setItem(PENDING_KEY, "B");
+          signInWithRedirect(auth, provider).catch((error) => log(`B : ÉCHEC — ${describeError(error)}`));
+        });
+
+        document.getElementById("test-link-redirect").addEventListener("click", async () => {
+          try {
+            const anonymous = await signInAnonymously(auth);
+            localStorage.setItem("authTest.anonymousUid", anonymous.user.uid);
+            log(`C : anonyme uid=${anonymous.user.uid}, départ vers Google…`);
+            localStorage.setItem(PENDING_KEY, "C");
+            await linkWithRedirect(anonymous.user, provider);
+          } catch (error) {
+            log(`C : ÉCHEC — ${describeError(error)}`);
+          }
+        });
+
+        document.getElementById("sign-out").addEventListener("click", () => {
+          signOut(auth).catch((error) => log(`Déconnexion : ÉCHEC — ${describeError(error)}`));
+        });
+
+        setUpGoogleIdentityServices(auth);
+      }
+
+      function setUpGoogleIdentityServices(auth) {
+        const clientId = storedClientId;
+        if (!clientId) {
+          log("D/E : pas d'ID client OAuth, tests GIS désactivés.");
+          return;
+        }
+        let currentTest = "D";
+        const script = document.createElement("script");
+        script.src = "https://accounts.google.com/gsi/client";
+        script.async = true;
+        script.onerror = () => log("D/E : impossible de charger le script GIS.");
+        script.onload = () => {
+          google.accounts.id.initialize({
+            client_id: clientId,
+            use_fedcm_for_prompt: true,
+            use_fedcm_for_button: true,
+            cancel_on_tap_outside: true,
+            callback: (response) => {
+              const test = currentTest;
+              log(`${test} : jeton GIS reçu (select_by=${response.select_by ?? "?"}), envoi à Firebase…`);
+              signInWithCredential(auth, GoogleAuthProvider.credential(response.credential))
+                .then((result) => log(`${test} : SUCCÈS — ${describeUser(result.user)}`))
+                .catch((error) => log(`${test} : ÉCHEC Firebase — ${describeError(error)}`));
+            },
+          });
+          google.accounts.id.renderButton(document.getElementById("gis-button"), {
+            type: "standard",
+            theme: "outline",
+            size: "large",
+            text: "signin_with",
+            click_listener: () => {
+              currentTest = "E";
+              log("E : clic sur le bouton GIS…");
+            },
+          });
+          log("D/E : script GIS chargé.");
+        };
+        document.head.append(script);
+
+        document.getElementById("test-one-tap").addEventListener("click", () => {
+          if (typeof google === "undefined") {
+            log("D : script GIS pas encore chargé.");
+            return;
+          }
+          currentTest = "D";
+          log("D : demande One Tap…");
+          // Under FedCM most moment getters are gone; call whichever exist.
+          google.accounts.id.prompt((notification) => {
+            const details = [
+              ["type", notification.getMomentType?.()],
+              ["non affiché", notification.isNotDisplayed?.() && notification.getNotDisplayedReason?.()],
+              ["ignoré", notification.isSkippedMoment?.() && notification.getSkippedReason?.()],
+              ["fermé", notification.isDismissedMoment?.() && notification.getDismissedReason?.()],
+            ]
+              .filter(([, value]) => value)
+              .map(([label, value]) => `${label}=${value}`)
+              .join(", ");
+            log(`D : notification One Tap — ${details || "sans détail"}`);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
