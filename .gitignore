@@ -49,4 +49,3 @@ src/environments/environment.ts
 # Firebase emulator logs (npm run test:rules:emulator)
 database-debug.log
 firebase-debug.log
-.firebase/
