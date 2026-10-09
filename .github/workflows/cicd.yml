@@ -1,20 +1,28 @@
 name: CICD
 
-# One workflow covering both verification and deploy. `deploy` declares
+# One workflow covering verification, release and deploy. `deploy` declares
 # `needs: [lint, typecheck, test, database-rules, build]`, so it cannot run
 # unless every one of them has already succeeded in the same run, and it
-# reuses the `build` job's own artifact instead of rebuilding. It additionally
-# requires `github.ref == 'refs/heads/main' && github.event_name == 'push'`,
-# so it only fires after a merge — every other job runs on every push and
-# every pull request.
+# reuses the `build` job's own artifact instead of rebuilding. `release` and
+# `deploy` additionally require `github.ref == 'refs/heads/main' &&
+# github.event_name == 'push'`, so they only fire after a merge — every other
+# job runs on every push and every pull request.
 #
-# Six jobs, ordered by how fast they fail:
+# Seven jobs, ordered by how fast they fail:
 #   • Lint, formatting, and the instruction-tree integrity check
 #   • TypeScript, with zero errors
 #   • Unit tests with the coverage thresholds from angular.json
 #   • database.rules.json against a local Realtime Database emulator
+#   • Release — main only: semantic-release bumps the version, writes
+#     CHANGELOG.md, commits, tags and publishes a GitHub release
 #   • The production build, including its bundle budgets
 #   • Deploy to GitHub Pages — main only, after all of the above
+#
+# `build` waits for `release` so that on main it builds the release commit:
+# the version the app displays is read from package.json at build time, and
+# building the merge commit instead would ship the previous number. On a
+# branch or a pull request `release` is skipped, and `build` runs once the
+# verification jobs are done.
 #
 # Every job but database-rules and deploy runs `npm run setup:env` first.
 # src/environments/environment.ts is git-ignored and nothing compiles without
@@ -129,11 +137,61 @@ jobs:
         # tells the emulator to run standalone. See database.rules.spec.ts.
         run: npm run test:rules:emulator
 
+  release:
+    name: Release
+    needs: [lint, typecheck, test, database-rules]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    # Two merges in quick succession must not compute the same next version.
+    concurrency:
+      group: release
+      cancel-in-progress: false
+    permissions:
+      contents: write
+    outputs:
+      sha: ${{ steps.release-commit.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # semantic-release reads every commit since the last tag.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - run: npm ci
+        env:
+          # The release commit only touches generated files; the pre-commit
+          # hook has nothing to check there and would only slow it down.
+          HUSKY: 0
+
+      - name: semantic-release
+        # Commits that warrant no release (docs, test, chore…) end here with
+        # nothing published, and the current version is deployed again. The
+        # release commit carries [skip ci], and a push made with GITHUB_TOKEN
+        # never starts a workflow anyway — this run is the one that deploys it.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HUSKY: 0
+        run: npx semantic-release
+
+      - name: Hand the commit to build
+        id: release-commit
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
   build:
     name: Production build
+    needs: [release]
+    # `release` is skipped everywhere but main, and a skipped need would
+    # otherwise skip this job too.
+    if: ${{ !cancelled() && (needs.release.result == 'success' || needs.release.result == 'skipped') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.release.outputs.sha || github.sha }}
 
       - uses: actions/setup-node@v5
         with:

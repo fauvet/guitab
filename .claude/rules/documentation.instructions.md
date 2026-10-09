@@ -18,7 +18,7 @@ touch, and how do I keep it true?" — the ownership table itself lives in the r
 | `.claude/rules/*.md`        | How to write code here, and why the rule exists | What the code currently contains, in detail  |
 | `.claude/skills/*/SKILL.md` | How a library, format or domain works           | Project conventions — those belong to a rule |
 | `README.md`                 | How to run, configure and deploy                | Any convention — link to the rule instead    |
-| `CHANGELOG.md`              | What changed, for a user                        | Why the implementation is shaped that way    |
+| `CHANGELOG.md`              | Generated from commit subjects — never edited   | Anything written by hand                     |
 
 ## Do not write down what the code already says
 

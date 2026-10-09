@@ -44,6 +44,18 @@ Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `perf`, `build`, `ci`
 Scopes are the area touched: `chordpro`, `editor`, `storage`, `auth`, `pwa`,
 `docs`.
 
+The type is not decoration: it decides the release. `main` only takes squash
+merges, so a pull request's **title** becomes the commit semantic-release reads —
+`fix` ships a patch, `feat` a minor, a `!` or a `BREAKING CHANGE:` footer a major,
+and every other type ships nothing. That subject line is also the `CHANGELOG.md`
+entry a player reads, so write it for them. `.github/workflows/pr-title.yml`
+rejects a title outside the format.
+
+Never write GitHub's skip marker — `skip ci` between square brackets — anywhere in a
+commit message, even quoted to describe the release job. GitHub skips every workflow
+for a head commit that contains it, with no failed run to show for it; only the
+release commit semantic-release writes may carry it.
+
 - One logical change per commit. A commit that both fixes a bug and reformats four
   files can be neither reviewed nor reverted.
 - **No drive-by reformatting.** Prettier already runs on everything; if formatting
@@ -69,7 +81,8 @@ Before calling a change finished, all of it:
 - [ ] Every new subscription has a matching `takeUntil(this.unsubscribe$)`.
 - [ ] A new dependency was checked against
       `dependencies-licensing.instructions.md` and lands lazily if it is heavy.
-- [ ] User-visible changes are in `CHANGELOG.md` under `Unreleased`.
+- [ ] A user-visible change is titled `feat` or `fix`, so it reaches the
+      generated `CHANGELOG.md`. Never edit that file by hand.
 - [ ] If a convention changed, **exactly one** document is updated — the owner from
       the table in the root `CLAUDE.md`. Editing two means one is a duplicate.
 
@@ -78,12 +91,14 @@ Before calling a change finished, all of it:
 The body covers what changed, why, what you verified — commands and their results,
 not "tested locally" — and anything deliberately left out. CI must be green.
 
-There is **one** workflow, `.github/workflows/cicd.yml`. Its verification jobs
-(lint, typecheck, test, database-rules, build) run on every branch and every
-pull request; its `deploy` job additionally runs on a push to `main`, gated by
-`needs:` on all of them — it cannot run unless they already succeeded in the same
-run, and it deploys the artifact `build` produced rather than building again. Its
-job list is not restated here.
+`.github/workflows/cicd.yml` carries everything that builds or ships. Its
+verification jobs (lint, typecheck, test, database-rules, build) run on every
+branch and every pull request. On a push to `main`, `release` runs semantic-release
+once verification passes, `build` then builds the release commit — the displayed
+version comes from `package.json` — and `deploy` publishes that artifact, gated by
+`needs:` on all of them. Its job list is not restated here. The one other
+workflow, `pr-title.yml`, only checks a pull request's title, kept apart because
+it has to re-run when the title is edited.
 
 `database.rules.json` is not deployed by this workflow — `database-rules` tests it
 against a local emulator on every branch, but shipping a rules change is a manual

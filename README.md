@@ -102,6 +102,9 @@ For the full spec, see [chordpro.org](https://www.chordpro.org/chordpro/chordpro
 
 ## Changelog
 
-Notable changes are recorded in [CHANGELOG.md](CHANGELOG.md), following
-[Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
-[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+Every merge to `main` is released automatically by
+[semantic-release](https://github.com/semantic-release/semantic-release), which
+picks the next [Semantic Versioning](https://semver.org/spec/v2.0.0.html) number
+from the Conventional Commits merged since the last tag and writes
+[CHANGELOG.md](CHANGELOG.md) and a GitHub release from them. Configuration:
+`.releaserc.json`.
