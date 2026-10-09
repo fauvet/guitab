@@ -51,6 +51,11 @@ and every other type ships nothing. That subject line is also the `CHANGELOG.md`
 entry a player reads, so write it for them. `.github/workflows/pr-title.yml`
 rejects a title outside the format.
 
+Never write GitHub's skip marker — `skip ci` between square brackets — anywhere in a
+commit message, even quoted to describe the release job. GitHub skips every workflow
+for a head commit that contains it, with no failed run to show for it; only the
+release commit semantic-release writes may carry it.
+
 - One logical change per commit. A commit that both fixes a bug and reformats four
   files can be neither reviewed nor reverted.
 - **No drive-by reformatting.** Prettier already runs on everything; if formatting
