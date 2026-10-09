@@ -38,9 +38,14 @@ service worker serves the cached version, downloads the new one in the backgroun
 and activates it on the **next** load. A user who opens the app once after a deploy
 sees the old code, and they are not wrong.
 
-`SwUpdate` from `@angular/service-worker` can surface a "reload for the new version"
-prompt. There is none today; if the staleness starts to matter, that is the fix, not
-disabling the cache.
+"Check for updates" in the settings sheet is the way out without waiting for that
+second load: `AppUpdateService` asks `SwUpdate` for the new version, activates it and
+reloads, saving the song first so the reload neither prompts nor loses anything. It
+calls `activateUpdate()` even when `checkForUpdate()` finds nothing, because the
+worker may already have downloaded the new version in the background — only
+activation tells whether this tab is behind. Disabling the cache is never the fix.
+The version shown next to the button is `package.json`'s, which the release job
+bumps before the build.
 
 To clear the slate while debugging: unregister the worker and clear storage in the
 browser's application panel. A hard refresh alone is not enough.
