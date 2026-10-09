@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.0](https://github.com/fauvet/guitab/compare/v1.0.0...v1.1.0) (2026-10-09)
+
+### Features
+
+* **pwa:** add a check for updates button to the settings ([#7](https://github.com/fauvet/guitab/issues/7)) ([90080c5](https://github.com/fauvet/guitab/commit/90080c57b9527a8480ebfb74c641999fb13b9445))
+
 ## 1.0.0 (2026-10-09)
 
 ### Features
