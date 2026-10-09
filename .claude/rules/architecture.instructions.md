@@ -83,6 +83,7 @@ ChordproService          ← subscribes to fileHandleWithContent$ in constructor
                             chordproContent$ into the active repository
      ↓ injected by
 KeyboardShortcutService  ← undo/redo/new file
+AppUpdateService         ← saves, then reloads into a newer deployed version
 BeforeUnloadService      ← hasUnsavedChanges() + draft via IDraftRepository
 HeaderActionsBarComponent
 FooterActionsBarComponent

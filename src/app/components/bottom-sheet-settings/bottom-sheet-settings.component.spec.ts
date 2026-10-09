@@ -7,6 +7,8 @@ import { ChordproService } from "../../services/chordpro/chordpro.service";
 import { NotificationService } from "../../services/notification/notification.service";
 import { WakeLockService } from "../../services/wake-lock/wake-lock.service";
 import { InstrumentService } from "../../services/instrument/instrument.service";
+import { AppUpdateService } from "../../services/app-update/app-update.service";
+import packageJson from "../../../../package.json";
 import Instrument from "../../types/instrument.type";
 import { BottomSheetSettingsComponent } from "./bottom-sheet-settings.component";
 
@@ -28,6 +30,8 @@ describe("BottomSheetSettingsComponent", () => {
   let lastErrorMessage$: BehaviorSubject<string | null>;
   let isBluetoothKeptAlive$: BehaviorSubject<boolean>;
   let instrument$: BehaviorSubject<Instrument>;
+  let updateApp: ReturnType<typeof vi.fn>;
+  let showError: ReturnType<typeof vi.fn>;
   let setInstrument: ReturnType<typeof vi.fn>;
   let setWakeLock: ReturnType<typeof vi.fn>;
   let setBluetoothKeptAlive: ReturnType<typeof vi.fn>;
@@ -53,6 +57,8 @@ describe("BottomSheetSettingsComponent", () => {
     setBluetoothKeptAlive = vi.fn();
     setLyricsDisplayed = vi.fn();
     showSuccess = vi.fn();
+    showError = vi.fn();
+    updateApp = vi.fn().mockResolvedValue(false);
 
     await TestBed.configureTestingModule({
       imports: [BottomSheetSettingsComponent, NoopAnimationsModule],
@@ -85,6 +91,7 @@ describe("BottomSheetSettingsComponent", () => {
             requestEditorFocus: vi.fn(),
           },
         },
+        { provide: AppUpdateService, useValue: { updateApp } },
         {
           provide: InstrumentService,
           useValue: {
@@ -95,7 +102,7 @@ describe("BottomSheetSettingsComponent", () => {
         },
         {
           provide: NotificationService,
-          useValue: { showSuccess, showError: vi.fn() },
+          useValue: { showSuccess, showError },
         },
       ],
     }).compileComponents();
@@ -195,6 +202,56 @@ describe("BottomSheetSettingsComponent", () => {
 
       expect(setInstrument).toHaveBeenCalledWith("guitar");
       expect(showSuccess).toHaveBeenCalledWith("Guitar chords shown.");
+    });
+  });
+
+  describe("the check for updates item", () => {
+    it("should show the installed version", () => {
+      expect(renderedText()).toContain(`Version ${packageJson.version} installed`);
+    });
+
+    it("should say so when the app is already up to date", async () => {
+      await component.onItemCheckForUpdatesClicked();
+
+      expect(updateApp).toHaveBeenCalledTimes(1);
+      expect(showSuccess).toHaveBeenCalledWith("Already up to date.");
+    });
+
+    it("should say nothing while the page reloads into a new version", async () => {
+      updateApp.mockResolvedValue(true);
+
+      await component.onItemCheckForUpdatesClicked();
+
+      expect(showSuccess).not.toHaveBeenCalled();
+      expect(showError).not.toHaveBeenCalled();
+    });
+
+    it("should log and report a failed check", async () => {
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      updateApp.mockRejectedValue(new Error("network"));
+
+      await component.onItemCheckForUpdatesClicked();
+
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      expect(showError).toHaveBeenCalledWith("Could not check for updates.");
+      consoleErrorSpy.mockRestore();
+    });
+
+    it("should announce the check while it runs and ignore a second click", async () => {
+      let resolveUpdate: (isUpdating: boolean) => void = () => {};
+      updateApp.mockReturnValue(new Promise<boolean>((resolve) => (resolveUpdate = resolve)));
+
+      const firstClick = component.onItemCheckForUpdatesClicked();
+      fixture.detectChanges();
+      expect(renderedText()).toContain("Checking for updates…");
+
+      await component.onItemCheckForUpdatesClicked();
+      expect(updateApp).toHaveBeenCalledTimes(1);
+
+      resolveUpdate(false);
+      await firstClick;
+      fixture.detectChanges();
+      expect(renderedText()).toContain(`Version ${packageJson.version} installed`);
     });
   });
 

@@ -65,4 +65,24 @@
     <div matListItemTitle>{{ "Ukulele chords" }}</div>
     <div matListItemLine>{{ "Shows chord diagrams for a GCEA ukulele instead of a guitar" }}</div>
   </mat-list-item>
+  <mat-divider />
+  @let isCheckingForUpdate = isCheckingForUpdate$ | async;
+  <mat-list-item
+    matRipple
+    [disabled]="isCheckingForUpdate"
+    (click)="onItemCheckForUpdatesClicked()">
+    <mat-icon
+      matListItemIcon
+      fontSet="material-icons-outlined">
+      update
+    </mat-icon>
+    <div matListItemTitle>{{ "Check for updates" }}</div>
+    <!-- One live region whose text changes, rather than one that appears:
+         a region inserted already filled is not announced by every reader. -->
+    <div
+      matListItemLine
+      role="status">
+      {{ isCheckingForUpdate ? "Checking for updates…" : "Version " + version + " installed" }}
+    </div>
+  </mat-list-item>
 </mat-list>
